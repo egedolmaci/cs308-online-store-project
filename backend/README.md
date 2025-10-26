@@ -29,14 +29,14 @@ cp .env.example .env
 ## Run
 
 ```bash
-uvicorn app.main:app --reload
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 **Docs**: http://localhost:8000/api/v1/docs
 
 ## Architecture
 
-**Request Flow**: Endpoint � Service � Repository � Database
+**Request Flow**: Endpoint -> Service -> Repository -> Database
 
 - **Endpoints**: Validate input, call services
 - **Services**: Business logic, orchestration

@@ -1,20 +1,10 @@
 # Environment files (all locations)
 .env
 .env.local
-.env.*.local
-**/.env
-**/.env.local
 
 # Python
-venv
 venv/
 **/__pycache__/
-**/*.pyc
-**/*.pyo
-**/*.pyd
-.Python
-**/venv/
-**/env/
 
 # IDE
 .vscode/
