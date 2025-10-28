@@ -1,13 +1,19 @@
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 
 const Header = () => {
   const totalQuantity = useSelector((state) => state.cart.totalQuantity);
   const navigate = useNavigate();
 
-  const handleCartClick = () => {
-    navigate('/cart');
+  const handleNavigate = (route) => {
+    navigate(route)
   }
+
+  const location = useLocation();
+  const selectedTab = location.pathname
+
+  const selectedTabStyle = "text-sm font-medium text-gray-900 border-b-2 border-gray-900 pb-1";
+  const normalTabStyle = "text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors duration-200";
 
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-sand/30 shadow-sm">
@@ -38,32 +44,26 @@ const Header = () => {
           {/* Navigation Links */}
           <nav className="hidden md:flex items-center space-x-8">
             <a
-              href="#"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors duration-200"
+              href="/"
+              className={selectedTab === "/" ? selectedTabStyle : normalTabStyle}
             >
               Home
             </a>
             <a
-              href="#"
-              className="text-sm font-medium text-gray-900 border-b-2 border-gray-900 pb-1"
+              href="/store"
+              className={selectedTab === "/store" ? selectedTabStyle : normalTabStyle}
             >
               Store
             </a>
             <a
-              href="#"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors duration-200"
-            >
-              Categories
-            </a>
-            <a
-              href="#"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors duration-200"
+              href="/about"
+              className={selectedTab === "/about" ? selectedTabStyle : normalTabStyle}
             >
               About
             </a>
             <a
-              href="#"
-              className="text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors duration-200"
+              href="/contact"
+              className={selectedTab === "/contact" ? selectedTabStyle : normalTabStyle}
             >
               Contact
             </a>
@@ -72,7 +72,7 @@ const Header = () => {
           {/* Right Side Actions */}
           <div className="flex items-center space-x-4">
             {/* Cart */}
-            <button onClick={handleCartClick} className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors duration-200">
+            <button onClick={() => handleNavigate("/cart")} className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors duration-200">
               <svg
                 className="w-6 h-6"
                 fill="none"
