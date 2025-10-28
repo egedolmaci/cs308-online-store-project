@@ -1,4 +1,14 @@
+import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
+
 const Header = () => {
+  const totalQuantity = useSelector((state) => state.cart.totalQuantity);
+  const navigate = useNavigate();
+
+  const handleCartClick = () => {
+    navigate('/cart');
+  }
+
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-xl border-b border-sand/30 shadow-sm">
       <div className="container mx-auto px-4">
@@ -62,7 +72,7 @@ const Header = () => {
           {/* Right Side Actions */}
           <div className="flex items-center space-x-4">
             {/* Cart */}
-            <button className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors duration-200">
+            <button onClick={handleCartClick} className="relative p-2 text-gray-600 hover:text-gray-900 transition-colors duration-200">
               <svg
                 className="w-6 h-6"
                 fill="none"
@@ -77,7 +87,7 @@ const Header = () => {
                 />
               </svg>
               <span className="absolute -top-1 -right-1 bg-error text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
-                3
+                {totalQuantity}
               </span>
             </button>
 

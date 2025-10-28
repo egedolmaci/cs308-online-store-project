@@ -1,11 +1,14 @@
 import { configureStore } from "@reduxjs/toolkit";
+import cartReducer from "./slices/cartSlice";
 
 export const store = configureStore({
-  reducer: {},
+  reducer: {
+    cart: cartReducer,
+  },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
-        ignoredActions: ['persist/PERSIST', 'persist/REHYDRATE'],
+        ignoredActions: ["persist/PERSIST", "persist/REHYDRATE"],
       },
     }),
 });
