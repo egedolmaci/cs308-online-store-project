@@ -122,7 +122,7 @@ const Filter = ({
 
         {/* Categories - Enhanced Pills */}
         <div className="relative flex items-center justify-center">
-          <div className="overflow-x-auto scrollbar-hide -mx-4 px-4 flex justify-center items-center">
+          <div className="overflow-x-auto scrollbar-hide -mx-4 px-4">
             <div className="flex gap-2.5 pb-2 pt-2 min-w-min">
               {categories.map((category, index) => (
                 <button
