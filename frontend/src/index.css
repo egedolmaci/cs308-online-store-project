@@ -17,4 +17,17 @@
   --color-error: #DC2626;
   --color-error-light: #F87171;
   --color-error-dark: #7F1D1D;
+
+  --animate-scale-in: scale-in 0.3s ease-out;
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }

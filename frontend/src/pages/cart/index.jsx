@@ -4,18 +4,15 @@ import CartItemCard from "./components/CartItemCard";
 import CartSummary from "./components/CartSummary";
 import EmptyCart from "./components/EmptyCart";
 import { clearCart } from "../../store/slices/cartSlice";
+import { setModal } from "../../store/slices/modalSlice";
+import { MODAL_NAMES } from "../../constants";
 
 const Cart = () => {
   const dispatch = useDispatch();
   const { items, totalQuantity } = useSelector((state) => state.cart);
 
   const handleCheckout = () => {
-    // TODO: Implement checkout logic
-    alert(
-      `Processing checkout for ${totalQuantity} items. This will be integrated with payment gateway.`
-    );
-    // For now, just clear the cart after "checkout"
-    // dispatch(clearCart());
+    dispatch(setModal(MODAL_NAMES.BANKING_MODAL));
   };
 
   // Show empty cart if no items
@@ -38,8 +35,8 @@ const Cart = () => {
                 Shopping Cart
               </h1>
               <p className="text-gray-600">
-                You have {totalQuantity} {totalQuantity === 1 ? "item" : "items"}{" "}
-                in your cart
+                You have {totalQuantity}{" "}
+                {totalQuantity === 1 ? "item" : "items"} in your cart
               </p>
             </div>
             <Link

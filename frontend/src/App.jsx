@@ -7,11 +7,13 @@ import { Provider } from "react-redux";
 import { store } from "./store";
 import Header from "./ui/components/Header";
 import Footer from "./ui/components/Footer";
+import ModalContainer from "./ui/components/ModalContainer";
 
 function App() {
   return (
     <Provider store={store}>
       <Router>
+        <ModalContainer />
         <Header />
         <Routes>
           <Route path="/" element={<Home />} />
