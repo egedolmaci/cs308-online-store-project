@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:5173"]
+    DATABASE_URL: str = "sqlite:///./database.db"
 
 @lru_cache
 def get_settings() -> Settings:
