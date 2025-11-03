@@ -1,49 +1,77 @@
 # Backend API
 
-FastAPI backend for the online store.
+FastAPI backend with SQLite database and automatic seeding.
 
-## Project Structure
+## Quick Start
+
+```bash
+source venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+uvicorn app.main:app --reload
+```
+
+**API Docs**: http://localhost:8000/docs
+
+## Stack
+
+- **FastAPI** 0.120.0 - Async Python web framework
+- **SQLAlchemy** 2.0.44 - ORM for SQLite
+- **Pydantic Settings** - Config management from `.env`
+- **Loguru** - Structured logging with colors
+
+## Structure
 
 ```
 app/
-    api/            # HTTP routes and endpoints
-    core/           # Config, security, exceptions
+├── api/endpoints/          # Route handlers
+├── core/
+│   ├── config.py          # Settings (reads .env)
+│   └── logging.py         # Loguru config
+├── domains/
+│   └── catalog/           # Product domain (entities, schemas)
+├── infrastructure/
+│   └── database/
+│       ├── sqlite/
+│       │   ├── session.py      # DB connection & dependency
+│       │   └── models/         # SQLAlchemy models
+│       ├── seed_data.py        # Initial product data
+│       └── seeder.py           # Auto-seed on startup
+└── main.py                # App factory + startup events
 ```
 
-## Setup
+## Database
 
-```bash
-# Create virtual environment
-python -m venv venv
-source venv/bin/activate  # Windows: venv\Scripts\activate
+**SQLite** with auto-migration and seeding:
+- Tables created on startup via `Base.metadata.create_all()`
+- Database seeded with 12 products if empty (from `seed_data.py`)
+- File: `database.db` (gitignored)
 
-# Install dependencies
-pip install -r requirements.txt
+**Reset database**: `rm database.db && uvicorn app.main:app --reload`
 
-# Configure environment
-cp .env.example .env
-# Edit .env with your values (SECRET_KEY, DATABASE_URL)
+## Logging
 
+Uses **Loguru** for structured logging. Import anywhere:
+
+```python
+from app.core.logging import logger
+
+logger.info("Something happened")
+logger.error("Something broke", extra_context="value")
 ```
 
-## Run
+## Config
 
-```bash
-uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
+Centralized in `app/core/config.py`. Override via `.env`:
+
+```env
+DATABASE_URL=sqlite:///./database.db
+DEBUG=True
 ```
 
-**Docs**: http://localhost:8000/api/v1/docs
-
-## Architecture
-
-**Request Flow**: Endpoint -> Service -> Repository -> Database
-
-- **Endpoints**: Validate input, call services
-- **Services**: Business logic, orchestration
-- **Repositories**: Database operations
-- **Models**: Database schema
-- **Schemas**: API contracts
-
-## Environment Variables
-
-See `.env.example` for required variables.
+Access in code:
+```python
+from app.core.config import get_settings
+settings = get_settings()
+print(settings.DATABASE_URL)
+```
