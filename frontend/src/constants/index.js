@@ -1,3 +1,0 @@
-export const MODAL_NAMES = {
-  BANKING_MODAL: "BANKING_MODAL",
-};

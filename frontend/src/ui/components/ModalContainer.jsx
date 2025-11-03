@@ -1,6 +1,6 @@
 import { useDispatch, useSelector } from "react-redux";
 import { clearModal } from "../../store/slices/modalSlice";
-import { MODALS } from "../modals";
+import { MODALS } from "../../constants";
 
 const ModalContainer = () => {
   const currentModal = useSelector((state) => state.modal.modal);
@@ -24,7 +24,7 @@ const ModalContainer = () => {
 
       {/* Modal Content */}
       <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-scale-in">
-        {MODALS[currentModal]}
+        {MODALS[currentModal.name]}
       </div>
     </div>
   );
