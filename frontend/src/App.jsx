@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Home from "./pages/home";
 import Store from "./pages/store";
 import Cart from "./pages/cart";
+import ItemDetail from "./pages/item-detail";
 import NotFound from "./pages/not-found";
 import { Provider } from "react-redux";
 import { persistor, store } from "./store";
@@ -21,6 +22,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/store" element={<Store />} />
             <Route path="/cart" element={<Cart />} />
+            <Route path="/item/:id" element={<ItemDetail />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Footer />

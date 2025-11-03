@@ -27,8 +27,8 @@ const Home = () => {
 
           {/* Tagline */}
           <p className="text-lg sm:text-xl text-gray-700 max-w-2xl mx-auto leading-relaxed">
-            Discover our curated collection of premium fashion essentials.
-            From casual basics to statement pieces.
+            Discover our curated collection of premium fashion essentials. From
+            casual basics to statement pieces.
           </p>
         </div>
 
