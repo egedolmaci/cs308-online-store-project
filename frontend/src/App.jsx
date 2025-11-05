@@ -5,6 +5,7 @@ import Cart from "./pages/cart";
 import ItemDetail from "./pages/item-detail";
 import Login from "./pages/login";
 import Register from "./pages/register";
+import Profile from "./pages/profile";
 import NotFound from "./pages/not-found";
 import { Provider } from "react-redux";
 import { persistor, store } from "./store";
@@ -27,6 +28,7 @@ function App() {
             <Route path="/item/:id" element={<ItemDetail />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
+            <Route path="/profile" element={<Profile />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Footer />
