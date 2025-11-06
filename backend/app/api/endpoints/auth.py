@@ -1,6 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends, Response, Request, status
 from typing import Optional, Iterable
-
 from app.core.config import get_settings
 from app.domains.identity.schemas import UserCreate, UserRead, LoginRequest, Message
 from app.domains.identity.use_cases import (
@@ -57,8 +56,13 @@ def require_roles(*roles: Iterable[str]):
 @router.post("/register", response_model=UserRead, status_code=201)
 def register(payload: UserCreate):
     try:
-        user = register_user(email=payload.email, password=payload.password, role=payload.role)
-        return UserRead(id=user.id, email=user.email, role=user.role)
+        user = register_user(
+            first_name=payload.first_name,
+            last_name=payload.last_name,
+            email=payload.email,
+            password=payload.password,  # default role "customer"
+        )
+        return UserRead(id=user.id, first_name=user.first_name, last_name=user.last_name, email=user.email, role=user.role)
     except ValueError:
         raise HTTPException(status_code=400, detail="User already exists")
 
