@@ -17,20 +17,13 @@ const Profile = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
+  const user = useSelector((state) => state.user);
 
   useEffect(() => {
     if (isAuthenticated === false) {
       navigate("/login");
     }
   }, [isAuthenticated, navigate]);
-
-  // Mock user data (replace with actual user data from state/API)
-  const user = {
-    firstName: "John",
-    lastName: "Doe",
-    email: "john.doe@example.com",
-    phone: "+1 (555) 123-4567",
-  };
 
   // Mock order data
   const orders = [
