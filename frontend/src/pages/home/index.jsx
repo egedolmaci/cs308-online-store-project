@@ -53,26 +53,6 @@ const Home = () => {
               />
             </svg>
           </Link>
-
-          <Link
-            to="/login"
-            className="group inline-flex items-center justify-center gap-3 px-10 py-5 bg-white text-gray-900 rounded-xl font-bold hover:bg-gray-50 hover:shadow-2xl transition-all duration-300 active:scale-95 shadow-lg border-2 border-gray-900 min-w-60 text-lg"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-              />
-            </svg>
-            <span>Login</span>
-          </Link>
         </div>
 
         {/* Feature Highlights */}

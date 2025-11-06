@@ -7,6 +7,7 @@ const Header = () => {
   const totalAmount = useSelector((state) => state.cart.totalAmount);
   const navigate = useNavigate();
   const location = useLocation();
+  const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const isActive = (path) => location.pathname === path;
@@ -59,10 +60,11 @@ const Header = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${isActive(item.path)
-                    ? "bg-gray-900 text-white shadow-lg scale-105"
-                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                    }`}
+                  className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
+                    isActive(item.path)
+                      ? "bg-gray-900 text-white shadow-lg scale-105"
+                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                  }`}
                 >
                   {item.name}
                 </Link>
@@ -71,8 +73,6 @@ const Header = () => {
 
             {/* Right Side Actions - Enhanced */}
             <div className="flex items-center space-x-3">
-
-
               {/* Cart Button - Enhanced */}
               <button
                 onClick={() => navigate("/cart")}
@@ -109,7 +109,12 @@ const Header = () => {
               </button>
 
               {/* Profile Button - Enhanced */}
-              <button onClick={() => navigate("/profile")} className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 text-white hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 group">
+              <button
+                onClick={() =>
+                  navigate(isAuthenticated ? "/profile" : "/login")
+                }
+                className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 text-white hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 group"
+              >
                 <svg
                   className="w-5 h-5 transform group-hover:scale-110 transition-transform duration-300"
                   fill="none"
@@ -123,7 +128,9 @@ const Header = () => {
                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                   />
                 </svg>
-                <span className="text-sm font-bold">Profile</span>
+                <span className="text-sm font-bold">
+                  {isAuthenticated ? "Profile" : "Login"}
+                </span>
               </button>
 
               {/* Mobile Menu Button */}
@@ -132,8 +139,9 @@ const Header = () => {
                 className="lg:hidden flex items-center justify-center w-11 h-11 rounded-xl bg-gray-900 text-white hover:bg-gray-800 transition-all duration-300"
               >
                 <svg
-                  className={`w-6 h-6 transform transition-transform duration-300 ${isMobileMenuOpen ? "rotate-90" : ""
-                    }`}
+                  className={`w-6 h-6 transform transition-transform duration-300 ${
+                    isMobileMenuOpen ? "rotate-90" : ""
+                  }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -156,8 +164,9 @@ const Header = () => {
 
         {/* Mobile Menu - Enhanced */}
         <div
-          className={`lg:hidden overflow-hidden transition-all duration-300 ${isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-            }`}
+          className={`lg:hidden overflow-hidden transition-all duration-300 ${
+            isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+          }`}
         >
           <nav className="container mx-auto px-4 py-4 space-y-2 border-t border-sand/20">
             {[
@@ -170,16 +179,20 @@ const Header = () => {
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`block px-5 py-3 rounded-xl font-semibold transition-all duration-300 ${isActive(item.path)
-                  ? "bg-gray-900 text-white shadow-lg"
-                  : "text-gray-600 hover:bg-gray-50"
-                  }`}
+                className={`block px-5 py-3 rounded-xl font-semibold transition-all duration-300 ${
+                  isActive(item.path)
+                    ? "bg-gray-900 text-white shadow-lg"
+                    : "text-gray-600 hover:bg-gray-50"
+                }`}
               >
                 {item.name}
               </Link>
             ))}
             {/* Mobile Profile Button */}
-            <button onClick={() => navigate("/profile")} className="sm:hidden w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 text-white shadow-lg">
+            <button
+              onClick={() => navigate(isAuthenticated ? "/profile" : "/login")}
+              className="sm:hidden w-full flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 text-white shadow-lg"
+            >
               <svg
                 className="w-5 h-5"
                 fill="none"
@@ -193,7 +206,9 @@ const Header = () => {
                   d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
                 />
               </svg>
-              <span className="font-bold">Profile</span>
+              <span className="font-bold">
+                {isAuthenticated ? "Profile" : "Login"}
+              </span>
             </button>
           </nav>
         </div>
