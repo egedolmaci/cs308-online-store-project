@@ -1,29 +1,32 @@
 from typing import Optional, Dict
 from dataclasses import dataclass
 import uuid
-
 from app.core.security import hash_password, verify_password
 
 @dataclass
 class User:
     id: str
+    first_name: str
+    last_name: str
     email: str
     password_hash: str
-    role: str
+    role: str  # "customer" | "sales_manager" | "product_manager" | "support_agent"
 
 class InMemoryUserRepository:
     def __init__(self):
         self._by_id: Dict[str, User] = {}
         self._by_email: Dict[str, User] = {}
-        # Seed a manager for testing
-        self.create_user("manager@example.com", "Password123!", role="product_manager")
+        # seed a manager (optional)
+        self.create_user(first_name="Prod", last_name="Manager", email="manager@example.com", password="Password123!", role="product_manager")
 
-    def create_user(self, email: str, password: str, role: str = "customer") -> User:
+    def create_user(self, first_name: str, last_name: str, email: str, password: str, role: str = "customer") -> User:
         email_l = email.lower()
         if email_l in self._by_email:
             raise ValueError("User already exists")
         user = User(
             id=str(uuid.uuid4()),
+            first_name=first_name,
+            last_name=last_name,
             email=email_l,
             password_hash=hash_password(password),
             role=role,

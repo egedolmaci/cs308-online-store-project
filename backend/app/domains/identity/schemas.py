@@ -3,15 +3,23 @@ from typing import Literal
 
 Role = Literal["customer", "sales_manager", "product_manager", "support_agent"]
 
-class UserBase(BaseModel):
+class UserCreate(BaseModel):
+    first_name: str = Field(min_length=1, max_length=100)
+    last_name: str = Field(min_length=1, max_length=100)
     email: EmailStr
-    role: Role = "customer"
-
-class UserCreate(UserBase):
     password: str = Field(min_length=8)
 
-class UserRead(UserBase):
+class UserRead(BaseModel):
     id: str
+    first_name: str
+    last_name: str
+    email: EmailStr
+    role: Role
+
+class UserRead(BaseModel):
+    id: str
+    email: EmailStr
+    role: Role
 
 class LoginRequest(BaseModel):
     email: EmailStr
