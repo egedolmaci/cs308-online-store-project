@@ -9,6 +9,7 @@ from app.infrastructure.database.sqlite.models.product import ProductModel
 from app.infrastructure.database.sqlite.seeder import seed_database 
 
 from app.api.endpoints import auth as auth_endpoints
+from app.api.endpoints import products as products_endpoints
 
 settings = get_settings()
 
@@ -27,6 +28,7 @@ def create_application() -> FastAPI:
     )
 
     app.include_router(auth_endpoints.router)
+    app.include_router(products_endpoints.router)
 
     @app.get("/health")
     def health_check():
