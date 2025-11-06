@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     DEBUG: bool = False
 
     BACKEND_CORS_ORIGINS: List[str] = ["http://localhost:5173"]
+    SQLITE_DATABASE_URL: str = "sqlite:///./database.db"
 
 
     SECRET_KEY: str = "change-this-in-.env"

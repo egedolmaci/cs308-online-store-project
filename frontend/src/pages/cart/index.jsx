@@ -3,17 +3,31 @@ import { Link } from "react-router-dom";
 import CartItemCard from "./components/CartItemCard";
 import CartSummary from "./components/CartSummary";
 import EmptyCart from "./components/EmptyCart";
-import { clearCart } from "../../store/slices/cartSlice";
 import { setModal } from "../../store/slices/modalSlice";
-import { MODAL_NAMES } from "../../constants";
+import { ICON_NAMES, MODAL_ACTIONS, MODAL_NAMES } from "../../constants";
 
 const Cart = () => {
   const dispatch = useDispatch();
   const { items, totalQuantity } = useSelector((state) => state.cart);
 
   const handleCheckout = () => {
-    dispatch(setModal(MODAL_NAMES.BANKING_MODAL));
+    dispatch(setModal(
+      { name: MODAL_NAMES.BANKING_MODAL }));
   };
+
+  const handleClearCart = () => {
+    dispatch(setModal({
+      name: MODAL_NAMES.CONFIRM_ACTION_MODAL,
+      data: {
+        iconName: ICON_NAMES.TRASH_ICON,
+        title: 'Clear Cart',
+        message: 'Are you sure you want to clear the cart?',
+        confirmText: 'Clear Cart',
+        cancelText: 'Cancel',
+        actionType: MODAL_ACTIONS.CLEAR_CART
+      }
+    }));
+  }
 
   // Show empty cart if no items
   if (items.length === 0) {
@@ -94,13 +108,7 @@ const Cart = () => {
               </Link>
               <button
                 onClick={() => {
-                  if (
-                    window.confirm(
-                      "Are you sure you want to clear your cart? This action cannot be undone."
-                    )
-                  ) {
-                    dispatch(clearCart());
-                  }
+                  handleClearCart();
                 }}
                 className="flex items-center gap-2 px-6 py-3 text-error hover:bg-error/10 rounded-xl font-semibold transition-all duration-300"
               >

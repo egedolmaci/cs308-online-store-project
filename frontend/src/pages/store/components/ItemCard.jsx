@@ -1,16 +1,25 @@
 import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { addToCart } from "../../../store/slices/cartSlice";
 
 const ItemCard = ({ product }) => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const handleAddToCart = () => {
+  const handleAddToCart = (e) => {
+    e.stopPropagation();
     dispatch(addToCart(product));
-  }
+  };
+
+  const handleCardClick = () => {
+    navigate(`/item/${product.id}`);
+  };
+
   return (
     <div
       key={product.id}
-      className="group relative bg-white rounded-3xl overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2"
+      onClick={handleCardClick}
+      className="group relative bg-white rounded-3xl overflow-hidden hover:shadow-2xl transition-all duration-500 transform hover:-translate-y-2 cursor-pointer"
     >
       {/* Product Image */}
       <div className="relative h-72 overflow-hidden bg-linear-to-br from-cream to-linen">
@@ -44,8 +53,11 @@ const ItemCard = ({ product }) => {
 
         {/* Quick View Button */}
         <div className="absolute bottom-4 left-4 right-4 opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500">
-          <button className="w-full bg-white/95 backdrop-blur-sm text-gray-900 py-3 rounded-xl font-semibold hover:bg-white transition-colors duration-300 shadow-lg">
-            Quick View
+          <button
+            onClick={handleCardClick}
+            className="w-full bg-white/95 backdrop-blur-sm text-gray-900 py-3 rounded-xl font-semibold hover:bg-white transition-colors duration-300 shadow-lg"
+          >
+            Go to Details
           </button>
         </div>
 
@@ -116,10 +128,11 @@ const ItemCard = ({ product }) => {
           <button
             onClick={handleAddToCart}
             disabled={product.stock === 0}
-            className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm transition-all duration-300 ${product.stock === 0
-              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-              : "bg-gray-900 text-white hover:bg-gray-800 hover:shadow-xl active:scale-95 shadow-lg"
-              }`}
+            className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm transition-all duration-300 ${
+              product.stock === 0
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-gray-900 text-white hover:bg-gray-800 hover:shadow-xl active:scale-95 shadow-lg"
+            }`}
           >
             <svg
               className="w-5 h-5"
