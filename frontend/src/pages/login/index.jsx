@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { loginUser } from "../../store/slices/userSlice";
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const loginError = useSelector((state) => state.user.error);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -58,16 +59,21 @@ const Login = () => {
     }
 
     setIsLoading(true);
-    setIsLoading(true);
-    await dispatch(
+    const result = await dispatch(
       loginUser({
         email: formData.email,
         password: formData.password,
       })
     );
 
+    console.log(result);
     setIsLoading(false);
-    navigate("/store");
+
+    console.log("Login Error:", loginError);
+
+    if (result.type === "auth/loginUser/fulfilled") {
+      navigate("/store");
+    }
   };
 
   return (
