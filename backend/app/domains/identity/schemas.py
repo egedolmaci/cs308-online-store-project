@@ -27,3 +27,11 @@ class LoginRequest(BaseModel):
 
 class Message(BaseModel):
     detail: str
+
+
+class LoginResponse(BaseModel):
+    user_id: str
+    first_name: str
+    last_name: str
+    email: EmailStr
+    role: Role

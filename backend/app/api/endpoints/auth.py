@@ -66,16 +66,25 @@ def register(payload: UserCreate):
     except ValueError:
         raise HTTPException(status_code=400, detail="User already exists")
 
-@router.post("/login", response_model=Message)
+@router.post("/login", response_model=LoginResponse)
 def login(payload: LoginRequest, response: Response):
     user = authenticate_user(payload.email, payload.password)
     if not user:
         raise HTTPException(status_code=401, detail="Invalid credentials")
+
     access = create_access_token(user.id, user.role)
     refresh = create_refresh_token(user.id, user.role)
+
     set_cookie(response, ACCESS_COOKIE_NAME, access, max_age=60 * settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     set_cookie(response, REFRESH_COOKIE_NAME, refresh, max_age=60 * 60 * 24 * settings.REFRESH_TOKEN_EXPIRE_DAYS)
-    return Message(detail="Logged in")
+
+    return LoginResponse(
+        user_id=user.id,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        role=user.role,
+    )
 
 @router.post("/logout", response_model=Message)
 def logout(response: Response):
