@@ -19,3 +19,21 @@ class ProductResponse(BaseModel):
     distributor: Optional[str]
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class ProductUpdate(BaseModel):
+    """Schema for updating a product. All fields are optional."""
+
+    name: Optional[str] = None
+    model: Optional[str] = None
+    serial_number: Optional[str] = None
+    description: Optional[str] = None
+    price: Optional[float] = None
+    stock: Optional[int] = None
+    category: Optional[str] = None
+    image: Optional[str] = None
+    rating: Optional[float] = None
+    warranty_status: Optional[str] = None
+    distributor: Optional[str] = None
+
+    model_config = ConfigDict(from_attributes=True)
