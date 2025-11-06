@@ -107,10 +107,16 @@ def refresh(request: Request, response: Response):
     set_cookie(response, ACCESS_COOKIE_NAME, new_access, max_age=60 * settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     return Message(detail="Refreshed")
 
-@router.get("/me", response_model=UserRead)
+@router.get("/me", response_model=LoginResponse)
 def me(user_with_role = Depends(get_current_user)):
     user, role = user_with_role
-    return UserRead(id=user.id, email=user.email, role=role)
+    return LoginResponse(
+        user_id=user.id,
+        first_name=user.first_name,
+        last_name=user.last_name,
+        email=user.email,
+        role=user.role,
+    )
 
 # Example role-guarded usage (to add later):
 # @router.get("/admin/reports", dependencies=[Depends(require_roles("sales_manager", "product_manager"))])
