@@ -9,6 +9,7 @@ export const API_ENDPOINTS = {
   REGISTER: "/auth/register",
   LOGOUT: "/auth/logout",
   REFRESH: "/auth/refresh",
+  PRODUCTS: "/products",
   // Add other endpoints here
 };
 

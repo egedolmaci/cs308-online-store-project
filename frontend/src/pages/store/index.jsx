@@ -1,29 +1,18 @@
 import { useState } from "react";
-import { mockProducts } from "./data/mock";
 import Filter from "./components/Filter";
 import ItemGrid from "./components/ItemGrid";
-
-const categories = [
-  "All",
-  "T-Shirts",
-  "Jeans",
-  "Hoodies",
-  "Shirts",
-  "Dresses",
-  "Jackets",
-  "Shorts",
-  "Sweaters",
-  "Pants",
-  "Polo",
-];
+import { useSelector } from "react-redux";
 
 function Store() {
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("name");
   const [searchQuery, setSearchQuery] = useState("");
 
+  const categories = useSelector((state) => state.products.categories);
+  const products = useSelector((state) => state.products.items);
+
   // Filter products
-  const filteredProducts = mockProducts.filter((product) => {
+  const filteredProducts = products.filter((product) => {
     const matchesCategory =
       selectedCategory === "All" || product.category === selectedCategory;
     const matchesSearch =
@@ -31,6 +20,14 @@ function Store() {
       product.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesCategory && matchesSearch;
   });
+
+  const handleSetSelectedCategory = (category) => {
+    if (category === selectedCategory) {
+      setSelectedCategory("All");
+      return;
+    }
+    setSelectedCategory(category);
+  };
 
   // Sort products
   const sortedProducts = [...filteredProducts].sort((a, b) => {
@@ -55,7 +52,7 @@ function Store() {
         setSearchQuery={setSearchQuery}
         categories={categories}
         selectedCategory={selectedCategory}
-        setSelectedCategory={setSelectedCategory}
+        setSelectedCategory={handleSetSelectedCategory}
         sortBy={sortBy}
         setSortBy={setSortBy}
         sortedProducts={sortedProducts}

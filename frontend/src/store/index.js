@@ -2,6 +2,7 @@ import { configureStore } from "@reduxjs/toolkit";
 import cartReducer from "./slices/cartSlice";
 import modalSlice from "./slices/modalSlice";
 import userSlice from "./slices/userSlice";
+import productsReducer, { fetchProducts } from "./slices/productsSlice";
 import { me } from "./slices/userSlice";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
@@ -12,8 +13,13 @@ const cartPersistConfig = {
 };
 
 const persistedCartReducer = persistReducer(cartPersistConfig, cartReducer);
+
 export const initializeAuth = () => {
   store.dispatch(me());
+};
+
+export const fetchProductsOnLoad = () => {
+  store.dispatch(fetchProducts());
 };
 
 export const store = configureStore({
@@ -21,6 +27,7 @@ export const store = configureStore({
     cart: persistedCartReducer,
     modal: modalSlice,
     user: userSlice,
+    products: productsReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

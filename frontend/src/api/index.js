@@ -25,6 +25,14 @@ apiClient.interceptors.request.use(
   }
 );
 
+export const productsAPI = {
+  // Fetch all products with optional filters
+  fetchProducts: async () => {
+    const response = await apiClient.get(API_ENDPOINTS.PRODUCTS);
+    return response.data;
+  },
+};
+
 // Auth API methods
 export const authAPI = {
   // Login with credentials
