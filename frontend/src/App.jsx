@@ -6,6 +6,8 @@ import ItemDetail from "./pages/item-detail";
 import Login from "./pages/login";
 import Register from "./pages/register";
 import Profile from "./pages/profile";
+import About from "./pages/about";
+import Contact from "./pages/contact";
 import NotFound from "./pages/not-found";
 import { Provider } from "react-redux";
 import { initializeAuth, persistor, store } from "./store";
@@ -34,6 +36,8 @@ function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact" element={<Contact />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
           <Footer />
