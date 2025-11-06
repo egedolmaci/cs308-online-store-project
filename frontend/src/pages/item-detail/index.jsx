@@ -1,13 +1,14 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { mockProducts } from "../store/data/mock";
 import ProductImages from "./components/ProductImages";
 import ProductInfo from "./components/ProductInfo";
 import ProductSpecs from "./components/ProductSpecs";
 import RelatedProducts from "./components/RelatedProducts";
 import ProdcutMetaInfo from "./components/ProductMetaInfo";
+import { useSelector } from "react-redux";
 
 function ItemDetail() {
+  const products = useSelector((state) => state.products.items);
   const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
@@ -15,13 +16,13 @@ function ItemDetail() {
 
   useEffect(() => {
     // Find the product by ID
-    const foundProduct = mockProducts.find((p) => p.id === parseInt(id));
+    const foundProduct = products.find((p) => p.id === parseInt(id));
 
     if (foundProduct) {
       setProduct(foundProduct);
 
       // Get related products from same category
-      const related = mockProducts
+      const related = products
         .filter(
           (p) =>
             p.category === foundProduct.category && p.id !== foundProduct.id

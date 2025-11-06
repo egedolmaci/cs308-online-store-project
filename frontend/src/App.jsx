@@ -10,7 +10,7 @@ import About from "./pages/about";
 import Contact from "./pages/contact";
 import NotFound from "./pages/not-found";
 import { Provider } from "react-redux";
-import { initializeAuth, persistor, store } from "./store";
+import { fetchProductsOnLoad, initializeAuth, persistor, store } from "./store";
 import Header from "./ui/components/Header";
 import Footer from "./ui/components/Footer";
 import ModalContainer from "./ui/components/ModalContainer";
@@ -20,6 +20,7 @@ import { useEffect } from "react";
 function App() {
   useEffect(() => {
     initializeAuth();
+    fetchProductsOnLoad();
   }, []);
 
   return (
