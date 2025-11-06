@@ -1,0 +1,20 @@
+from dataclasses import dataclass
+from typing import Optional
+
+
+@dataclass
+class Product:
+    """Product entity representing a catalog item."""
+
+    id: Optional[int]
+    name: str
+    model: str
+    serial_number: str
+    description: Optional[str]
+    price: float
+    stock: int
+    category: str
+    image: Optional[str]
+    rating: Optional[float]
+    warranty_status: Optional[str]
+    distributor: Optional[str]
