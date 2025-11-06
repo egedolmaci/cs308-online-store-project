@@ -1,7 +1,7 @@
 from fastapi import APIRouter, HTTPException, Depends, Response, Request, status
 from typing import Optional, Iterable
 from app.core.config import get_settings
-from app.domains.identity.schemas import UserCreate, UserRead, LoginRequest, Message
+from app.domains.identity.schemas import UserCreate, UserRead, LoginRequest, Message, LoginResponse
 from app.domains.identity.use_cases import (
     register_user, authenticate_user,
     create_access_token, create_refresh_token,
