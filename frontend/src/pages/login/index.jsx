@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { loginUser } from "../../store/slices/userSlice";
 
 const Login = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: "",
@@ -55,15 +58,16 @@ const Login = () => {
     }
 
     setIsLoading(true);
+    setIsLoading(true);
+    await dispatch(
+      loginUser({
+        email: formData.email,
+        password: formData.password,
+      })
+    );
 
-    // Simulate API call
-    setTimeout(() => {
-      // TODO: Replace with actual API call
-      console.log("Login data:", formData);
-      setIsLoading(false);
-      // On success, navigate to home or store
-      navigate("/store");
-    }, 1500);
+    setIsLoading(false);
+    navigate("/store");
   };
 
   return (
