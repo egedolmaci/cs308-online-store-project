@@ -8,13 +8,18 @@ import Register from "./pages/register";
 import Profile from "./pages/profile";
 import NotFound from "./pages/not-found";
 import { Provider } from "react-redux";
-import { persistor, store } from "./store";
+import { initializeAuth, persistor, store } from "./store";
 import Header from "./ui/components/Header";
 import Footer from "./ui/components/Footer";
 import ModalContainer from "./ui/components/ModalContainer";
 import { PersistGate } from "redux-persist/integration/react";
+import { useEffect } from "react";
 
 function App() {
+  useEffect(() => {
+    initializeAuth();
+  }, []);
+
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>

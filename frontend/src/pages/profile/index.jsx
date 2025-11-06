@@ -1,10 +1,13 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { logoutUser } from "../../store/slices/userSlice";
 
 const Profile = () => {
   const navigate = useNavigate();
   const [activeSection, setActiveSection] = useState("dashboard");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  const dispatch = useDispatch();
 
   // Mock user data (replace with actual user data from state/API)
   const user = {
@@ -185,6 +188,11 @@ const Profile = () => {
     }
   };
 
+  const handleLogout = () => {
+    dispatch(logoutUser());
+    navigate("/store");
+  };
+
   const renderDashboard = () => (
     <div className="space-y-6">
       {/* Welcome Section */}
@@ -218,7 +226,9 @@ const Profile = () => {
               </svg>
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">{orders.length}</p>
+              <p className="text-2xl font-bold text-gray-900">
+                {orders.length}
+              </p>
               <p className="text-sm text-gray-500">Total Orders</p>
             </div>
           </div>
@@ -304,9 +314,7 @@ const Profile = () => {
               <p className="font-bold text-gray-900 group-hover:text-sand transition-colors">
                 View Order History
               </p>
-              <p className="text-sm text-gray-500">
-                Track your past purchases
-              </p>
+              <p className="text-sm text-gray-500">Track your past purchases</p>
             </div>
           </button>
 
@@ -347,7 +355,7 @@ const Profile = () => {
             onClick={() => setActiveSection("orders")}
             className="text-sm font-semibold text-sand hover:text-sage transition-colors"
           >
-            View All ’
+            View All ï¿½
           </button>
         </div>
         <div className="space-y-4">
@@ -789,9 +797,7 @@ const Profile = () => {
             />
           </svg>
         </div>
-        <h3 className="text-xl font-bold text-gray-900 mb-2">
-          Coming Soon
-        </h3>
+        <h3 className="text-xl font-bold text-gray-900 mb-2">Coming Soon</h3>
         <p className="text-gray-500">
           Advanced settings and preferences will be available here soon.
         </p>
@@ -892,7 +898,7 @@ const Profile = () => {
               {/* Logout Button */}
               <div className="mt-8 pt-6 border-t border-gray-200">
                 <button
-                  onClick={() => navigate("/")}
+                  onClick={() => handleLogout()}
                   className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-2xl border-2 border-error text-error font-semibold hover:bg-error hover:text-white transition-all duration-300 active:scale-95"
                 >
                   <svg

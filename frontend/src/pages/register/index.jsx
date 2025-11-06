@@ -1,7 +1,10 @@
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { registerUser } from "../../store/slices/userSlice";
 
 const Register = () => {
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
@@ -54,15 +57,6 @@ const Register = () => {
       newErrors.email = "Please enter a valid email address";
     }
 
-    // Password validation
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
-    } else if (!/(?=.*[0-9])(?=.*[!@#$%^&*])/.test(formData.password)) {
-      newErrors.password = "Password must include a number and a symbol";
-    }
-
     // Confirm Password validation
     if (!formData.confirmPassword) {
       newErrors.confirmPassword = "Please confirm your password";
@@ -82,15 +76,17 @@ const Register = () => {
     }
 
     setIsLoading(true);
+    await dispatch(
+      registerUser({
+        first_name: formData.firstName,
+        last_name: formData.lastName,
+        email: formData.email,
+        password: formData.password,
+      })
+    );
 
-    // Simulate API call
-    setTimeout(() => {
-      // TODO: Replace with actual API call
-      console.log("Register data:", formData);
-      setIsLoading(false);
-      // On success, navigate to store
-      navigate("/store");
-    }, 1500);
+    setIsLoading(false);
+    navigate("/login");
   };
 
   // Password strength indicator
