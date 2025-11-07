@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../../store/slices/userSlice";
@@ -9,21 +9,13 @@ import Invoices from "./components/Invoices";
 import PersonalDetails from "./components/PersonalDetails";
 import Addresses from "./components/Addresses";
 import Settings from "./components/Settings";
-import NotFound from "../not-found";
 
 const Profile = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const [activeSection, setActiveSection] = useState("dashboard");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
-  const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
   const user = useSelector((state) => state.user);
-
-  useEffect(() => {
-    if (isAuthenticated === false) {
-      navigate("/login");
-    }
-  }, [isAuthenticated, navigate]);
 
   // Mock order data
   const orders = [
@@ -165,10 +157,6 @@ const Profile = () => {
         );
     }
   };
-
-  if (isAuthenticated === false) {
-    return <NotFound />;
-  }
 
   return (
     <div className="min-h-screen bg-linear-to-br from-linen via-cream to-linen">
