@@ -71,7 +71,8 @@ const Login = () => {
 
     console.log("Login Error:", loginError);
 
-    if (result.type === "auth/loginUser/fulfilled") {
+    console.log(result.type);
+    if (result.type === "user/login/fulfilled") {
       navigate("/store");
     }
   };
