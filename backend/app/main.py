@@ -7,6 +7,7 @@ from app.core.logging import logger
 from app.infrastructure.database.sqlite.session import Base, engine, SessionLocal
 from app.infrastructure.database.sqlite.models.product import ProductModel
 from app.infrastructure.database.sqlite.models.order import OrderModel, OrderItemModel
+from app.infrastructure.database.sqlite.models.user import UserModel
 from app.infrastructure.database.sqlite.seeder import seed_database
 
 from app.api.endpoints import auth as auth_endpoints
