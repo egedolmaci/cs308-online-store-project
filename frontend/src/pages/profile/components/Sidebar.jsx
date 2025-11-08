@@ -8,7 +8,6 @@ const Sidebar = ({
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: "dashboard" },
     { id: "orders", label: "Order History", icon: "orders" },
-    { id: "invoices", label: "Invoices & Billing", icon: "invoices" },
     { id: "personal", label: "Personal Details", icon: "personal" },
     { id: "addresses", label: "Shipping Addresses", icon: "addresses" },
     { id: "settings", label: "Settings", icon: "settings", badge: "Soon" },
@@ -82,11 +81,10 @@ const Sidebar = ({
                 setActiveSection(item.id);
                 setIsMobileSidebarOpen(false);
               }}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl font-semibold transition-all duration-300 ${
-                activeSection === item.id
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl font-semibold transition-all duration-300 ${activeSection === item.id
                   ? "bg-linear-to-br from-sand to-sage text-white shadow-lg"
                   : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3">
                 <svg

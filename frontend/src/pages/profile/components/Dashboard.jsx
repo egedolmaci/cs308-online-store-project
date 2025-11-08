@@ -60,7 +60,7 @@ const Dashboard = ({ user, orders, addresses, setActiveSection }) => {
             </div>
             <div>
               <p className="text-lg font-bold text-gray-900">
-                {orders[0].status}
+                {orders.length > 0 ? orders[0].status : "No Orders"}
               </p>
               <p className="text-sm text-gray-500">Last Order</p>
             </div>
@@ -171,8 +171,8 @@ const Dashboard = ({ user, orders, addresses, setActiveSection }) => {
               className="flex items-center justify-between p-4 rounded-2xl border-2 border-gray-100 hover:border-sand/50 hover:shadow-md transition-all duration-300"
             >
               <div className="flex-1">
-                <p className="font-bold text-gray-900">{order.id}</p>
-                <p className="text-sm text-gray-500">{order.date}</p>
+                <p className="font-bold text-gray-900">Order ID: {order.id}</p>
+                <p className="text-sm text-gray-500">{order.created_at}</p>
               </div>
               <div className="flex items-center gap-4">
                 <span
@@ -180,7 +180,7 @@ const Dashboard = ({ user, orders, addresses, setActiveSection }) => {
                 >
                   {order.status}
                 </span>
-                <p className="font-bold text-gray-900">${order.total}</p>
+                <p className="font-bold text-gray-900">${order.total_amount.toFixed(2)}</p>
               </div>
             </div>
           ))}

@@ -3,10 +3,12 @@ import { useDispatch, useSelector } from "react-redux";
 import { clearModal } from "../../store/slices/modalSlice";
 import { clearCart } from "../../store/slices/cartSlice";
 import { X, CreditCard, Lock, CheckCircle2, AlertCircle } from "lucide-react";
+import { createOrder } from "../../store/slices/ordersSlice";
 
 const BankingModal = () => {
   const dispatch = useDispatch();
   const { totalAmount } = useSelector((state) => state.cart);
+  const cartItems = useSelector((state) => state.cart.items);
 
   const shipping = totalAmount > 0 ? (totalAmount > 100 ? 0 : 9.99) : 0;
   const tax = totalAmount * 0.08;
@@ -112,19 +114,13 @@ const BankingModal = () => {
 
     // Mock payment processing (2 seconds delay)
     setTimeout(() => {
-      // Randomly succeed or fail for demo purposes (90% success rate)
-      const success = Math.random() > 0.1;
-
-      if (success) {
-        setStep("success");
-        // Clear cart after successful payment
-        setTimeout(() => {
-          dispatch(clearCart());
-          handleClose();
-        }, 3000);
-      } else {
-        setStep("error");
-      }
+      setStep("success");
+      // Clear cart after successful payment
+      setTimeout(() => {
+        dispatch(clearCart());
+        dispatch(createOrder(cartItems));
+        handleClose();
+      }, 3000);
     }, 2000);
   };
 
@@ -196,9 +192,8 @@ const BankingModal = () => {
                 value={formData.cardNumber}
                 onChange={handleInputChange}
                 placeholder="1234 5678 9012 3456"
-                className={`w-full px-4 py-3 rounded-xl border-2 ${
-                  errors.cardNumber ? "border-error" : "border-sage/30"
-                } focus:border-sand focus:outline-none transition-all duration-300 hover:shadow-md`}
+                className={`w-full px-4 py-3 rounded-xl border-2 ${errors.cardNumber ? "border-error" : "border-sage/30"
+                  } focus:border-sand focus:outline-none transition-all duration-300 hover:shadow-md`}
               />
               {errors.cardNumber && (
                 <p className="text-error text-xs mt-1 flex items-center gap-1">
@@ -219,9 +214,8 @@ const BankingModal = () => {
                 value={formData.cardName}
                 onChange={handleInputChange}
                 placeholder="John Doe"
-                className={`w-full px-4 py-3 rounded-xl border-2 ${
-                  errors.cardName ? "border-error" : "border-sage/30"
-                } focus:border-sand focus:outline-none transition-all duration-300 hover:shadow-md`}
+                className={`w-full px-4 py-3 rounded-xl border-2 ${errors.cardName ? "border-error" : "border-sage/30"
+                  } focus:border-sand focus:outline-none transition-all duration-300 hover:shadow-md`}
               />
               {errors.cardName && (
                 <p className="text-error text-xs mt-1 flex items-center gap-1">
@@ -243,9 +237,8 @@ const BankingModal = () => {
                   value={formData.expiryDate}
                   onChange={handleInputChange}
                   placeholder="MM/YY"
-                  className={`w-full px-4 py-3 rounded-xl border-2 ${
-                    errors.expiryDate ? "border-error" : "border-sage/30"
-                  } focus:border-sand focus:outline-none transition-all duration-300 hover:shadow-md`}
+                  className={`w-full px-4 py-3 rounded-xl border-2 ${errors.expiryDate ? "border-error" : "border-sage/30"
+                    } focus:border-sand focus:outline-none transition-all duration-300 hover:shadow-md`}
                 />
                 {errors.expiryDate && (
                   <p className="text-error text-xs mt-1 flex items-center gap-1">
@@ -264,9 +257,8 @@ const BankingModal = () => {
                   value={formData.cvv}
                   onChange={handleInputChange}
                   placeholder="123"
-                  className={`w-full px-4 py-3 rounded-xl border-2 ${
-                    errors.cvv ? "border-error" : "border-sage/30"
-                  } focus:border-sand focus:outline-none transition-all duration-300 hover:shadow-md`}
+                  className={`w-full px-4 py-3 rounded-xl border-2 ${errors.cvv ? "border-error" : "border-sage/30"
+                    } focus:border-sand focus:outline-none transition-all duration-300 hover:shadow-md`}
                 />
                 {errors.cvv && (
                   <p className="text-error text-xs mt-1 flex items-center gap-1">
