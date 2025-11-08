@@ -1,5 +1,6 @@
 import { useState } from "react";
 import OrderDetails from "./OrderDetails";
+import { ORDER_STATUS_LABELS } from "../../../constants";
 
 const OrderHistory = ({ orders }) => {
   console.log("OrderHistory orders:", orders);
@@ -39,7 +40,7 @@ const OrderHistory = ({ orders }) => {
                   <span
                     className={`px-3 py-1 rounded-full text-xs font-semibold text-white`}
                   >
-                    {order.status}
+                    {ORDER_STATUS_LABELS[order.status]}
                   </span>
                 </div>
                 <div className="flex items-center gap-4 text-sm text-gray-500">

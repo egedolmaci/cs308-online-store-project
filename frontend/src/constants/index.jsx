@@ -40,3 +40,21 @@ export const ICONS = {
   [ICON_NAMES.TRASH_ICON]: TrashIcon,
   // Map other icon components here
 };
+
+export const ORDER_STATUSES = {
+  PROCESSING: "processing",
+  IN_TRANSIT: "in-transit",
+  DELIVERED: "delivered",
+  CANCELLED: "cancelled",
+  REFUND_REQUESTED: "refund_requested",
+  REFUNDED: "refunded",
+}
+
+export const ORDER_STATUS_LABELS = {
+  [ORDER_STATUSES.PROCESSING]: "Processing",
+  [ORDER_STATUSES.IN_TRANSIT]: "In Transit",
+  [ORDER_STATUSES.DELIVERED]: "Delivered",
+  [ORDER_STATUSES.CANCELLED]: "Cancelled",
+  [ORDER_STATUSES.REFUND_REQUESTED]: "Refund Requested",
+  [ORDER_STATUSES.REFUNDED]: "Refunded",
+};
