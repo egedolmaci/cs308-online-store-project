@@ -1,3 +1,5 @@
+import { ORDER_STATUS_LABELS } from "../../../constants";
+
 const Dashboard = ({ user, orders, addresses, setActiveSection }) => {
   return (
     <div className="space-y-6">
@@ -60,7 +62,7 @@ const Dashboard = ({ user, orders, addresses, setActiveSection }) => {
             </div>
             <div>
               <p className="text-lg font-bold text-gray-900">
-                {orders.length > 0 ? orders[0].status : "No Orders"}
+                {orders.length > 0 ? ORDER_STATUS_LABELS[orders[0].status] : "No Orders"}
               </p>
               <p className="text-sm text-gray-500">Last Order</p>
             </div>

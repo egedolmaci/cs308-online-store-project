@@ -3,6 +3,7 @@ import {
   requestRefund,
   selectRefundRequestStatus,
 } from "../../../store/slices/ordersSlice";
+import { ORDER_STATUS_LABELS, ORDER_STATUSES } from "../../../constants";
 
 const OrderDetails = ({ order, onBack }) => {
   const dispatch = useDispatch();
@@ -22,9 +23,9 @@ const OrderDetails = ({ order, onBack }) => {
 
   // Check if order is eligible for refund (not already refunded or cancelled)
   const isRefundEligible =
-    order.status !== "refunded" &&
-    order.status !== "cancelled" &&
-    order.status !== "refund_requested";
+    order.status !== ORDER_STATUSES.REFUNDED &&
+    order.status !== ORDER_STATUSES.CANCELLED &&
+    order.status !== ORDER_STATUSES.REFUND_REQUESTED;
 
   const isRefundLoading = refundRequestStatus === "loading";
 
@@ -112,7 +113,7 @@ const OrderDetails = ({ order, onBack }) => {
             <div>
               <p className="text-sm text-gray-500 mb-1">Status</p>
               <span className="inline-block px-4 py-2 rounded-full text-sm font-semibold text-white bg-gray-900">
-                {order.status}
+                {ORDER_STATUS_LABELS[order.status]}
               </span>
             </div>
           </div>
