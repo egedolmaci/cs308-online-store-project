@@ -33,6 +33,54 @@ export const productsAPI = {
   },
 };
 
+export const ordersAPI = {
+  // Fetch orders for the authenticated user
+  fetchUserOrders: async () => {
+    const response = await apiClient.get(API_ENDPOINTS.ORDERS);
+    return response.data;
+  },
+  fetchOrderById: async (orderId) => {
+    const response = await apiClient.get(`${API_ENDPOINTS.ORDERS}/${orderId}`);
+    return response.data;
+  },
+  createOrder: async (orderData) => {
+    const response = await apiClient.post(API_ENDPOINTS.ORDERS, orderData);
+    return response.data;
+  },
+  cancelOrder: async (orderId) => {
+    const response = await apiClient.post(
+      `${API_ENDPOINTS.ORDERS}/${orderId}/cancel`
+    );
+    return response.data;
+  },
+  deleteOrder: async (orderId) => {
+    const response = await apiClient.delete(
+      `${API_ENDPOINTS.ORDERS}/${orderId}`
+    );
+    return response.data;
+  },
+  updateOrderStatus: async (orderId, status) => {
+    const response = await apiClient.patch(
+      `${API_ENDPOINTS.ORDERS}/${orderId}/status`,
+      { status: status }
+    );
+    return response.data;
+  },
+  requestRefund: async ({ orderId, reason }) => {
+    const response = await apiClient.post(
+      `${API_ENDPOINTS.ORDERS}/${orderId}/refund/request`,
+      { reason }
+    );
+    return response.data;
+  },
+  approveRefund: async (orderId) => {
+    const response = await apiClient.post(
+      `${API_ENDPOINTS.ORDERS}/${orderId}/refund/approve`
+    );
+    return response.data;
+  },
+};
+
 // Auth API methods
 export const authAPI = {
   // Login with credentials

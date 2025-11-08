@@ -1,8 +1,7 @@
 // AppContent.jsx (new file)
 import { Routes, Route, Navigate } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useEffect } from "react";
-import { fetchProductsOnLoad, initializeAuth } from "./store";
 import Home from "./pages/home";
 import Store from "./pages/store";
 import Cart from "./pages/cart";
@@ -16,13 +15,14 @@ import NotFound from "./pages/not-found";
 import Header from "./ui/components/Header";
 import Footer from "./ui/components/Footer";
 import ModalContainer from "./ui/components/ModalContainer";
+import { me } from "./store/slices/userSlice";
 
 function AppContent() {
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
+  const dispatch = useDispatch();
 
   useEffect(() => {
-    initializeAuth();
-    fetchProductsOnLoad();
+    dispatch(me()); // Initialize authentication state on app load
   }, []);
 
   return (
@@ -37,13 +37,13 @@ function AppContent() {
         <Route
           path="/login"
           element={
-            isAuthenticated ? <Navigate to="/store" replace /> : <Login />
+            isAuthenticated ? <Navigate to="/profile" replace /> : <Login />
           }
         />
         <Route
           path="/register"
           element={
-            isAuthenticated ? <Navigate to="/store" replace /> : <Register />
+            isAuthenticated ? <Navigate to="/profile" replace /> : <Register />
           }
         />
         <Route

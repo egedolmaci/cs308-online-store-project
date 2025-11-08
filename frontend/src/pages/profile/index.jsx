@@ -1,14 +1,14 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { logoutUser } from "../../store/slices/userSlice";
 import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
 import OrderHistory from "./components/OrderHistory";
-import Invoices from "./components/Invoices";
 import PersonalDetails from "./components/PersonalDetails";
 import Addresses from "./components/Addresses";
 import Settings from "./components/Settings";
+import { fetchUserOrders } from "../../store/slices/ordersSlice";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -18,57 +18,11 @@ const Profile = () => {
   const user = useSelector((state) => state.user);
 
   // Mock order data
-  const orders = [
-    {
-      id: "ORD-2024-001",
-      date: "2024-11-01",
-      total: 249.99,
-      status: "Delivered",
-      statusColor: "bg-success",
-      items: 3,
-    },
-    {
-      id: "ORD-2024-002",
-      date: "2024-10-28",
-      total: 129.99,
-      status: "Shipped",
-      statusColor: "bg-success-light",
-      items: 2,
-    },
-    {
-      id: "ORD-2024-003",
-      date: "2024-10-15",
-      total: 89.99,
-      status: "Processing",
-      statusColor: "bg-warning",
-      items: 1,
-    },
-  ];
+  const orders = useSelector((state) => state.orders.orders);
 
-  // Mock invoice data
-  const invoices = [
-    {
-      id: "INV-2024-001",
-      orderId: "ORD-2024-001",
-      date: "2024-11-01",
-      amount: 249.99,
-      status: "Paid",
-    },
-    {
-      id: "INV-2024-002",
-      orderId: "ORD-2024-002",
-      date: "2024-10-28",
-      amount: 129.99,
-      status: "Paid",
-    },
-    {
-      id: "INV-2024-003",
-      orderId: "ORD-2024-003",
-      date: "2024-10-15",
-      amount: 89.99,
-      status: "Paid",
-    },
-  ];
+  useEffect(() => {
+    dispatch(fetchUserOrders());
+  }, [dispatch]);
 
   // Mock addresses
   const [addresses, setAddresses] = useState([
@@ -96,12 +50,6 @@ const Profile = () => {
     },
   ]);
 
-  const handleDownloadInvoice = (invoiceId) => {
-    // TODO: Implement actual PDF download
-    console.log(`Downloading invoice: ${invoiceId}`);
-    alert(`Downloading invoice ${invoiceId}...`);
-  };
-
   const handleDeleteAddress = (addressId) => {
     if (
       window.confirm("Are you sure you want to delete this shipping address?")
@@ -128,13 +76,6 @@ const Profile = () => {
         );
       case "orders":
         return <OrderHistory orders={orders} />;
-      case "invoices":
-        return (
-          <Invoices
-            invoices={invoices}
-            onDownloadInvoice={handleDownloadInvoice}
-          />
-        );
       case "personal":
         return <PersonalDetails user={user} />;
       case "addresses":
@@ -169,9 +110,8 @@ const Profile = () => {
           >
             <span className="font-bold text-gray-900">Menu</span>
             <svg
-              className={`w-6 h-6 text-gray-700 transform transition-transform ${
-                isMobileSidebarOpen ? "rotate-180" : ""
-              }`}
+              className={`w-6 h-6 text-gray-700 transform transition-transform ${isMobileSidebarOpen ? "rotate-180" : ""
+                }`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
