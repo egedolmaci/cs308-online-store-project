@@ -1,8 +1,8 @@
 import { useDispatch, useSelector } from "react-redux";
 import { clearModal } from "../../store/slices/modalSlice";
 import { TriangleAlert, X } from "lucide-react";
-import { ICON_NAMES, ICONS, MODAL_ACTIONS } from "../../constants";
-import { clearCart } from "../../store/slices/cartSlice";
+import { ICON_NAMES, ICONS } from "../../constants";
+import { cancelModal, confirmModal } from "./modalPromises";
 
 const ConfirmActionModal = () => {
   const dispatch = useDispatch();
@@ -15,7 +15,6 @@ const ConfirmActionModal = () => {
     message = "Are you sure you want to proceed?",
     confirmText = "Confirm",
     cancelText = "Cancel",
-    actionType,
     confirmButtonStyle = "bg-gradient-to-r from-sand to-sage",
     cancelButtonStyle = "border-2 border-sand text-sand hover:bg-sand hover:text-white",
     iconColor = "text-sand",
@@ -25,19 +24,12 @@ const ConfirmActionModal = () => {
   const IconComponent = ICON_NAMES[iconName] ? ICONS[iconName] : TriangleAlert;
 
   const handleClose = () => {
+    cancelModal();
     dispatch(clearModal());
   };
 
   const handleConfirm = () => {
-    switch (actionType) {
-      case MODAL_ACTIONS.CLEAR_CART:
-        dispatch(clearCart());
-        break;
-      // Add more action types as needed
-      default:
-        break;
-    }
-
+    confirmModal();
     dispatch(clearModal());
   };
 

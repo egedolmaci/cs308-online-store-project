@@ -20,11 +20,6 @@ export const MODAL_NAMES = {
   // Add other modal names here
 };
 
-export const MODAL_ACTIONS = {
-  CLEAR_CART: "CLEAR_CART",
-  // Add other modal actions here
-};
-
 export const MODALS = {
   [MODAL_NAMES.BANKING_MODAL]: <BankingModal />,
   [MODAL_NAMES.CONFIRM_ACTION_MODAL]: <ConfirmActionModal />,
