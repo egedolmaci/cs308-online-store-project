@@ -3,8 +3,11 @@ import { Link } from "react-router-dom";
 import CartItemCard from "./components/CartItemCard";
 import CartSummary from "./components/CartSummary";
 import EmptyCart from "./components/EmptyCart";
-import { setModal } from "../../store/slices/modalSlice";
-import { ICON_NAMES, MODAL_ACTIONS, MODAL_NAMES } from "../../constants";
+import { clearModal, setModal } from "../../store/slices/modalSlice";
+import { ICON_NAMES, MODAL_NAMES } from "../../constants";
+import { openModalWithPromise } from "../../ui/modals/modalPromises";
+import { generateConfirmActionModal } from "../../ui/modals";
+import { clearCart } from "../../store/slices/cartSlice";
 
 const Cart = () => {
   const dispatch = useDispatch();
@@ -15,20 +18,23 @@ const Cart = () => {
       { name: MODAL_NAMES.BANKING_MODAL }));
   };
 
-  const handleClearCart = () => {
-    dispatch(setModal({
-      name: MODAL_NAMES.CONFIRM_ACTION_MODAL,
-      data: {
-        iconName: ICON_NAMES.TRASH_ICON,
-        title: 'Clear Cart',
-        message: 'Are you sure you want to clear the cart?',
-        confirmText: 'Clear Cart',
-        cancelText: 'Cancel',
-        actionType: MODAL_ACTIONS.CLEAR_CART
-      }
-    }));
-  }
-
+  const handleClearCart = async () => {
+    try {
+      await dispatch(openModalWithPromise(generateConfirmActionModal(
+        ICON_NAMES.TRASH_ICON,
+        'Clear Cart',
+        'Are you sure you want to clear the cart?',
+        'Clear Cart',
+        'Cancel'
+      )));
+      // If confirmed, clear the cart
+      dispatch(clearModal());
+      dispatch(clearCart());
+    } catch (error) {
+      // Modal was cancelled, do nothing
+      console.log("Clear cart action cancelled: " + error);
+    }
+  };
   // Show empty cart if no items
   if (items.length === 0) {
     return (
