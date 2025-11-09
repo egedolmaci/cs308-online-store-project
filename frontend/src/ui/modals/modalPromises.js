@@ -18,6 +18,13 @@ export const confirmModal = () => {
   }
 };
 
+export const confirmModalWithData = (data) => {
+  if (modalPromise) {
+    modalPromise.resolve(data);
+    modalPromise = null;
+  }
+};
+
 export const cancelModal = () => {
   if (modalPromise) {
     modalPromise.reject(new Error("Modal cancelled"));
