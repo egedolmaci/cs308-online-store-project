@@ -5,7 +5,9 @@ import {
   selectRefundRequestStatus,
   selectCancelOrderStatus,
 } from "../../../store/slices/ordersSlice";
-import { ORDER_STATUS_LABELS, ORDER_STATUSES } from "../../../constants";
+import { ICON_NAMES, ORDER_STATUS_LABELS, ORDER_STATUSES } from "../../../constants";
+import { openModalWithPromise } from "../../../ui/modals/modalPromises";
+import { generateConfirmActionModal, generateConfirmActionWithReasonModal } from "../../../ui/modals";
 
 const OrderDetails = ({ onBack }) => {
   const dispatch = useDispatch();
@@ -15,24 +17,33 @@ const OrderDetails = ({ onBack }) => {
 
   if (!order) return null;
 
-  const handleRequestRefund = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to request a refund for this order? This action will notify customer support."
-      )
-    ) {
-      dispatch(requestRefund({ orderId: order.id, reason: "Customer requested refund" }));
+  const handleRequestRefund = async () => {
+    try {
+      const reason = await dispatch(openModalWithPromise(generateConfirmActionWithReasonModal(
+        ICON_NAMES.REFUND_ICON, "Request Refund", "What is the reason for your refund request?"
+      )));
+      dispatch(requestRefund({ orderId: order.id, reason }));
+    } catch {
+      return;
     }
   };
 
-  const handleCancelOrder = () => {
-    if (
-      window.confirm(
-        "Are you sure you want to cancel this order? This action cannot be undone."
-      )
-    ) {
+  const handleCancelOrder = async () => {
+    try {
+      await dispatch(openModalWithPromise(generateConfirmActionModal(
+        ICON_NAMES.CANCEL_ICON,
+        "Cancel Order",
+        "Are you sure you want to cancel this order? This action cannot be undone.",
+        "Yes, Cancel Order",
+        "No, Keep Order"
+      )));
+
       dispatch(cancelOrder(order.id));
+
+    } catch {
+      return
     }
+
   };
 
   // Check if order is eligible for refund (not already refunded or cancelled)
