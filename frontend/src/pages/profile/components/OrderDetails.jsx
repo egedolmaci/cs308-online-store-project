@@ -1,13 +1,17 @@
 import { useDispatch, useSelector } from "react-redux";
 import {
   requestRefund,
+  cancelOrder,
   selectRefundRequestStatus,
+  selectCancelOrderStatus,
 } from "../../../store/slices/ordersSlice";
 import { ORDER_STATUS_LABELS, ORDER_STATUSES } from "../../../constants";
 
-const OrderDetails = ({ order, onBack }) => {
+const OrderDetails = ({ onBack }) => {
   const dispatch = useDispatch();
   const refundRequestStatus = useSelector(selectRefundRequestStatus);
+  const cancelOrderStatus = useSelector(selectCancelOrderStatus);
+  const order = useSelector((state) => state.orders.currentOrder);
 
   if (!order) return null;
 
@@ -21,64 +25,54 @@ const OrderDetails = ({ order, onBack }) => {
     }
   };
 
+  const handleCancelOrder = () => {
+    if (
+      window.confirm(
+        "Are you sure you want to cancel this order? This action cannot be undone."
+      )
+    ) {
+      dispatch(cancelOrder(order.id));
+    }
+  };
+
   // Check if order is eligible for refund (not already refunded or cancelled)
   const isRefundEligible =
     order.status !== ORDER_STATUSES.REFUNDED &&
     order.status !== ORDER_STATUSES.CANCELLED &&
     order.status !== ORDER_STATUSES.REFUND_REQUESTED;
 
+  // Check if order is eligible for cancellation (only processing orders can be cancelled)
+  const isCancelEligible =
+    order.status === ORDER_STATUSES.PROCESSING;
+
   const isRefundLoading = refundRequestStatus === "loading";
+  const isCancelLoading = cancelOrderStatus === "loading";
 
   return (
     <div className="space-y-6">
       {/* Header with Back Button */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border-2 border-sand/30 text-gray-900 font-semibold hover:bg-white/80 transition-colors"
+      <div className="flex items-center gap-4 justify-between">
+        <h2 className="text-2xl font-bold text-gray-900">Order Details</h2>
+        <button
+          onClick={onBack}
+          className="flex items-center gap-2 px-4 py-2 rounded-xl bg-white border-2 border-sand/30 text-gray-900 font-semibold hover:bg-white/80 transition-colors"
+        >
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 19l-7-7 7-7"
-              />
-            </svg>
-            Back to Orders
-          </button>
-          <h2 className="text-2xl font-bold text-gray-900">Order Details</h2>
-        </div>
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M15 19l-7-7 7-7"
+            />
+          </svg>
+          Back to Orders
+        </button>
 
-        {/* Request Refund Button */}
-        {isRefundEligible && (
-          <button
-            onClick={handleRequestRefund}
-            disabled={isRefundLoading}
-            className="flex items-center gap-2 px-6 py-3 rounded-xl bg-sand text-white font-semibold hover:shadow-lg transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
-              />
-            </svg>
-            {isRefundLoading ? "Requesting..." : "Request Refund"}
-          </button>
-        )}
       </div>
 
       {/* Order Summary Card */}
@@ -208,6 +202,64 @@ const OrderDetails = ({ order, onBack }) => {
             <div className="text-gray-700">
               <p className="font-medium">{order.delivery_address}</p>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Order Actions Section */}
+      {(isRefundEligible || isCancelEligible) && (
+        <div className="bg-white rounded-3xl p-6 shadow-lg border border-sand/20">
+          <h3 className="text-xl font-bold text-gray-900 mb-4">
+            Order Actions
+          </h3>
+          <div className="flex flex-wrap gap-4">
+            {/* Cancel Order Button */}
+            {isCancelEligible && (
+              <button
+                onClick={handleCancelOrder}
+                disabled={isCancelLoading}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-error text-white font-semibol hover:shadow-lg transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M6 18L18 6M6 6l12 12"
+                  />
+                </svg>
+                {isCancelLoading ? "Cancelling..." : "Cancel Order"}
+              </button>
+            )}
+
+            {/* Request Refund Button */}
+            {isRefundEligible && (
+              <button
+                onClick={handleRequestRefund}
+                disabled={isRefundLoading}
+                className="flex items-center gap-2 px-6 py-3 rounded-xl bg-error text-white hover:shadow-lg transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"
+                  />
+                </svg>
+                {isRefundLoading ? "Requesting..." : "Request Refund"}
+              </button>
+            )}
           </div>
         </div>
       )}

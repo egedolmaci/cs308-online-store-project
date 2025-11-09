@@ -1,17 +1,18 @@
-import { useState } from "react";
 import OrderDetails from "./OrderDetails";
 import { ORDER_STATUS_LABELS } from "../../../constants";
+import { setCurrentOrder } from "../../../store/slices/ordersSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 const OrderHistory = ({ orders }) => {
-  console.log("OrderHistory orders:", orders);
-  const [selectedOrder, setSelectedOrder] = useState(null);
+  const selectedOrder = useSelector((state) => state.orders.currentOrder);
+  const dispatch = useDispatch();
 
   // If an order is selected, show the details view
   if (selectedOrder) {
     return (
       <OrderDetails
         order={selectedOrder}
-        onBack={() => setSelectedOrder(null)}
+        onBack={() => dispatch(setCurrentOrder(null))}
       />
     );
   }
@@ -88,7 +89,7 @@ const OrderHistory = ({ orders }) => {
                   </p>
                 </div>
                 <button
-                  onClick={() => setSelectedOrder(order)}
+                  onClick={() => dispatch(setCurrentOrder(order))}
                   className="px-6 py-3 rounded-xl bg-gray-900 text-white font-semibold hover:bg-gray-800 hover:shadow-lg transition-all duration-300 active:scale-95"
                 >
                   View Details
