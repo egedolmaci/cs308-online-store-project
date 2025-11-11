@@ -68,7 +68,7 @@ const initialState = {
   firstName: null,
   lastName: null,
   isAuthenticated: false,
-  isLoading: false,
+  isLoading: true,
   error: null,
 };
 
