@@ -16,14 +16,26 @@ import Header from "./ui/components/Header";
 import Footer from "./ui/components/Footer";
 import ModalContainer from "./ui/components/ModalContainer";
 import { me } from "./store/slices/userSlice";
+import { MANAGEMENT_ROLES } from "./constants";
+import ManagementPage from "./pages/management";
+import LoadingScreen from "./ui/components/LoadingScreen";
 
 function AppContent() {
+  const isLoading = useSelector((state) => state.user.isLoading);
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
+  const userRole = useSelector((state) => state.user.role);
+  const isManagementUser =
+    isAuthenticated && MANAGEMENT_ROLES.includes(userRole);
+  console.log("User Role:", userRole, "Is Management User:", isManagementUser);
   const dispatch = useDispatch();
 
   useEffect(() => {
     dispatch(me()); // Initialize authentication state on app load
   }, []);
+
+  if (isLoading) {
+    return <LoadingScreen message="Initializing application..." />;
+  }
 
   return (
     <>
@@ -50,6 +62,12 @@ function AppContent() {
           path="/profile"
           element={
             isAuthenticated ? <Profile /> : <Navigate to="/login" replace />
+          }
+        />
+        <Route
+          path="/management"
+          element={
+            isManagementUser ? <ManagementPage /> : <Navigate to="/" replace />
           }
         />
         <Route path="/about" element={<About />} />

@@ -25,7 +25,9 @@ export const MODAL_NAMES = {
 export const MODALS = {
   [MODAL_NAMES.BANKING_MODAL]: <BankingModal />,
   [MODAL_NAMES.CONFIRM_ACTION_MODAL]: <ConfirmActionModal />,
-  [MODAL_NAMES.CONFIRM_ACTION_WITH_REASON_MODAL]: <ConfirmActionWithReasonModal />,
+  [MODAL_NAMES.CONFIRM_ACTION_WITH_REASON_MODAL]: (
+    <ConfirmActionWithReasonModal />
+  ),
   // Map other modal components here
 };
 
@@ -50,7 +52,7 @@ export const ORDER_STATUSES = {
   CANCELLED: "cancelled",
   REFUND_REQUESTED: "refund_requested",
   REFUNDED: "refunded",
-}
+};
 
 export const ORDER_STATUS_LABELS = {
   [ORDER_STATUSES.PROCESSING]: "Processing",
@@ -59,4 +61,24 @@ export const ORDER_STATUS_LABELS = {
   [ORDER_STATUSES.CANCELLED]: "Cancelled",
   [ORDER_STATUSES.REFUND_REQUESTED]: "Refund Requested",
   [ORDER_STATUSES.REFUNDED]: "Refunded",
+};
+
+export const USER_ROLES = {
+  CUSTOMER: "customer",
+  SALES_MANAGER: "sales_manager",
+  PRODUCT_MANAGER: "product_manager",
+  SUPPORT_AGENT: "support_agent",
+};
+
+export const MANAGEMENT_ROLES = [
+  USER_ROLES.SALES_MANAGER,
+  USER_ROLES.PRODUCT_MANAGER,
+  USER_ROLES.SUPPORT_AGENT,
+];
+
+export const USER_ROLE_LABELS = {
+  [USER_ROLES.CUSTOMER]: "Customer",
+  [USER_ROLES.SALES_MANAGER]: "Sales Manager",
+  [USER_ROLES.PRODUCT_MANAGER]: "Product Manager",
+  [USER_ROLES.SUPPORT_AGENT]: "Support Agent",
 };
