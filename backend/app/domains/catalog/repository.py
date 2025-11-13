@@ -54,7 +54,8 @@ class ProductRepository:
             description=model.description,
             price=model.price,
             stock=model.stock,
-            category=model.category,
+            category_id=model.category_id,
+            category=model.category.name,  # Extract category name from relationship
             image=model.image,
             rating=model.rating,
             warranty_status=model.warranty_status,
