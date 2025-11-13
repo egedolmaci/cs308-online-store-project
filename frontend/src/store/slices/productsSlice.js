@@ -163,4 +163,10 @@ const productsSlice = createSlice({
 export const { setFilters, clearFilters, clearError, clearCurrentProduct } =
   productsSlice.actions;
 
+// Selectors
+export const selectProducts = (state) => state.products.items;
+export const selectProductsLoading = (state) => state.products.loading;
+export const selectProductsError = (state) => state.products.error;
+export const selectProductCategories = (state) => state.products.categories;
+
 export default productsSlice.reducer;
