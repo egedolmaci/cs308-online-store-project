@@ -1,15 +1,9 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Filter from "./components/Filter";
 import ItemGrid from "./components/ItemGrid";
-import { useDispatch, useSelector } from "react-redux";
-import { fetchProducts } from "../../store/slices/productsSlice";
+import { useSelector } from "react-redux";
 
 function Store() {
-  const dispatch = useDispatch();
-
-  useEffect(() => {
-    dispatch(fetchProducts());
-  }, []);
 
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("name");

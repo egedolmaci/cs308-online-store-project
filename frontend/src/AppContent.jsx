@@ -19,6 +19,7 @@ import { me } from "./store/slices/userSlice";
 import { MANAGEMENT_ROLES } from "./constants";
 import ManagementPage from "./pages/management";
 import LoadingScreen from "./ui/components/LoadingScreen";
+import { fetchProducts } from "./store/slices/productsSlice";
 
 function AppContent() {
   const isLoading = useSelector((state) => state.user.isLoading);
@@ -31,6 +32,7 @@ function AppContent() {
 
   useEffect(() => {
     dispatch(me()); // Initialize authentication state on app load
+    dispatch(fetchProducts());
   }, []);
 
   if (isLoading) {

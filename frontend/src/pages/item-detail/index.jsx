@@ -6,15 +6,26 @@ import ProductSpecs from "./components/ProductSpecs";
 import RelatedProducts from "./components/RelatedProducts";
 import ProdcutMetaInfo from "./components/ProductMetaInfo";
 import { useSelector } from "react-redux";
+import LoadingScreen from "../../ui/components/LoadingScreen";
 
 function ItemDetail() {
   const products = useSelector((state) => state.products.items);
+  const loading = useSelector((state) => state.products.loading);
   const { id } = useParams();
   const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   const [relatedProducts, setRelatedProducts] = useState([]);
 
   useEffect(() => {
+    // Wait for products to load before attempting to find product
+    if (loading) return;
+
+    // If products are loaded but empty, redirect
+    if (!loading && products.length === 0) {
+      navigate("/404");
+      return;
+    }
+
     // Find the product by ID
     const foundProduct = products.find((p) => p.id === parseInt(id));
 
@@ -33,16 +44,11 @@ function ItemDetail() {
       // Redirect to 404 if product not found
       navigate("/404");
     }
-  }, [id, navigate]);
+  }, [id, products, loading, navigate]);
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-linear-to-br from-linen via-cream to-linen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-4 border-gray-900 mx-auto mb-4"></div>
-          <p className="text-gray-600 font-semibold">Loading...</p>
-        </div>
-      </div>
+      <LoadingScreen message="Fetching products..."></LoadingScreen>
     );
   }
 
