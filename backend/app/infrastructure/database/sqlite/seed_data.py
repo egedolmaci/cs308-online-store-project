@@ -1,3 +1,16 @@
+CATEGORIES = [
+    "T-Shirts",
+    "Jeans",
+    "Hoodies",
+    "Shirts",
+    "Dresses",
+    "Jackets",
+    "Shorts",
+    "Sweaters",
+    "Pants",
+    "Polo",
+]
+
 PRODUCTS = [
     {
         "name": "Classic Cotton T-Shirt",

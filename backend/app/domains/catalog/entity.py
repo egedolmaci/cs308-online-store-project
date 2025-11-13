@@ -13,7 +13,8 @@ class Product:
     description: Optional[str]
     price: float
     stock: int
-    category: str
+    category_id: int
+    category: str  # Category name (denormalized for API responses)
     image: Optional[str]
     rating: Optional[float]
     warranty_status: Optional[str]

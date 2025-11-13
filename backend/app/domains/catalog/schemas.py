@@ -12,7 +12,8 @@ class ProductResponse(BaseModel):
     description: Optional[str]
     price: float
     stock: int
-    category: str
+    category_id: int
+    category: str  # Category name for backward compatibility
     image: Optional[str]
     rating: Optional[float]
     warranty_status: Optional[str]
@@ -30,7 +31,7 @@ class ProductUpdate(BaseModel):
     description: Optional[str] = None
     price: Optional[float] = None
     stock: Optional[int] = None
-    category: Optional[str] = None
+    category_id: Optional[int] = None  # Use category_id for updates
     image: Optional[str] = None
     rating: Optional[float] = None
     warranty_status: Optional[str] = None
