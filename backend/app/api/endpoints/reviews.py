@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.infrastructure.database.sqlite.session import get_db
 from app.domains.review.schemas import ReviewCreate, ReviewResponse, ReviewApprovalAction
 from app.domains.review import use_cases
-from app.domains.identity.entity import User
+from app.domains.identity.repository import User
 from app.api.endpoints.auth import require_roles
 from app.core.logging import logger
 
