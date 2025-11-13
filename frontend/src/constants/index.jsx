@@ -12,6 +12,8 @@ export const API_ENDPOINTS = {
   REFRESH: "/auth/refresh",
   PRODUCTS: "/products",
   ORDERS: "/orders",
+  CATEGORIES: "/categories",
+  reviews: "/reviews",
   // Add other endpoints here
 };
 
