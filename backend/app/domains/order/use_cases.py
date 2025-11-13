@@ -155,19 +155,20 @@ def cancel_order(db: Session, order_id: int) -> Optional[Order]:
     return order
 
 
-def request_refund(db: Session, order_id: int) -> Optional[Order]:
+def request_refund(db: Session, order_id: int, reason: Optional[str] = None) -> Optional[Order]:
     """
     Request a refund for a delivered order (within 30 days).
 
     Args:
         db: Database session
         order_id: ID of the order to refund
+        reason: Optional reason for the refund request
 
     Returns:
         Updated Order entity if successful, None otherwise
     """
     repository = OrderRepository(db)
-    return repository.request_refund(order_id)
+    return repository.request_refund(order_id, reason)
 
 
 def approve_refund(db: Session, order_id: int) -> Optional[Order]:

@@ -219,7 +219,7 @@ def request_refund(
     if order_check.customer_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your order")
 
-    order = use_cases.request_refund(db, order_id)
+    order = use_cases.request_refund(db, order_id, refund_data.reason)
     if not order:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

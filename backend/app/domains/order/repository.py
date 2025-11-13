@@ -93,7 +93,7 @@ class OrderRepository:
         self.db.refresh(order)
         return self._to_entity(order)
 
-    def request_refund(self, order_id: int) -> Optional[Order]:
+    def request_refund(self, order_id: int, reason: Optional[str] = None) -> Optional[Order]:
         """Request a refund for a delivered order."""
         order = self.db.query(OrderModel).filter(OrderModel.id == order_id).first()
         if not order:
@@ -110,6 +110,7 @@ class OrderRepository:
 
         order.status = OrderStatus.REFUND_REQUESTED
         order.refund_requested_at = datetime.utcnow()
+        order.refund_reason = reason  # Save the refund reason
 
         self.db.commit()
         self.db.refresh(order)
@@ -187,4 +188,5 @@ class OrderRepository:
             refund_requested_at=model.refund_requested_at,
             refunded_at=model.refunded_at,
             refund_amount=model.refund_amount,
+            refund_reason=model.refund_reason,
         )
