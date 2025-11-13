@@ -1,13 +1,18 @@
 import { useState } from "react";
 import { useSelector } from "react-redux";
 import { Link, useLocation, useNavigate } from "react-router-dom";
+import { MANAGEMENT_ROLES } from "../../constants";
+import { Briefcase } from "lucide-react";
 
 const Header = () => {
   const totalQuantity = useSelector((state) => state.cart.totalQuantity);
   const totalAmount = useSelector((state) => state.cart.totalAmount);
   const navigate = useNavigate();
   const location = useLocation();
+  const userRole = useSelector((state) => state.user.role);
   const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
+  const isManagementUser =
+    isAuthenticated && MANAGEMENT_ROLES.includes(userRole);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   const isActive = (path) => location.pathname === path;
@@ -60,11 +65,10 @@ const Header = () => {
                 <Link
                   key={item.path}
                   to={item.path}
-                  className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${
-                    isActive(item.path)
-                      ? "bg-gray-900 text-white shadow-lg scale-105"
-                      : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                  }`}
+                  className={`px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-300 ${isActive(item.path)
+                    ? "bg-gray-900 text-white shadow-lg scale-105"
+                    : "text-gray-600 hover:text-gray-900 hover:bg-gray-50"
+                    }`}
                 >
                   {item.name}
                 </Link>
@@ -132,6 +136,19 @@ const Header = () => {
                   {isAuthenticated ? "Profile" : "Login"}
                 </span>
               </button>
+              {isManagementUser && (
+                <button
+                  onClick={() =>
+                    navigate("/management")
+                  }
+                  className="hidden sm:flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gradient-to-br from-gray-900 to-gray-800 text-white hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 group"
+                >
+                  <Briefcase />
+                  <span className="text-sm font-bold">
+                    {"Management Panel"}
+                  </span>
+                </button>
+              )}
 
               {/* Mobile Menu Button */}
               <button
@@ -139,9 +156,8 @@ const Header = () => {
                 className="lg:hidden flex items-center justify-center w-11 h-11 rounded-xl bg-gray-900 text-white hover:bg-gray-800 transition-all duration-300"
               >
                 <svg
-                  className={`w-6 h-6 transform transition-transform duration-300 ${
-                    isMobileMenuOpen ? "rotate-90" : ""
-                  }`}
+                  className={`w-6 h-6 transform transition-transform duration-300 ${isMobileMenuOpen ? "rotate-90" : ""
+                    }`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -164,9 +180,8 @@ const Header = () => {
 
         {/* Mobile Menu - Enhanced */}
         <div
-          className={`lg:hidden overflow-hidden transition-all duration-300 ${
-            isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-          }`}
+          className={`lg:hidden overflow-hidden transition-all duration-300 ${isMobileMenuOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+            }`}
         >
           <nav className="container mx-auto px-4 py-4 space-y-2 border-t border-sand/20">
             {[
@@ -179,11 +194,10 @@ const Header = () => {
                 key={item.path}
                 to={item.path}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className={`block px-5 py-3 rounded-xl font-semibold transition-all duration-300 ${
-                  isActive(item.path)
-                    ? "bg-gray-900 text-white shadow-lg"
-                    : "text-gray-600 hover:bg-gray-50"
-                }`}
+                className={`block px-5 py-3 rounded-xl font-semibold transition-all duration-300 ${isActive(item.path)
+                  ? "bg-gray-900 text-white shadow-lg"
+                  : "text-gray-600 hover:bg-gray-50"
+                  }`}
               >
                 {item.name}
               </Link>
