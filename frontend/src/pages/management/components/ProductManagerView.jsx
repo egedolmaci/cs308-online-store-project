@@ -1,99 +1,103 @@
 import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
 import {
   fetchProducts,
-  createProduct,
-  updateProduct,
-  deleteProduct,
+  createProduct as createProductAction,
+  updateProduct as updateProductAction,
+  deleteProduct as deleteProductAction,
+  selectProducts,
+  selectProductsLoading,
+  selectProductsError,
+} from "../../../store/slices/productsSlice";
+import {
   fetchCategories,
-  createCategory,
-  updateCategory,
-  deleteCategory,
-  fetchDeliveries,
-  updateDeliveryStatus,
-  fetchPendingComments,
-  approveComment,
-  disapproveComment,
-} from "../../../api/mockAdminService";
+  createCategory as createCategoryAction,
+  updateCategory as updateCategoryAction,
+  deleteCategory as deleteCategoryAction,
+  selectCategories,
+  selectCategoriesLoading,
+  selectCategoriesError,
+} from "../../../store/slices/categoriesSlice";
+import {
+  getPendingReviews,
+  approveReview,
+  selectPendingReviews,
+  selectReviewsLoading,
+  selectReviewsError,
+} from "../../../store/slices/reviewsSlice";
 
 const ProductManagerView = () => {
+  const dispatch = useDispatch();
   const [activeTab, setActiveTab] = useState("products");
 
+  // Redux state
+  const products = useSelector(selectProducts);
+  const isLoadingProducts = useSelector(selectProductsLoading);
+  const productsError = useSelector(selectProductsError);
+
+  const categories = useSelector(selectCategories);
+  const isLoadingCategories = useSelector(selectCategoriesLoading);
+  const categoriesError = useSelector(selectCategoriesError);
+
+  const pendingReviews = useSelector(selectPendingReviews);
+  const isLoadingReviews = useSelector(selectReviewsLoading);
+  const reviewsError = useSelector(selectReviewsError);
+
   // Products State
-  const [products, setProducts] = useState([]);
-  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
   const [showProductModal, setShowProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
   const [productForm, setProductForm] = useState({
     name: "",
     category: "",
-    salePrice: "",
-    costPrice: "",
+    price: "",
+    cost_price: "",
     stock: "",
     description: "",
   });
 
   // Categories State
-  const [categories, setCategories] = useState([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   const [showCategoryModal, setShowCategoryModal] = useState(false);
   const [editingCategory, setEditingCategory] = useState(null);
-  const [categoryForm, setCategoryForm] = useState({ name: "", slug: "" });
-
-  // Deliveries State
-  const [deliveries, setDeliveries] = useState([]);
-  const [isLoadingDeliveries, setIsLoadingDeliveries] = useState(false);
-
-  // Comments State
-  const [comments, setComments] = useState([]);
-  const [isLoadingComments, setIsLoadingComments] = useState(false);
+  const [categoryForm, setCategoryForm] = useState({ name: "", description: "" });
 
   // Load initial data
   useEffect(() => {
     if (activeTab === "products") {
-      loadProducts();
+      dispatch(fetchProducts());
     } else if (activeTab === "categories") {
-      loadCategories();
-    } else if (activeTab === "deliveries") {
-      loadDeliveries();
+      dispatch(fetchCategories());
     } else if (activeTab === "comments") {
-      loadComments();
+      dispatch(getPendingReviews());
     }
-  }, [activeTab]);
+  }, [activeTab, dispatch]);
 
   // Product Functions
-  const loadProducts = async () => {
-    setIsLoadingProducts(true);
-    try {
-      const data = await fetchProducts();
-      setProducts(data);
-    } catch (error) {
-      alert("Error loading products");
-    } finally {
-      setIsLoadingProducts(false);
-    }
-  };
-
   const handleProductSubmit = async (e) => {
     e.preventDefault();
     try {
       if (editingProduct) {
-        await updateProduct(editingProduct.id, productForm);
+        await dispatch(
+          updateProductAction({
+            productId: editingProduct.id,
+            productData: productForm,
+          })
+        ).unwrap();
       } else {
-        await createProduct(productForm);
+        await dispatch(createProductAction(productForm)).unwrap();
       }
       setShowProductModal(false);
       setEditingProduct(null);
       setProductForm({
         name: "",
         category: "",
-        salePrice: "",
-        costPrice: "",
+        price: "",
+        cost_price: "",
         stock: "",
         description: "",
       });
-      loadProducts();
+      dispatch(fetchProducts());
     } catch (error) {
-      alert("Error saving product");
+      alert(error || "Error saving product");
     }
   };
 
@@ -102,10 +106,10 @@ const ProductManagerView = () => {
     setProductForm({
       name: product.name,
       category: product.category,
-      salePrice: product.salePrice,
-      costPrice: product.costPrice,
+      price: product.price,
+      cost_price: product.cost_price || "",
       stock: product.stock,
-      description: product.description,
+      description: product.description || "",
     });
     setShowProductModal(true);
   };
@@ -113,111 +117,60 @@ const ProductManagerView = () => {
   const handleDeleteProduct = async (productId) => {
     if (window.confirm("Are you sure you want to delete this product?")) {
       try {
-        await deleteProduct(productId);
-        loadProducts();
+        await dispatch(deleteProductAction(productId)).unwrap();
+        dispatch(fetchProducts());
       } catch (error) {
-        alert("Error deleting product");
+        alert(error || "Error deleting product");
       }
     }
   };
 
   // Category Functions
-  const loadCategories = async () => {
-    setIsLoadingCategories(true);
-    try {
-      const data = await fetchCategories();
-      setCategories(data);
-    } catch (error) {
-      alert("Error loading categories");
-    } finally {
-      setIsLoadingCategories(false);
-    }
-  };
-
   const handleCategorySubmit = async (e) => {
     e.preventDefault();
     try {
       if (editingCategory) {
-        await updateCategory(editingCategory.id, categoryForm);
+        await dispatch(
+          updateCategoryAction({
+            categoryId: editingCategory.id,
+            categoryData: categoryForm,
+          })
+        ).unwrap();
       } else {
-        await createCategory(categoryForm);
+        await dispatch(createCategoryAction(categoryForm)).unwrap();
       }
       setShowCategoryModal(false);
       setEditingCategory(null);
-      setCategoryForm({ name: "", slug: "" });
-      loadCategories();
+      setCategoryForm({ name: "", description: "" });
+      dispatch(fetchCategories());
     } catch (error) {
-      alert("Error saving category");
+      alert(error || "Error saving category");
     }
   };
 
   const handleEditCategory = (category) => {
     setEditingCategory(category);
-    setCategoryForm({ name: category.name, slug: category.slug });
+    setCategoryForm({ name: category.name, description: category.description || "" });
     setShowCategoryModal(true);
   };
 
   const handleDeleteCategory = async (categoryId) => {
     if (window.confirm("Are you sure you want to delete this category?")) {
       try {
-        await deleteCategory(categoryId);
-        loadCategories();
+        await dispatch(deleteCategoryAction(categoryId)).unwrap();
+        dispatch(fetchCategories());
       } catch (error) {
-        alert("Error deleting category");
+        alert(error || "Error deleting category");
       }
     }
   };
 
-  // Delivery Functions
-  const loadDeliveries = async () => {
-    setIsLoadingDeliveries(true);
-    try {
-      const data = await fetchDeliveries();
-      setDeliveries(data);
-    } catch (error) {
-      alert("Error loading deliveries");
-    } finally {
-      setIsLoadingDeliveries(false);
-    }
-  };
-
-  const handleUpdateDeliveryStatus = async (deliveryId, newStatus) => {
-    try {
-      await updateDeliveryStatus(deliveryId, newStatus);
-      loadDeliveries();
-    } catch (error) {
-      alert("Error updating delivery status");
-    }
-  };
-
   // Comment Functions
-  const loadComments = async () => {
-    setIsLoadingComments(true);
+  const handleApproveComment = async (reviewId) => {
     try {
-      const data = await fetchPendingComments();
-      setComments(data);
+      await dispatch(approveReview(reviewId)).unwrap();
     } catch (error) {
-      alert("Error loading comments");
-    } finally {
-      setIsLoadingComments(false);
-    }
-  };
-
-  const handleApproveComment = async (commentId) => {
-    try {
-      await approveComment(commentId);
-      setComments(comments.filter((c) => c.id !== commentId));
-    } catch (error) {
-      alert("Error approving comment");
-    }
-  };
-
-  const handleDisapproveComment = async (commentId) => {
-    try {
-      await disapproveComment(commentId);
-      setComments(comments.filter((c) => c.id !== commentId));
-    } catch (error) {
-      alert("Error disapproving comment");
+      alert(error || "Error approving review");
     }
   };
 
@@ -229,7 +182,7 @@ const ProductManagerView = () => {
           Product Management
         </h2>
         <p className="text-gray-600">
-          Manage products, categories, deliveries, and moderate comments
+          Manage products, categories, and moderate comments
         </p>
       </div>
 
@@ -257,16 +210,6 @@ const ProductManagerView = () => {
             Categories
           </button>
           <button
-            onClick={() => setActiveTab("deliveries")}
-            className={`flex-1 px-6 py-3 rounded-2xl font-semibold transition-all duration-300 ${
-              activeTab === "deliveries"
-                ? "bg-linear-to-br from-sand to-sage text-white shadow-lg"
-                : "text-gray-700 hover:bg-gray-50"
-            }`}
-          >
-            Deliveries
-          </button>
-          <button
             onClick={() => setActiveTab("comments")}
             className={`flex-1 px-6 py-3 rounded-2xl font-semibold transition-all duration-300 ${
               activeTab === "comments"
@@ -274,7 +217,7 @@ const ProductManagerView = () => {
                 : "text-gray-700 hover:bg-gray-50"
             }`}
           >
-            Comments
+            Reviews
           </button>
         </div>
       </div>
@@ -290,8 +233,8 @@ const ProductManagerView = () => {
                 setProductForm({
                   name: "",
                   category: "",
-                  salePrice: "",
-                  costPrice: "",
+                  price: "",
+                  cost_price: "",
                   stock: "",
                   description: "",
                 });
@@ -303,6 +246,12 @@ const ProductManagerView = () => {
             </button>
           </div>
 
+          {productsError && (
+            <div className="mb-4 p-4 rounded-2xl bg-error/20 border border-error">
+              <p className="text-error font-medium">{productsError}</p>
+            </div>
+          )}
+
           {isLoadingProducts ? (
             <p className="text-center text-gray-500 py-8">Loading products...</p>
           ) : (
@@ -312,31 +261,30 @@ const ProductManagerView = () => {
                   key={product.id}
                   className="p-4 rounded-2xl border-2 border-gray-200 hover:border-sand hover:shadow-md transition-all duration-300"
                 >
-                  <div className="aspect-square rounded-xl overflow-hidden mb-3">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="aspect-square rounded-xl overflow-hidden mb-3 bg-gray-100">
+                    {product.image ? (
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-gray-400">
+                        No image
+                      </div>
+                    )}
                   </div>
                   <h4 className="font-bold text-gray-900 mb-1">{product.name}</h4>
                   <p className="text-sm text-gray-500 mb-2">{product.category}</p>
                   <div className="flex justify-between items-center mb-3">
                     <div>
-                      <p className="text-sm text-gray-600">Sale: ${product.salePrice}</p>
-                      <p className="text-sm text-gray-600">Cost: ${product.costPrice}</p>
+                      <p className="text-sm text-gray-600">Price: ${product.price}</p>
+                      {product.cost_price && (
+                        <p className="text-sm text-gray-600">Cost: ${product.cost_price}</p>
+                      )}
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-gray-600">Stock: {product.stock}</p>
-                      <span
-                        className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                          product.status === "active"
-                            ? "bg-success-light text-success"
-                            : "bg-gray-200 text-gray-700"
-                        }`}
-                      >
-                        {product.status}
-                      </span>
                     </div>
                   </div>
                   <div className="flex gap-2">
@@ -368,7 +316,7 @@ const ProductManagerView = () => {
             <button
               onClick={() => {
                 setEditingCategory(null);
-                setCategoryForm({ name: "", slug: "" });
+                setCategoryForm({ name: "", description: "" });
                 setShowCategoryModal(true);
               }}
               className="px-6 py-3 rounded-2xl bg-linear-to-r from-sand to-sage text-white font-semibold hover:shadow-lg transition-all duration-300"
@@ -376,6 +324,12 @@ const ProductManagerView = () => {
               Add Category
             </button>
           </div>
+
+          {categoriesError && (
+            <div className="mb-4 p-4 rounded-2xl bg-error/20 border border-error">
+              <p className="text-error font-medium">{categoriesError}</p>
+            </div>
+          )}
 
           {isLoadingCategories ? (
             <p className="text-center text-gray-500 py-8">Loading categories...</p>
@@ -389,10 +343,9 @@ const ProductManagerView = () => {
                   <h4 className="font-bold text-gray-900 text-lg mb-1">
                     {category.name}
                   </h4>
-                  <p className="text-sm text-gray-500 mb-2">/{category.slug}</p>
-                  <p className="text-sm text-gray-600 mb-4">
-                    {category.productCount} products
-                  </p>
+                  {category.description && (
+                    <p className="text-sm text-gray-500 mb-4">{category.description}</p>
+                  )}
                   <div className="flex gap-2">
                     <button
                       onClick={() => handleEditCategory(category)}
@@ -414,103 +367,37 @@ const ProductManagerView = () => {
         </div>
       )}
 
-      {/* Deliveries Tab */}
-      {activeTab === "deliveries" && (
-        <div className="bg-white rounded-3xl p-8 shadow-lg border border-sand/20">
-          <h3 className="text-xl font-bold text-gray-900 mb-6">Delivery Tracking</h3>
-
-          {isLoadingDeliveries ? (
-            <p className="text-center text-gray-500 py-8">Loading deliveries...</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="bg-linear-to-r from-sand to-sage text-white">
-                    <th className="px-4 py-3 text-left rounded-tl-2xl">
-                      Delivery ID
-                    </th>
-                    <th className="px-4 py-3 text-left">Customer</th>
-                    <th className="px-4 py-3 text-left">Product</th>
-                    <th className="px-4 py-3 text-left">Address</th>
-                    <th className="px-4 py-3 text-left">Tracking</th>
-                    <th className="px-4 py-3 text-left">ETA</th>
-                    <th className="px-4 py-3 text-left rounded-tr-2xl">Status</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {deliveries.map((delivery, index) => (
-                    <tr
-                      key={delivery.id}
-                      className={`border-b border-gray-100 hover:bg-gray-50 transition-colors ${
-                        index === deliveries.length - 1 ? "border-0" : ""
-                      }`}
-                    >
-                      <td className="px-4 py-3 font-medium text-gray-900">
-                        {delivery.id}
-                      </td>
-                      <td className="px-4 py-3 text-gray-700">
-                        {delivery.customer}
-                      </td>
-                      <td className="px-4 py-3 text-gray-700">
-                        {delivery.product}
-                      </td>
-                      <td className="px-4 py-3 text-gray-700 text-sm">
-                        {delivery.address}
-                      </td>
-                      <td className="px-4 py-3 text-gray-700 text-sm font-mono">
-                        {delivery.trackingNumber}
-                      </td>
-                      <td className="px-4 py-3 text-gray-700 text-sm">
-                        {delivery.estimatedDelivery}
-                      </td>
-                      <td className="px-4 py-3">
-                        <select
-                          value={delivery.status}
-                          onChange={(e) =>
-                            handleUpdateDeliveryStatus(delivery.id, e.target.value)
-                          }
-                          className="px-3 py-2 rounded-xl border-2 border-gray-200 focus:border-sand focus:outline-none transition-colors font-semibold text-sm"
-                        >
-                          <option value="pending">Pending</option>
-                          <option value="processing">Processing</option>
-                          <option value="in-transit">In Transit</option>
-                          <option value="delivered">Delivered</option>
-                        </select>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Comments Tab */}
+      {/* Reviews Tab */}
       {activeTab === "comments" && (
         <div className="bg-white rounded-3xl p-8 shadow-lg border border-sand/20">
           <h3 className="text-xl font-bold text-gray-900 mb-6">
-            Comment Moderation
+            Review Moderation
           </h3>
 
-          {isLoadingComments ? (
-            <p className="text-center text-gray-500 py-8">Loading comments...</p>
-          ) : comments.length === 0 ? (
+          {reviewsError && (
+            <div className="mb-4 p-4 rounded-2xl bg-error/20 border border-error">
+              <p className="text-error font-medium">{reviewsError}</p>
+            </div>
+          )}
+
+          {isLoadingReviews ? (
+            <p className="text-center text-gray-500 py-8">Loading reviews...</p>
+          ) : pendingReviews.length === 0 ? (
             <p className="text-center text-gray-500 py-8">
-              No pending comments to moderate
+              No pending reviews to moderate
             </p>
           ) : (
             <div className="space-y-4">
-              {comments.map((comment) => (
+              {pendingReviews.map((review) => (
                 <div
-                  key={comment.id}
+                  key={review.id}
                   className="p-6 rounded-2xl border-2 border-gray-200 hover:border-sand/50 transition-all duration-300"
                 >
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <h4 className="font-bold text-gray-900">{comment.userName}</h4>
+                      <h4 className="font-bold text-gray-900">{review.user_name || "Anonymous"}</h4>
                       <p className="text-sm text-gray-500">
-                        {comment.productName} • {comment.date}
+                        Product ID: {review.product_id} • {new Date(review.created_at).toLocaleDateString()}
                       </p>
                     </div>
                     <div className="flex gap-1">
@@ -518,7 +405,7 @@ const ProductManagerView = () => {
                         <svg
                           key={i}
                           className={`w-4 h-4 ${
-                            i < comment.rating ? "text-warning" : "text-gray-300"
+                            i < review.rating ? "text-warning" : "text-gray-300"
                           }`}
                           fill="currentColor"
                           viewBox="0 0 20 20"
@@ -529,20 +416,14 @@ const ProductManagerView = () => {
                     </div>
                   </div>
 
-                  <p className="text-gray-700 mb-4">{comment.comment}</p>
+                  <p className="text-gray-700 mb-4">{review.comment}</p>
 
                   <div className="flex gap-3">
                     <button
-                      onClick={() => handleApproveComment(comment.id)}
+                      onClick={() => handleApproveComment(review.id)}
                       className="flex-1 px-4 py-2 rounded-xl bg-success-light text-success font-semibold hover:bg-success hover:text-white transition-all duration-300"
                     >
                       Approve
-                    </button>
-                    <button
-                      onClick={() => handleDisapproveComment(comment.id)}
-                      className="flex-1 px-4 py-2 rounded-xl bg-error/20 text-error font-semibold hover:bg-error hover:text-white transition-all duration-300"
-                    >
-                      Disapprove
                     </button>
                   </div>
                 </div>
@@ -593,14 +474,14 @@ const ProductManagerView = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Sale Price
+                    Price
                   </label>
                   <input
                     type="number"
                     step="0.01"
-                    value={productForm.salePrice}
+                    value={productForm.price}
                     onChange={(e) =>
-                      setProductForm({ ...productForm, salePrice: e.target.value })
+                      setProductForm({ ...productForm, price: e.target.value })
                     }
                     className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-sand focus:outline-none transition-colors"
                     required
@@ -614,9 +495,9 @@ const ProductManagerView = () => {
                   <input
                     type="number"
                     step="0.01"
-                    value={productForm.costPrice}
+                    value={productForm.cost_price}
                     onChange={(e) =>
-                      setProductForm({ ...productForm, costPrice: e.target.value })
+                      setProductForm({ ...productForm, cost_price: e.target.value })
                     }
                     className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-sand focus:outline-none transition-colors"
                   />
@@ -700,16 +581,15 @@ const ProductManagerView = () => {
 
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Slug
+                  Description
                 </label>
-                <input
-                  type="text"
-                  value={categoryForm.slug}
+                <textarea
+                  value={categoryForm.description}
                   onChange={(e) =>
-                    setCategoryForm({ ...categoryForm, slug: e.target.value })
+                    setCategoryForm({ ...categoryForm, description: e.target.value })
                   }
+                  rows="3"
                   className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-sand focus:outline-none transition-colors"
-                  required
                 />
               </div>
 
