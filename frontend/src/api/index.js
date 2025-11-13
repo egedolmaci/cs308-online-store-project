@@ -31,6 +31,23 @@ export const productsAPI = {
     const response = await apiClient.get(API_ENDPOINTS.PRODUCTS);
     return response.data;
   },
+  updateProduct: async (productId, productData) => {
+    const response = await apiClient.put(
+      `${API_ENDPOINTS.PRODUCTS}/${productId}`,
+      productData
+    );
+    return response.data;
+  },
+  deleteProduct: async (productId) => {
+    const response = await apiClient.delete(
+      `${API_ENDPOINTS.PRODUCTS}/${productId}`
+    );
+    return response.data;
+  },
+  createProduct: async (productData) => {
+    const response = await apiClient.post(API_ENDPOINTS.PRODUCTS, productData);
+    return response.data;
+  },
 };
 
 export const ordersAPI = {
