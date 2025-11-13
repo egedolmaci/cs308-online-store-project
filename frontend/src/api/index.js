@@ -133,5 +133,71 @@ export const authAPI = {
   },
 };
 
+export const categoriesAPI = {
+  // Fetch all categories
+  fetchCategories: async () => {
+    const response = await apiClient.get(API_ENDPOINTS.CATEGORIES);
+    return response.data;
+  },
+  createCategory: async (categoryData) => {
+    const response = await apiClient.post(
+      API_ENDPOINTS.CATEGORIES,
+      categoryData
+    );
+    return response.data;
+  },
+  updateCategory: async (categoryId, categoryData) => {
+    const response = await apiClient.put(
+      `${API_ENDPOINTS.CATEGORIES}/${categoryId}`,
+      categoryData
+    );
+    return response.data;
+  },
+  deleteCategory: async (categoryId) => {
+    const response = await apiClient.delete(
+      `${API_ENDPOINTS.CATEGORIES}/${categoryId}`
+    );
+    return response.data;
+  },
+  fetchCategoryById: async (categoryId) => {
+    const response = await apiClient.get(
+      `${API_ENDPOINTS.CATEGORIES}/${categoryId}`
+    );
+    return response.data;
+  },
+};
+
+export const reviewsAPI = {
+  fetchReviewsByProduct: async (productId) => {
+    const response = await apiClient.get(
+      `${API_ENDPOINTS.PRODUCTS}/${productId}/${API_ENDPOINTS.reviews}`
+    );
+    return response.data;
+  },
+  createReview: async (productId, reviewData) => {
+    const response = await apiClient.post(
+      `${API_ENDPOINTS.PRODUCTS}/${productId}/${API_ENDPOINTS.reviews}`,
+      reviewData
+    );
+    return response.data;
+  },
+  getPendingReviews: async () => {
+    const response = await apiClient.get(`${API_ENDPOINTS.reviews}/pending`);
+    return response.data;
+  },
+  approveReview: async (reviewId) => {
+    const response = await apiClient.post(
+      `${API_ENDPOINTS.reviews}/${reviewId}/approve`
+    );
+    return response.data;
+  },
+  fetchReviewById: async (reviewId) => {
+    const response = await apiClient.get(
+      `${API_ENDPOINTS.reviews}/${reviewId}`
+    );
+    return response.data;
+  },
+};
+
 // Export the configured axios instance for custom requests
 export default apiClient;
