@@ -5,6 +5,7 @@ import ProductInfo from "./components/ProductInfo";
 import ProductSpecs from "./components/ProductSpecs";
 import RelatedProducts from "./components/RelatedProducts";
 import ProdcutMetaInfo from "./components/ProductMetaInfo";
+import ReviewSection from "./components/ReviewSection";
 import { useSelector } from "react-redux";
 import LoadingScreen from "../../ui/components/LoadingScreen";
 
@@ -90,6 +91,9 @@ function ItemDetail() {
 
         {/* Product Specifications */}
         <ProductSpecs product={product} />
+
+        {/* Customer Reviews */}
+        <ReviewSection productId={product.id} />
 
         {/* Related Products */}
         {relatedProducts.length > 0 && (
