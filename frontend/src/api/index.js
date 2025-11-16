@@ -170,13 +170,13 @@ export const categoriesAPI = {
 export const reviewsAPI = {
   fetchReviewsByProduct: async (productId) => {
     const response = await apiClient.get(
-      `${API_ENDPOINTS.PRODUCTS}/${productId}/${API_ENDPOINTS.reviews}`
+      `${API_ENDPOINTS.PRODUCTS}/${productId}/reviews`
     );
     return response.data;
   },
   createReview: async (productId, reviewData) => {
     const response = await apiClient.post(
-      `${API_ENDPOINTS.PRODUCTS}/${productId}/${API_ENDPOINTS.reviews}`,
+      `${API_ENDPOINTS.PRODUCTS}/${productId}/reviews`,
       reviewData
     );
     return response.data;
@@ -186,8 +186,11 @@ export const reviewsAPI = {
     return response.data;
   },
   approveReview: async (reviewId) => {
-    const response = await apiClient.post(
-      `${API_ENDPOINTS.reviews}/${reviewId}/approve`
+    const response = await apiClient.patch(
+      `${API_ENDPOINTS.reviews}/${reviewId}/approve`,
+      {
+        approved: true,
+      }
     );
     return response.data;
   },
