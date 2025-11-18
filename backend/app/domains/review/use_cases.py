@@ -9,13 +9,14 @@ from app.domains.review.repository import ReviewRepository
 from app.domains.order.repository import OrderRepository
 from app.domains.order.entity import OrderStatus
 from app.infrastructure.database.sqlite.models.order import OrderItemModel
+from app.infrastructure.database.sqlite.models.review import ReviewModel
 
 
 def create_review(
     db: Session,
     user_id: str,
+    user_name: str,
     product_id: int,
-    order_id: int,
     rating: int,
     comment: Optional[str] = None
 ) -> Optional[Review]:
@@ -23,17 +24,16 @@ def create_review(
     Create a product review.
 
     Business rules:
-    - User must have purchased the product (order must contain the product)
-    - Order must be delivered
-    - User cannot review the same product from the same order twice
+    - User must have purchased the product in a delivered order
+    - User can only review each product once (regardless of how many times purchased)
     - Ratings (1-5) are automatically approved
     - Comments require product manager approval
 
     Args:
         db: Database session
         user_id: UUID of the user creating the review
+        user_name: Full name of the user (for display)
         product_id: ID of the product being reviewed
-        order_id: ID of the order that contains the product
         rating: Rating (1-5 stars)
         comment: Optional comment text
 
@@ -43,30 +43,37 @@ def create_review(
     review_repo = ReviewRepository(db)
     order_repo = OrderRepository(db)
 
-    # 1. Verify order exists and belongs to user
-    order = order_repo.get_by_id(order_id)
-    if not order or order.customer_id != user_id:
-        return None
-
-    # 2. Verify order is delivered
-    if order.status != OrderStatus.DELIVERED:
-        return None
-
-    # 3. Verify product is in the order
-    order_item = db.query(OrderItemModel).filter(
-        OrderItemModel.order_id == order_id,
-        OrderItemModel.product_id == product_id
+    # 1. Check if user already reviewed this product (regardless of order)
+    existing_reviews = db.query(ReviewModel).filter(
+        ReviewModel.user_id == user_id,
+        ReviewModel.product_id == product_id
     ).first()
 
-    if not order_item:
+    if existing_reviews:
+        return None  # User already reviewed this product
+
+    # 2. Find any delivered order that contains this product for this user
+    # Get all user's delivered orders
+    user_orders = order_repo.get_all_orders(customer_id=user_id)
+    delivered_orders = [order for order in user_orders if order.status == OrderStatus.DELIVERED]
+
+    # Find an order that contains the product
+    valid_order_id = None
+    for order in delivered_orders:
+        order_item = db.query(OrderItemModel).filter(
+            OrderItemModel.order_id == order.id,
+            OrderItemModel.product_id == product_id
+        ).first()
+
+        if order_item:
+            valid_order_id = order.id
+            break
+
+    # 3. If no valid order found, user hasn't purchased this product
+    if valid_order_id is None:
         return None
 
-    # 4. Check if user already reviewed this product from this order
-    existing_review = review_repo.check_existing_review(user_id, product_id, order_id)
-    if existing_review:
-        return None
-
-    # 5. Create review
+    # 4. Create review
     # Comments require approval, ratings are auto-approved
     is_approved = comment is None or len(comment.strip()) == 0
 
@@ -74,7 +81,8 @@ def create_review(
         id=None,
         product_id=product_id,
         user_id=user_id,
-        order_id=order_id,
+        user_name=user_name,
+        order_id=valid_order_id,
         rating=rating,
         comment=comment if comment and comment.strip() else None,
         is_approved=is_approved,

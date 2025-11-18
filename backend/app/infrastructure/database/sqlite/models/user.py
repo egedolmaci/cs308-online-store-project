@@ -12,6 +12,7 @@ class UserModel(Base):
     email = Column(String(255), unique=True, index=True, nullable=False)
     password_hash = Column(String(255), nullable=False)
     role = Column(String(50), nullable=False, default="customer")
+    address = Column(String(500), nullable=True)  # Optional address field
 
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}', role='{self.role}')>"

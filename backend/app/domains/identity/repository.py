@@ -19,6 +19,7 @@ class User:
     email: str
     password_hash: str
     role: str  # "customer" | "sales_manager" | "product_manager" | "support_agent"
+    address: Optional[str] = None  # Optional user address
 
 class SQLAlchemyUserRepository:
     def __init__(self):
@@ -32,6 +33,7 @@ class SQLAlchemyUserRepository:
             email=model.email,
             password_hash=model.password_hash,
             role=model.role,
+            address=model.address,
         )
 
     def _ensure_seed_user(self):
@@ -53,7 +55,7 @@ class SQLAlchemyUserRepository:
             db.add(seeded)
             db.commit()
 
-    def create_user(self, first_name: str, last_name: str, email: str, password: str, role: str = "customer") -> User:
+    def create_user(self, first_name: str, last_name: str, email: str, password: str, role: str = "customer", address: Optional[str] = None) -> User:
         email_l = email.lower()
         with SessionLocal() as db:
             # Uniqueness check
@@ -67,6 +69,7 @@ class SQLAlchemyUserRepository:
                 email=email_l,
                 password_hash=hash_password(password),
                 role=role,
+                address=address,
             )
             db.add(model)
             try:

@@ -17,6 +17,7 @@ class ReviewModel(Base):
     # Foreign keys
     product_id = Column(Integer, ForeignKey('products.id', ondelete='CASCADE'), nullable=False, index=True)
     user_id = Column(String(36), nullable=False, index=True)  # UUID from identity system
+    user_name = Column(String(200), nullable=False)  # Denormalized for display (first_name + last_name)
     order_id = Column(Integer, ForeignKey('orders.id', ondelete='CASCADE'), nullable=False, index=True)
 
     # Review content

@@ -61,8 +61,9 @@ def register(payload: UserCreate):
             last_name=payload.last_name,
             email=payload.email,
             password=payload.password,  # default role "customer"
+            address=payload.address,
         )
-        return UserRead(id=user.id, first_name=user.first_name, last_name=user.last_name, email=user.email, role=user.role)
+        return UserRead(id=user.id, first_name=user.first_name, last_name=user.last_name, email=user.email, role=user.role, address=user.address)
     except ValueError:
         raise HTTPException(status_code=400, detail="User already exists")
 
@@ -84,6 +85,7 @@ def login(payload: LoginRequest, response: Response):
         last_name=user.last_name,
         email=user.email,
         role=user.role,
+        address=user.address,
     )
 
 @router.post("/logout", response_model=Message)
@@ -116,6 +118,7 @@ def me(user_with_role = Depends(get_current_user)):
         last_name=user.last_name,
         email=user.email,
         role=user.role,
+        address=user.address,
     )
 
 # Example role-guarded usage (to add later):

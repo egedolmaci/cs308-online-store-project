@@ -57,30 +57,41 @@ def create_order(
     return order
 
 
-@router.get("", response_model=List[OrderResponse])
-def get_orders(
+@router.get("/all", response_model=List[OrderResponse])
+def get_all_orders(
     db: Session = Depends(get_db),
-    user_with_role=Depends(get_current_user),
+    current_user: User = Depends(require_roles("product_manager", "sales_manager")),
 ):
     """
-    Retrieve orders (authenticated users only).
-    - Customers see only their own orders
-    - Product/Sales managers see all orders
+    Retrieve all orders from all customers (managers only).
 
     Returns:
-        List of orders based on user role
+        List of all orders in the system
+
+    Raises:
+        HTTPException: 401 if not authenticated
+        HTTPException: 403 if not a product manager or sales manager
     """
-    current_user, role = user_with_role
+    orders = use_cases.get_all_orders(db, customer_id=None)
+    return orders
 
-    # Customers can only see their own orders
-    if role == "customer":
-        orders = use_cases.get_all_orders(db, customer_id=current_user.id)
-    # Managers can see all orders
-    elif role in ["product_manager", "sales_manager"]:
-        orders = use_cases.get_all_orders(db, customer_id=None)
-    else:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied")
 
+@router.get("", response_model=List[OrderResponse])
+def get_my_orders(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("customer")),
+):
+    """
+    Retrieve orders for the current customer (customers only).
+
+    Returns:
+        List of orders belonging to the authenticated customer
+
+    Raises:
+        HTTPException: 401 if not authenticated
+        HTTPException: 403 if not a customer
+    """
+    orders = use_cases.get_all_orders(db, customer_id=current_user.id)
     return orders
 
 
