@@ -6,8 +6,8 @@ from app.domains.identity.repository import repo, User
 
 settings = get_settings()
 
-def register_user(first_name: str, last_name: str, email: str, password: str, role: str = "customer") -> User:
-    return repo.create_user(first_name=first_name, last_name=last_name, email=email, password=password, role=role)
+def register_user(first_name: str, last_name: str, email: str, password: str, role: str = "customer", address: Optional[str] = None) -> User:
+    return repo.create_user(first_name=first_name, last_name=last_name, email=email, password=password, role=role, address=address)
 
 def authenticate_user(email: str, password: str) -> Optional[User]:
     return repo.verify_user(email, password)

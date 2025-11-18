@@ -21,6 +21,7 @@ class ReviewRepository:
         model = ReviewModel(
             product_id=review.product_id,
             user_id=review.user_id,
+            user_name=review.user_name,
             order_id=review.order_id,
             rating=review.rating,
             comment=review.comment,
@@ -105,6 +106,7 @@ class ReviewRepository:
             id=model.id,
             product_id=model.product_id,
             user_id=model.user_id,
+            user_name=model.user_name,
             order_id=model.order_id,
             rating=model.rating,
             comment=model.comment,

@@ -17,6 +17,7 @@ class ReviewResponse(BaseModel):
     id: int
     product_id: int
     user_id: str
+    user_name: str
     order_id: int
     rating: int
     comment: Optional[str]

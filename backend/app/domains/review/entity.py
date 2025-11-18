@@ -13,6 +13,7 @@ class Review:
     id: Optional[int]
     product_id: int
     user_id: str  # UUID from identity system
+    user_name: str  # Reviewer's full name (denormalized)
     order_id: int
     rating: int  # 1-5 stars
     comment: Optional[str]

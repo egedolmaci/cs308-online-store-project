@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
-from typing import Literal
+from typing import Literal, Optional
 
 Role = Literal["customer", "sales_manager", "product_manager", "support_agent"]
 
@@ -8,6 +8,7 @@ class UserCreate(BaseModel):
     last_name: str = Field(min_length=1, max_length=100)
     email: EmailStr
     password: str = Field(min_length=8)
+    address: Optional[str] = Field(None, max_length=500)
 
 class UserRead(BaseModel):
     id: str
@@ -15,6 +16,7 @@ class UserRead(BaseModel):
     last_name: str
     email: EmailStr
     role: Role
+    address: Optional[str] = None
 
 class LoginRequest(BaseModel):
     email: EmailStr
@@ -30,3 +32,4 @@ class LoginResponse(BaseModel):
     last_name: str
     email: EmailStr
     role: Role
+    address: Optional[str] = None

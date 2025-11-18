@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.infrastructure.database.sqlite.session import get_db
-from app.domains.review.schemas import ReviewCreate, ReviewResponse, ReviewApprovalAction
+from app.domains.review.schemas import ReviewCreate, ReviewResponse
 from app.domains.review import use_cases
 from app.domains.identity.repository import User
 from app.api.endpoints.auth import require_roles
@@ -19,7 +19,6 @@ router = APIRouter(prefix="/api/v1", tags=["Reviews"])
 def create_product_review(
     product_id: int,
     review_data: ReviewCreate,
-    order_id: int,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles("customer")),
 ):
@@ -28,40 +27,42 @@ def create_product_review(
 
     Requirements:
     - User must have purchased the product in a delivered order
-    - Cannot review the same product from the same order twice
+    - User can only review each product once
     - Ratings are automatically approved
     - Comments require product manager approval
 
     Args:
         product_id: ID of the product to review
         review_data: Review data (rating and optional comment)
-        order_id: ID of the delivered order containing the product
         current_user: Authenticated user
 
     Returns:
         Created review details
 
     Raises:
-        400: If validation fails (order not delivered, product not in order, already reviewed)
+        400: If validation fails (no delivered order with product, already reviewed)
         401: If not authenticated
         403: If not a customer
     """
     logger.info(f"POST /api/v1/products/{product_id}/reviews - User {current_user.id} creating review")
 
+    # Construct full name from user
+    user_name = f"{current_user.first_name} {current_user.last_name}"
+
     review = use_cases.create_review(
         db=db,
         user_id=current_user.id,
+        user_name=user_name,
         product_id=product_id,
-        order_id=order_id,
         rating=review_data.rating,
         comment=review_data.comment,
     )
 
     if not review:
-        logger.warning(f"Review creation failed for user {current_user.id}, product {product_id}, order {order_id}")
+        logger.warning(f"Review creation failed for user {current_user.id}, product {product_id}")
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Cannot create review. Ensure: 1) Order is delivered, 2) Product is in the order, 3) You haven't already reviewed this product from this order"
+            detail="Cannot create review. You must have purchased this product in a delivered order and not already reviewed it."
         )
 
     logger.info(f"Review {review.id} created successfully (approved={review.is_approved})")
@@ -144,55 +145,72 @@ def get_my_reviews(
 @router.patch("/reviews/{review_id}/approve", response_model=ReviewResponse)
 def approve_review(
     review_id: int,
-    approval_data: ReviewApprovalAction,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles("product_manager")),
 ):
     """
-    Approve or reject a review (product managers only).
+    Approve a review (product managers only).
 
     Args:
-        review_id: ID of the review
-        approval_data: Approval decision (true=approve, false=reject)
+        review_id: ID of the review to approve
         current_user: Authenticated product manager
 
     Returns:
-        Updated review (if approved) or success message (if rejected)
+        Approved review
 
     Raises:
         404: If review not found
         401: If not authenticated
         403: If not a product manager
     """
-    logger.info(f"PATCH /api/v1/reviews/{review_id}/approve - Manager {current_user.id} {'approving' if approval_data.approved else 'rejecting'}")
+    logger.info(f"PATCH /api/v1/reviews/{review_id}/approve - Manager {current_user.id} approving review")
 
-    if approval_data.approved:
-        # Approve the review
-        review = use_cases.approve_review(db, review_id, current_user.id)
-        if not review:
-            logger.warning(f"Review {review_id} not found")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Review {review_id} not found"
-            )
-
-        logger.info(f"Review {review_id} approved successfully")
-        return review
-    else:
-        # Reject (delete) the review
-        success = use_cases.reject_review(db, review_id)
-        if not success:
-            logger.warning(f"Review {review_id} not found")
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail=f"Review {review_id} not found"
-            )
-
-        logger.info(f"Review {review_id} rejected and deleted")
+    review = use_cases.approve_review(db, review_id, current_user.id)
+    if not review:
+        logger.warning(f"Review {review_id} not found")
         raise HTTPException(
-            status_code=status.HTTP_204_NO_CONTENT,
-            detail="Review rejected"
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Review {review_id} not found"
         )
+
+    logger.info(f"Review {review_id} approved successfully")
+    return review
+
+
+@router.delete("/reviews/{review_id}/reject", status_code=status.HTTP_204_NO_CONTENT)
+def reject_review(
+    review_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("product_manager")),
+):
+    """
+    Reject a review (product managers only).
+    This will delete the review permanently.
+
+    Args:
+        review_id: ID of the review to reject
+        current_user: Authenticated product manager
+
+    Returns:
+        No content (204)
+
+    Raises:
+        404: If review not found
+        401: If not authenticated
+        403: If not a product manager
+    """
+    logger.info(f"DELETE /api/v1/reviews/{review_id}/reject - Manager {current_user.id} rejecting review")
+
+    success = use_cases.reject_review(db, review_id)
+    if not success:
+        logger.warning(f"Review {review_id} not found")
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Review {review_id} not found"
+        )
+
+    logger.info(f"Review {review_id} rejected and deleted successfully")
+    return None
 
 
 @router.get("/reviews/{review_id}", response_model=ReviewResponse)
