@@ -1,16 +1,20 @@
+import uuid
 from sqlalchemy.orm import Session
 from app.infrastructure.database.sqlite.models.product import ProductModel
 from app.infrastructure.database.sqlite.models.category import CategoryModel
+from app.infrastructure.database.sqlite.models.user import UserModel
 from app.infrastructure.database.sqlite.seed_data import PRODUCTS, CATEGORIES
+from app.core.security import hash_password
 from app.core.logging import logger
 
 
 def seed_database(db: Session) -> None:
-    """Seed database with initial categories and products"""
+    """Seed database with initial categories, products, and users"""
 
     # Check if database is already seeded
     existing_product_count = db.query(ProductModel).count()
     existing_category_count = db.query(CategoryModel).count()
+    existing_user_count = db.query(UserModel).count()
 
     if existing_product_count > 0 or existing_category_count > 0:
         logger.info(
@@ -22,7 +26,37 @@ def seed_database(db: Session) -> None:
     logger.info("Database is empty. Seeding with initial data...")
 
     try:
-        # Seed categories first
+        # Seed users first
+        logger.info("Seeding users...")
+        seed_users = [
+            {
+                "id": str(uuid.uuid4()),
+                "first_name": "Prod",
+                "last_name": "Manager",
+                "email": "manager@example.com",
+                "password_hash": hash_password("12345678"),
+                "address": "123 Manager Rd, Business City",
+                "role": "product_manager",
+            },
+            {
+                "id": str(uuid.uuid4()),
+                "first_name": "Sales",
+                "last_name": "Manager",
+                "email": "sales@example.com",
+                "password_hash": hash_password("12345678"),
+                "address": "123 Sales St, Commerce City",
+                "role": "sales_manager",
+            },
+        ]
+
+        for user_data in seed_users:
+            user = UserModel(**user_data)
+            db.add(user)
+
+        db.commit()
+        logger.info(f"Successfully seeded {len(seed_users)} users!")
+
+        # Seed categories
         logger.info("Seeding categories...")
         category_map = {}  # Map category name to ID
         for category_name in CATEGORIES:

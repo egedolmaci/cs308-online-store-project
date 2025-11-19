@@ -3,12 +3,11 @@ from dataclasses import dataclass
 import uuid
 
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
 from sqlalchemy import inspect
 from app.infrastructure.database.sqlite.session import SessionLocal, engine
+from app.core.logging import logger
 
 from app.core.security import hash_password, verify_password
-from app.infrastructure.database.sqlite.session import SessionLocal
 from app.infrastructure.database.sqlite.models.user import UserModel
 
 @dataclass
@@ -37,23 +36,43 @@ class SQLAlchemyUserRepository:
         )
 
     def _ensure_seed_user(self):
+        """Ensure seed users exist - protects against accidental deletion"""
         # Skip if table doesn't exist yet (import happens before startup)
         if not inspect(engine).has_table("users"):
             return
+
         with SessionLocal() as db:
+            # Ensure product manager exists
             existing = db.query(UserModel).filter(UserModel.email == "manager@example.com").first()
-            if existing:
-                return
-            seeded = UserModel(
-                id=str(uuid.uuid4()),
-                first_name="Prod",
-                last_name="Manager",
-                email="manager@example.com",
-                password_hash=hash_password("Password123!"),
-                role="product_manager",
-            )
-            db.add(seeded)
-            db.commit()
+            if not existing:
+                logger.info("Re-creating missing product manager user")
+                seeded = UserModel(
+                    id=str(uuid.uuid4()),
+                    first_name="Prod",
+                    last_name="Manager",
+                    email="manager@example.com",
+                    password_hash=hash_password("12345678"),
+                    address="123 Manager Rd, Business City",
+                    role="product_manager",
+                )
+                db.add(seeded)
+                db.commit()
+
+            # Ensure sales manager exists
+            existing = db.query(UserModel).filter(UserModel.email == "sales@example.com").first()
+            if not existing:
+                logger.info("Re-creating missing sales manager user")
+                seeded = UserModel(
+                    id=str(uuid.uuid4()),
+                    first_name="Sales",
+                    last_name="Manager",
+                    email="sales@example.com",
+                    password_hash=hash_password("12345678"),
+                    address="123 Sales St, Commerce City",
+                    role="sales_manager",
+                )
+                db.add(seeded)
+                db.commit()
 
     def create_user(self, first_name: str, last_name: str, email: str, password: str, role: str = "customer", address: Optional[str] = None) -> User:
         email_l = email.lower()
