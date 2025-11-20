@@ -21,6 +21,13 @@ class Settings(BaseSettings):
     COOKIE_SAMESITE: str = "lax"
     COOKIE_PATH: str = "/"
 
+    SMTP_HOST: str | None = None
+    SMTP_PORT: int = 587
+    SMTP_USERNAME: str | None = None
+    SMTP_PASSWORD: str | None = None
+    SMTP_STARTTLS: bool = True
+    EMAIL_FROM: str = "no-reply@example.com"
+
     class Config:
         env_file = ".env"
         extra = "ignore"
