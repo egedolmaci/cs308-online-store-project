@@ -50,6 +50,10 @@ class OrderRepository:
         orders = query.order_by(OrderModel.created_at.desc()).all()
         return [self._to_entity(o) for o in orders]
 
+    def get_all_orders(self, customer_id: Optional[str] = None) -> List[Order]:
+        """Compatibility wrapper for domains that still call get_all_orders."""
+        return self.get_all(customer_id)
+
     def get_by_id(self, order_id: int) -> Optional[Order]:
         """Retrieve a single order by ID."""
         order = self.db.query(OrderModel).filter(OrderModel.id == order_id).first()
