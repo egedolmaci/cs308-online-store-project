@@ -1,5 +1,5 @@
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status, Query
+from fastapi import APIRouter, Depends, HTTPException, status, Query, BackgroundTasks
 from sqlalchemy.orm import Session
 
 from app.infrastructure.database.sqlite.session import get_db
@@ -13,6 +13,7 @@ from app.domains.order.schemas import (
 from app.domains.order import use_cases
 from app.api.endpoints.auth import get_current_user, require_roles
 from app.domains.identity.repository import User
+from app.infrastructure.notifications.invoice_email import send_order_invoice_email
 
 router = APIRouter(prefix="/api/v1/orders", tags=["orders"])
 
@@ -20,6 +21,7 @@ router = APIRouter(prefix="/api/v1/orders", tags=["orders"])
 @router.post("", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
 def create_order(
     order_data: OrderCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: User = Depends(require_roles("customer")),
 ):
@@ -53,6 +55,9 @@ def create_order(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Failed to create order. Check product availability and stock.",
         )
+    
+    customer_name = f"{current_user.first_name} {current_user.last_name}".strip()
+    background_tasks.add_task(send_order_invoice_email, order, current_user.email, customer_name)
 
     return order
 
