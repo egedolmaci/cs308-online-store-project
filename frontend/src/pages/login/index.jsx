@@ -1,11 +1,12 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { loginUser } from "../../store/slices/userSlice";
 
 const Login = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation();
   const loginError = useSelector((state) => state.user.error);
   const [formData, setFormData] = useState({
     email: "",
@@ -73,7 +74,10 @@ const Login = () => {
 
     console.log(result.type);
     if (result.type === "user/login/fulfilled") {
-      navigate("/store");
+      // Navigate to redirect target if provided (e.g., /login?redirect=/cart)
+      const params = new URLSearchParams(location.search);
+      const redirectTo = params.get("redirect");
+      navigate(redirectTo || "/store", { replace: true });
     }
   };
 

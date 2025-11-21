@@ -1,14 +1,19 @@
 import { useNavigate } from "react-router-dom";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../../store/slices/cartSlice";
 
 const RelatedProducts = ({ products }) => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
+  const cartItems = useSelector((state) => state.cart.items);
 
   const handleAddToCart = (product, e) => {
     e.stopPropagation();
-    dispatch(addToCart(product));
+    const inCart = cartItems.find((i) => i.id === product.id)?.quantity || 0;
+    const availableLeft = Math.max(0, (product.stock ?? 0) - inCart);
+    if (availableLeft > 0) {
+      dispatch(addToCart(product));
+    }
   };
 
   const handleProductClick = (productId) => {
@@ -121,30 +126,36 @@ const RelatedProducts = ({ products }) => {
                     {product.stock > 0 ? "In stock" : "Unavailable"}
                   </p>
                 </div>
-                <button
-                  onClick={(e) => handleAddToCart(product, e)}
-                  disabled={product.stock === 0}
-                  className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 ${
-                    product.stock === 0
-                      ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                      : "bg-gray-900 text-white hover:bg-gray-800 hover:shadow-lg active:scale-95"
-                  }`}
-                >
-                  <svg
-                    className="w-4 h-4"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                    />
-                  </svg>
-                  <span>Add</span>
-                </button>
+                {(() => {
+                  const inCart = cartItems.find((i) => i.id === product.id)?.quantity || 0;
+                  const availableLeft = Math.max(0, (product.stock ?? 0) - inCart);
+                  return (
+                    <button
+                      onClick={(e) => handleAddToCart(product, e)}
+                      disabled={availableLeft === 0}
+                      className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl font-bold text-sm transition-all duration-300 ${
+                        availableLeft === 0
+                          ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                          : "bg-gray-900 text-white hover:bg-gray-800 hover:shadow-lg active:scale-95"
+                      }`}
+                    >
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                        />
+                      </svg>
+                      <span>{availableLeft === 0 ? "Max Reached" : "Add"}</span>
+                    </button>
+                  );
+                })()}
               </div>
             </div>
           </div>
