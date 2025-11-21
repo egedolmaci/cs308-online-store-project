@@ -1,21 +1,27 @@
 import { useState } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../../store/slices/cartSlice";
 
 const ProductInfo = ({ product }) => {
   const dispatch = useDispatch();
+  const inCart = useSelector(
+    (state) => state.cart.items.find((i) => i.id === product.id)?.quantity || 0
+  );
+  const availableLeft = Math.max(0, (product.stock ?? 0) - inCart);
   const [quantity, setQuantity] = useState(1);
   const [showAddedMessage, setShowAddedMessage] = useState(false);
 
   const handleQuantityChange = (delta) => {
     const newQuantity = quantity + delta;
-    if (newQuantity >= 1 && newQuantity <= product.stock) {
+    if (newQuantity >= 1 && newQuantity <= availableLeft) {
       setQuantity(newQuantity);
     }
   };
 
   const handleAddToCart = () => {
-    for (let i = 0; i < quantity; i++) {
+    const toAdd = Math.min(quantity, availableLeft);
+    if (toAdd <= 0) return;
+    for (let i = 0; i < toAdd; i++) {
       dispatch(addToCart(product));
     }
     setShowAddedMessage(true);
@@ -85,15 +91,13 @@ const ProductInfo = ({ product }) => {
               </span>
               <button
                 onClick={() => handleQuantityChange(1)}
-                disabled={quantity >= product.stock}
+                disabled={quantity >= availableLeft}
                 className="px-6 py-4 hover:bg-gray-100 active:bg-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-all duration-300 font-bold text-xl"
               >
                 +
               </button>
             </div>
-            <span className="text-sm text-gray-500">
-              Max: {product.stock} items
-            </span>
+            <span className="text-sm text-gray-500">Max: {availableLeft} items</span>
           </div>
         </div>
 
@@ -101,7 +105,7 @@ const ProductInfo = ({ product }) => {
         <div className="space-y-3">
           <button
             onClick={handleAddToCart}
-            disabled={product.stock === 0}
+            disabled={availableLeft === 0}
             className={`w-full flex items-center justify-center gap-3 px-8 py-5 rounded-2xl font-bold text-lg transition-all duration-300 ${
               product.stock === 0
                 ? "bg-gray-200 text-gray-400 cursor-not-allowed"

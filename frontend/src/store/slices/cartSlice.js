@@ -15,26 +15,31 @@ const cartSlice = createSlice({
       const existingItem = state.items.find((item) => item.id === newItem.id);
 
       if (existingItem) {
-        // If item exists, increase quantity
-        existingItem.quantity++;
-        existingItem.totalPrice = existingItem.quantity * existingItem.price;
+        // If item exists, increase quantity only if under stock limit
+        if (existingItem.quantity < existingItem.stock) {
+          existingItem.quantity++;
+          existingItem.totalPrice = existingItem.quantity * existingItem.price;
+          state.totalQuantity++;
+          state.totalAmount += existingItem.price;
+        }
       } else {
-        // Add new item to cart
-        state.items.push({
-          id: newItem.id,
-          name: newItem.name,
-          price: newItem.price,
-          quantity: 1,
-          totalPrice: newItem.price,
-          image: newItem.image,
-          model: newItem.model,
-          stock: newItem.stock,
-          category: newItem.category,
-        });
+        // Add new item to cart only if there is stock
+        if (newItem.stock > 0) {
+          state.items.push({
+            id: newItem.id,
+            name: newItem.name,
+            price: newItem.price,
+            quantity: 1,
+            totalPrice: newItem.price,
+            image: newItem.image,
+            model: newItem.model,
+            stock: newItem.stock,
+            category: newItem.category,
+          });
+          state.totalQuantity++;
+          state.totalAmount += newItem.price;
+        }
       }
-
-      state.totalQuantity++;
-      state.totalAmount += newItem.price;
     },
 
     removeFromCart: (state, action) => {
