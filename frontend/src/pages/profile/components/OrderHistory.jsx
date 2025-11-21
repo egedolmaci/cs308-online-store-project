@@ -2,6 +2,7 @@ import OrderDetails from "./OrderDetails";
 import { ORDER_STATUS_LABELS } from "../../../constants";
 import { setCurrentOrder } from "../../../store/slices/ordersSlice";
 import { useDispatch, useSelector } from "react-redux";
+import EmptyState from "../../../ui/components/EmptyState";
 
 const OrderHistory = ({ orders }) => {
   const selectedOrder = useSelector((state) => state.orders.currentOrder);
@@ -24,7 +25,13 @@ const OrderHistory = ({ orders }) => {
         <h2 className="text-2xl font-bold text-gray-900">Order History</h2>
         <p className="text-sm text-gray-500">{orders.length} total orders</p>
       </div>
-
+      {orders.length === 0 && (
+        <EmptyState
+          title="No orders found"
+          description="You haven't placed any orders yet. Start shopping to see your order history here."
+          icon="inbox"
+        />
+      )}
       <div className="space-y-4">
         {orders.map((order) => (
           <div
