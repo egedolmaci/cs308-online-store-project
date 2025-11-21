@@ -1,5 +1,5 @@
 import { useSelector, useDispatch } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import CartItemCard from "./components/CartItemCard";
 import CartSummary from "./components/CartSummary";
 import EmptyCart from "./components/EmptyCart";
@@ -11,11 +11,18 @@ import { clearCart } from "../../store/slices/cartSlice";
 
 const Cart = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { items, totalQuantity } = useSelector((state) => state.cart);
+  const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
 
   const handleCheckout = () => {
-    dispatch(setModal(
-      { name: MODAL_NAMES.BANKING_MODAL }));
+    // If not logged in, redirect to login and return to cart after login
+    if (!isAuthenticated) {
+      navigate(`/login?redirect=${encodeURIComponent('/cart')}`);
+      return;
+    }
+    // Otherwise, proceed to payment modal
+    dispatch(setModal({ name: MODAL_NAMES.BANKING_MODAL }));
   };
 
   const handleClearCart = async () => {
