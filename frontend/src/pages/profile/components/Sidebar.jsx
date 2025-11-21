@@ -9,8 +9,6 @@ const Sidebar = ({
     { id: "dashboard", label: "Dashboard", icon: "dashboard" },
     { id: "orders", label: "Order History", icon: "orders" },
     { id: "personal", label: "Personal Details", icon: "personal" },
-    { id: "addresses", label: "Shipping Addresses", icon: "addresses" },
-    { id: "settings", label: "Settings", icon: "settings", badge: "Soon" },
   ];
 
   const getIcon = (iconType) => {

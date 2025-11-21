@@ -6,8 +6,6 @@ import Sidebar from "./components/Sidebar";
 import Dashboard from "./components/Dashboard";
 import OrderHistory from "./components/OrderHistory";
 import PersonalDetails from "./components/PersonalDetails";
-import Addresses from "./components/Addresses";
-import Settings from "./components/Settings";
 import { fetchUserOrders } from "../../store/slices/ordersSlice";
 
 const Profile = () => {
@@ -24,39 +22,14 @@ const Profile = () => {
     dispatch(fetchUserOrders());
   }, [dispatch]);
 
-  // Mock addresses
-  const [addresses, setAddresses] = useState([
-    {
-      id: 1,
-      type: "Home",
-      name: "John Doe",
-      street: "123 Fashion Avenue",
-      city: "New York",
-      state: "NY",
-      zip: "10001",
-      country: "USA",
-      isDefault: true,
-    },
-    {
-      id: 2,
-      type: "Office",
-      name: "John Doe",
-      street: "456 Business Blvd",
-      city: "Brooklyn",
-      state: "NY",
-      zip: "11201",
-      country: "USA",
-      isDefault: false,
-    },
-  ]);
-
-  const handleDeleteAddress = (addressId) => {
-    if (
-      window.confirm("Are you sure you want to delete this shipping address?")
-    ) {
-      setAddresses(addresses.filter((addr) => addr.id !== addressId));
-    }
-  };
+  // User's single address
+  const [address, setAddress] = useState({
+    street: "123 Fashion Avenue",
+    city: "New York",
+    state: "NY",
+    zip: "10001",
+    country: "USA",
+  });
 
   const handleLogout = () => {
     dispatch(logoutUser());
@@ -70,29 +43,20 @@ const Profile = () => {
           <Dashboard
             user={user}
             orders={orders}
-            addresses={addresses}
+            address={address}
             setActiveSection={setActiveSection}
           />
         );
       case "orders":
         return <OrderHistory orders={orders} />;
       case "personal":
-        return <PersonalDetails user={user} />;
-      case "addresses":
-        return (
-          <Addresses
-            addresses={addresses}
-            onDeleteAddress={handleDeleteAddress}
-          />
-        );
-      case "settings":
-        return <Settings />;
+        return <PersonalDetails user={user} address={address} />;
       default:
         return (
           <Dashboard
             user={user}
             orders={orders}
-            addresses={addresses}
+            address={address}
             setActiveSection={setActiveSection}
           />
         );
