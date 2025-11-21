@@ -1,6 +1,6 @@
 import { ORDER_STATUS_LABELS } from "../../../constants";
 
-const Dashboard = ({ user, orders, addresses, setActiveSection }) => {
+const Dashboard = ({ user, orders, address, setActiveSection }) => {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
@@ -69,7 +69,7 @@ const Dashboard = ({ user, orders, addresses, setActiveSection }) => {
           </div>
         </div>
 
-        {/* Saved Addresses */}
+        {/* Shipping Address Status */}
         <div className="bg-white rounded-3xl p-6 shadow-lg border border-sand/20 hover:shadow-xl transition-shadow duration-300">
           <div className="flex items-center gap-4">
             <div className="w-12 h-12 bg-linear-to-br from-sage to-linen rounded-2xl flex items-center justify-center">
@@ -88,10 +88,10 @@ const Dashboard = ({ user, orders, addresses, setActiveSection }) => {
               </svg>
             </div>
             <div>
-              <p className="text-2xl font-bold text-gray-900">
-                {addresses.length}
+              <p className="text-lg font-bold text-gray-900">
+                {address?.city ? `${address.city}, ${address.state}` : "Not Set"}
               </p>
-              <p className="text-sm text-gray-500">Saved Addresses</p>
+              <p className="text-sm text-gray-500">Shipping Address</p>
             </div>
           </div>
         </div>
