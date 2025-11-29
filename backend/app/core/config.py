@@ -28,6 +28,12 @@ class Settings(BaseSettings):
     SMTP_STARTTLS: bool = True
     EMAIL_FROM: str = "no-reply@example.com"
 
+    SUPPORT_ATTACHMENT_DIR: str = "./storage/support_attachments"
+    SUPPORT_ATTACHMENT_MAX_MB: int = 15
+    SUPPORT_ALLOWED_MIME_PREFIXES: List[str] = ["image/", "video/", "application/pdf"]
+    SUPPORT_HISTORY_LIMIT: int = 50
+    SUPPORT_QUEUE_LIMIT: int = 50
+
     class Config:
         env_file = ".env"
         extra = "ignore"

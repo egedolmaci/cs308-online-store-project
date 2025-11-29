@@ -58,6 +58,22 @@ class SQLAlchemyUserRepository:
                 db.add(seeded)
                 db.commit()
 
+            # Ensure support agent exists
+            existing = db.query(UserModel).filter(UserModel.email == "support@example.com").first()
+            if not existing:
+                logger.info("Re-creating missing support agent user")
+                seeded = UserModel(
+                    id=str(uuid.uuid4()),
+                    first_name="Support",
+                    last_name="Agent",
+                    email="support@example.com",
+                    password_hash=hash_password("12345678"),
+                    address="456 Helpdesk Rd, Service City",
+                    role="support_agent",
+                )
+                db.add(seeded)
+                db.commit()
+
             # Ensure sales manager exists
             existing = db.query(UserModel).filter(UserModel.email == "sales@example.com").first()
             if not existing:
