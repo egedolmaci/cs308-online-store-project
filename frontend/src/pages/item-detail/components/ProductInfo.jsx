@@ -16,6 +16,9 @@ const ProductInfo = ({ product }) => {
     if (newQuantity >= 1 && newQuantity <= availableLeft) {
       setQuantity(newQuantity);
     }
+    else {
+      setQuantity(1);
+    }
   };
 
   const handleAddToCart = () => {
@@ -106,11 +109,10 @@ const ProductInfo = ({ product }) => {
           <button
             onClick={handleAddToCart}
             disabled={availableLeft === 0}
-            className={`w-full flex items-center justify-center gap-3 px-8 py-5 rounded-2xl font-bold text-lg transition-all duration-300 ${
-              product.stock === 0
+            className={`w-full flex items-center justify-center gap-3 px-8 py-5 rounded-2xl font-bold text-lg transition-all duration-300 ${product.stock === 0
                 ? "bg-gray-200 text-gray-400 cursor-not-allowed"
                 : "bg-gray-900 text-white hover:bg-gray-800 hover:shadow-2xl active:scale-98 shadow-xl"
-            }`}
+              }`}
           >
             <svg
               className="w-6 h-6"

@@ -21,6 +21,7 @@ const cartSlice = createSlice({
           existingItem.totalPrice = existingItem.quantity * existingItem.price;
           state.totalQuantity++;
           state.totalAmount += existingItem.price;
+          state.totalAmount = Math.max(0, state.totalAmount);
         }
       } else {
         // Add new item to cart only if there is stock
@@ -38,6 +39,7 @@ const cartSlice = createSlice({
           });
           state.totalQuantity++;
           state.totalAmount += newItem.price;
+          state.totalAmount = Math.max(0, state.totalAmount);
         }
       }
     },
@@ -50,6 +52,7 @@ const cartSlice = createSlice({
         state.totalQuantity -= existingItem.quantity;
         state.totalAmount -= existingItem.totalPrice;
         state.items = state.items.filter((item) => item.id !== id);
+        state.totalAmount = Math.max(0, state.totalAmount);
       }
     },
 
@@ -62,6 +65,7 @@ const cartSlice = createSlice({
         existingItem.totalPrice = existingItem.quantity * existingItem.price;
         state.totalQuantity++;
         state.totalAmount += existingItem.price;
+        state.totalAmount = Math.max(0, state.totalAmount);
       }
     },
 
@@ -75,11 +79,13 @@ const cartSlice = createSlice({
           state.totalQuantity--;
           state.totalAmount -= existingItem.price;
           state.items = state.items.filter((item) => item.id !== id);
+          state.totalAmount = Math.max(0, state.totalAmount);
         } else {
           existingItem.quantity--;
           existingItem.totalPrice = existingItem.quantity * existingItem.price;
           state.totalQuantity--;
           state.totalAmount -= existingItem.price;
+          state.totalAmount = Math.max(0, state.totalAmount);
         }
       }
     },
@@ -94,6 +100,7 @@ const cartSlice = createSlice({
         existingItem.totalPrice = existingItem.quantity * existingItem.price;
         state.totalQuantity += quantityDiff;
         state.totalAmount += quantityDiff * existingItem.price;
+        state.totalAmount = Math.max(0, state.totalAmount);
       }
     },
 
