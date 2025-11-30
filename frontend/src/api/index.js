@@ -96,6 +96,10 @@ export const ordersAPI = {
     );
     return response.data;
   },
+  fetchAllOrders: async () => {
+    const response = await apiClient.get(`${API_ENDPOINTS.ORDERS}/all`);
+    return response.data;
+  },
 };
 
 // Auth API methods

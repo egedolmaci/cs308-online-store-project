@@ -6,6 +6,8 @@ import Dashboard from "./components/Dashboard";
 import SalesManagerView from "./components/SalesManagerView";
 import ProductManagerView from "./components/ProductManagerView";
 import SupportAgentView from "./components/SupportAgentView";
+import ReviewsManagement from "./components/ReviewsManagement";
+import OrdersManagement from "./components/OrdersManagement";
 import { USER_ROLES } from "../../constants";
 
 const Management = () => {
@@ -43,6 +45,16 @@ const Management = () => {
       case "products":
         if (userRole === USER_ROLES.PRODUCT_MANAGER) {
           return <ProductManagerView />;
+        }
+        return <Dashboard userRole={userRole} setActiveSection={setActiveSection} />;
+      case "reviews":
+        if (userRole === USER_ROLES.PRODUCT_MANAGER) {
+          return <ReviewsManagement />;
+        }
+        return <Dashboard userRole={userRole} setActiveSection={setActiveSection} />;
+      case "orders":
+        if (userRole === USER_ROLES.PRODUCT_MANAGER) {
+          return <OrdersManagement />;
         }
         return <Dashboard userRole={userRole} setActiveSection={setActiveSection} />;
       case "support":

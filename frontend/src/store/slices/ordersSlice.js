@@ -146,6 +146,20 @@ export const approveRefund = createAsyncThunk(
   }
 );
 
+export const fetchAllOrders = createAsyncThunk(
+  "orders/fetchAllOrders",
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await ordersAPI.fetchAllOrders();
+      return response;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to fetch all orders"
+      );
+    }
+  }
+);
+
 const ordersSlice = createSlice({
   name: "orders",
   initialState,
@@ -358,6 +372,20 @@ const ordersSlice = createSlice({
       })
       .addCase(approveRefund.rejected, (state, action) => {
         state.refundApproveStatus = "failed";
+        state.error = action.payload;
+      });
+    builder
+      .addCase(fetchAllOrders.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchAllOrders.fulfilled, (state, action) => {
+        state.loading = false;
+        state.orders = action.payload;
+        state.error = null;
+      })
+      .addCase(fetchAllOrders.rejected, (state, action) => {
+        state.loading = false;
         state.error = action.payload;
       });
   },

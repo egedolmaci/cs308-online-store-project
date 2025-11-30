@@ -1,6 +1,60 @@
-import { USER_ROLES, USER_ROLE_LABELS } from "../../../constants";
+import { useEffect, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { USER_ROLES, USER_ROLE_LABELS, ORDER_STATUSES } from "../../../constants";
+import { fetchAllOrders, selectOrders } from "../../../store/slices/ordersSlice";
+import { fetchProducts, selectProducts } from "../../../store/slices/productsSlice";
+import { getPendingReviews, selectPendingReviews } from "../../../store/slices/reviewsSlice";
 
 const Dashboard = ({ userRole, setActiveSection }) => {
+  const dispatch = useDispatch();
+
+  // Fetch data from Redux store
+  const orders = useSelector(selectOrders);
+  const products = useSelector(selectProducts);
+  const pendingReviews = useSelector(selectPendingReviews);
+
+  // Load data on mount
+  useEffect(() => {
+    if (userRole === USER_ROLES.SALES_MANAGER || userRole === USER_ROLES.PRODUCT_MANAGER) {
+      dispatch(fetchAllOrders());
+    }
+    if (userRole === USER_ROLES.PRODUCT_MANAGER) {
+      dispatch(fetchProducts());
+      dispatch(getPendingReviews());
+    }
+  }, [dispatch, userRole]);
+
+  // Calculate real statistics
+  const statistics = useMemo(() => {
+    const now = new Date();
+    const currentMonth = now.getMonth();
+    const currentYear = now.getFullYear();
+
+    // Calculate monthly orders
+    const monthlyOrders = orders.filter((order) => {
+      const orderDate = new Date(order.created_at);
+      return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
+    });
+
+    // Calculate total revenue
+    const totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+
+    // Calculate low stock items (stock < 10)
+    const lowStockItems = products.filter((product) => product.stock < 10);
+
+    // Calculate active deliveries (in-transit orders)
+    const activeDeliveries = orders.filter((order) => order.status === ORDER_STATUSES.IN_TRANSIT);
+
+    return {
+      totalRevenue,
+      monthlyOrders: monthlyOrders.length,
+      totalProducts: products.length,
+      lowStockItems: lowStockItems.length,
+      activeDeliveries: activeDeliveries.length,
+      pendingReviews: pendingReviews.length,
+    };
+  }, [orders, products, pendingReviews]);
+
   const getRoleSpecificContent = () => {
     switch (userRole) {
       case USER_ROLES.SALES_MANAGER:
@@ -29,19 +83,19 @@ const Dashboard = ({ userRole, setActiveSection }) => {
           stats: [
             {
               label: "Total Revenue",
-              value: "$45,231",
+              value: `$${statistics.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
               icon: "dollar",
               color: "from-sand to-sage",
             },
             {
               label: "Active Discounts",
-              value: "12",
+              value: "0",
               icon: "tag",
               color: "from-success-light to-success",
             },
             {
               label: "Monthly Orders",
-              value: "156",
+              value: statistics.monthlyOrders.toString(),
               icon: "orders",
               color: "from-sage to-linen",
             },
@@ -59,36 +113,42 @@ const Dashboard = ({ userRole, setActiveSection }) => {
               action: () => setActiveSection("products"),
             },
             {
-              label: "Manage Categories",
-              icon: "category",
-              description: "Organize product categories",
-              action: () => setActiveSection("products"),
+              label: "Review Moderation",
+              icon: "reviews",
+              description: "Approve pending reviews",
+              action: () => setActiveSection("reviews"),
             },
             {
               label: "Track Deliveries",
-              icon: "delivery",
+              icon: "orders",
               description: "Monitor order deliveries",
-              action: () => setActiveSection("products"),
+              action: () => setActiveSection("orders"),
             },
           ],
           stats: [
             {
               label: "Total Products",
-              value: "245",
+              value: statistics.totalProducts.toString(),
               icon: "product",
               color: "from-sand to-sage",
             },
             {
               label: "Low Stock Items",
-              value: "8",
+              value: statistics.lowStockItems.toString(),
               icon: "warning",
               color: "from-warning to-error",
             },
             {
               label: "Active Deliveries",
-              value: "23",
+              value: statistics.activeDeliveries.toString(),
               icon: "truck",
               color: "from-sage to-linen",
+            },
+            {
+              label: "Pending Reviews",
+              value: statistics.pendingReviews.toString(),
+              icon: "reviews",
+              color: "from-sand to-sage",
             },
           ],
         };
@@ -244,7 +304,7 @@ const Dashboard = ({ userRole, setActiveSection }) => {
           strokeLinecap="round"
           strokeLinejoin="round"
           strokeWidth={2}
-          d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
+          d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"
         />
       ),
       warning: (
@@ -279,6 +339,14 @@ const Dashboard = ({ userRole, setActiveSection }) => {
           d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
         />
       ),
+      reviews: (
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"
+        />
+      ),
     };
     return icons[iconType] || icons.product;
   };
@@ -295,7 +363,7 @@ const Dashboard = ({ userRole, setActiveSection }) => {
 
       {/* Quick Stats */}
       {content.stats.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className={`grid grid-cols-1 ${content.stats.length === 4 ? 'md:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-3'} gap-6`}>
           {content.stats.map((stat, index) => (
             <div
               key={index}
@@ -352,16 +420,6 @@ const Dashboard = ({ userRole, setActiveSection }) => {
               </div>
             </button>
           ))}
-        </div>
-      </div>
-
-      {/* Recent Activity Section */}
-      <div className="bg-white rounded-3xl p-8 shadow-lg border border-sand/20">
-        <h3 className="text-xl font-bold text-gray-900 mb-6">Recent Activity</h3>
-        <div className="space-y-4">
-          <p className="text-gray-500 text-center py-8">
-            No recent activity to display
-          </p>
         </div>
       </div>
     </div>
