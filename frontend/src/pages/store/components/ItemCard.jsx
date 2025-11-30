@@ -134,11 +134,10 @@ const ItemCard = ({ product }) => {
           <button
             onClick={handleAddToCart}
             disabled={availableLeft === 0}
-            className={`flex items-center gap-2 px-6 py-3.5 rounded-xl font-bold text-sm transition-all duration-300 ${
-              availableLeft === 0
-                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                : "bg-gray-900 text-white hover:bg-gray-800 hover:shadow-xl active:scale-95 shadow-lg"
-            }`}
+            className={`flex items-center gap-2 mx-4 px-6 py-3.5 rounded-xl font-bold text-sm transition-all duration-300 ${availableLeft === 0
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+              : "bg-gray-900 text-white hover:bg-gray-800 hover:shadow-xl active:scale-95 shadow-lg"
+              }`}
           >
             <svg
               className="w-5 h-5"
