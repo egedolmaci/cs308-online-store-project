@@ -60,11 +60,26 @@ export const createProduct = createAsyncThunk(
   }
 );
 
+export const applyDiscount = createAsyncThunk(
+  "products/applyDiscount",
+  async ({ productIds, discountRate }, { rejectWithValue }) => {
+    try {
+      const response = await productsAPI.applyDiscount(productIds, discountRate);
+      return response;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to apply discount"
+      );
+    }
+  }
+);
+
 const initialState = {
   items: [], // Array of products
   categories: [], // Available categories
   loading: false,
   error: null,
+  discountStatus: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
 };
 
 const productsSlice = createSlice({
@@ -156,6 +171,29 @@ const productsSlice = createSlice({
       .addCase(createProduct.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      .addCase(applyDiscount.pending, (state) => {
+        state.discountStatus = "loading";
+        state.error = null;
+      })
+      .addCase(applyDiscount.fulfilled, (state, action) => {
+        state.discountStatus = "succeeded";
+        // Update product prices in the items array
+        if (action.payload && Array.isArray(action.payload)) {
+          action.payload.forEach((updatedProduct) => {
+            const index = state.items.findIndex(
+              (item) => item.id === updatedProduct.id
+            );
+            if (index !== -1) {
+              state.items[index] = updatedProduct;
+            }
+          });
+        }
+        state.error = null;
+      })
+      .addCase(applyDiscount.rejected, (state, action) => {
+        state.discountStatus = "failed";
+        state.error = action.payload;
       });
   },
 });
@@ -168,5 +206,6 @@ export const selectProducts = (state) => state.products.items;
 export const selectProductsLoading = (state) => state.products.loading;
 export const selectProductsError = (state) => state.products.error;
 export const selectProductCategories = (state) => state.products.categories;
+export const selectDiscountStatus = (state) => state.products.discountStatus;
 
 export default productsSlice.reducer;
