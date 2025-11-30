@@ -65,19 +65,19 @@ const Dashboard = ({ userRole, setActiveSection }) => {
               label: "Manage Discounts",
               icon: "discount",
               description: "Apply discounts to products",
-              action: () => setActiveSection("sales"),
+              action: () => setActiveSection("discounts"),
             },
             {
               label: "View Invoices",
               icon: "invoice",
               description: "Generate and view reports",
-              action: () => setActiveSection("sales"),
+              action: () => setActiveSection("invoices"),
             },
             {
               label: "Financial Analysis",
               icon: "chart",
               description: "View revenue and profit",
-              action: () => setActiveSection("sales"),
+              action: () => setActiveSection("revenue"),
             },
           ],
           stats: [

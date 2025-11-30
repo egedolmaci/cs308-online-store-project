@@ -48,6 +48,14 @@ export const productsAPI = {
     const response = await apiClient.post(API_ENDPOINTS.PRODUCTS, productData);
     return response.data;
   },
+  // Apply discount to multiple products
+  applyDiscount: async (productIds, discountRate) => {
+    const response = await apiClient.patch(
+      `${API_ENDPOINTS.PRODUCTS}/discount`,
+      { product_ids: productIds, discount_rate: discountRate }
+    );
+    return response.data;
+  },
 };
 
 export const ordersAPI = {
