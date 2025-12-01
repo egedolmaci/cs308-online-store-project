@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Float, ForeignKey
+from sqlalchemy import Column, Integer, String, Float, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from app.infrastructure.database.sqlite.session import Base
 
@@ -21,6 +21,8 @@ class ProductModel(Base):
     rating = Column(Float, default=0.0, nullable=True)
     warranty_status = Column(String(100), nullable=True)
     distributor = Column(String(200), nullable=True)
+    discount_rate = Column(Float, default=0.0, nullable=False)      # percent 0–100
+    discount_active = Column(Boolean, default=False, nullable=False)
 
     # Relationship to CategoryModel
     category = relationship("CategoryModel", backref="products", lazy="joined")

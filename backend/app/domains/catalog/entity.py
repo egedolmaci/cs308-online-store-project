@@ -19,3 +19,6 @@ class Product:
     rating: Optional[float]
     warranty_status: Optional[str]
     distributor: Optional[str]
+    discount_rate: float = 0.0
+    discount_active: bool = False
+    final_price: Optional[float] = None 
