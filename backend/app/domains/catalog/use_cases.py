@@ -62,3 +62,16 @@ def update_product(db: Session, product_id: int, updates: dict) -> Optional[Prod
     """
     repository = ProductRepository(db)
     return repository.update(product_id, updates)
+
+
+def apply_discount(db: Session, product_ids: List[int], discount_rate: float) -> List[Product]:
+    """
+    Apply a percentage discount to multiple products.
+    """
+    repository = ProductRepository(db)
+    return repository.apply_discount(product_ids, discount_rate)
+
+
+def clear_discount(db: Session, product_ids: List[int]) -> List[Product]:
+    repository = ProductRepository(db)
+    return repository.clear_discount(product_ids)

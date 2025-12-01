@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.infrastructure.database.sqlite.session import get_db
-from app.domains.catalog.schemas import ProductResponse, ProductUpdate
+from app.domains.catalog.schemas import ProductResponse, ProductUpdate, ProductDiscountRequest, ProductDiscountClearRequest
 from app.domains.catalog import use_cases
 
 router = APIRouter(prefix="/api/v1/products", tags=["products"])
@@ -99,3 +99,40 @@ def update_product(
             detail=f"Product with id {product_id} not found"
         )
     return updated_product
+
+
+@router.patch("/discount", response_model=List[ProductResponse])
+def apply_discount(discount_request: ProductDiscountRequest, db: Session = Depends(get_db)):
+    """
+    Apply a percentage discount to multiple products and return the updated products.
+    """
+    try:
+        updated_products = use_cases.apply_discount(
+            db,
+            discount_request.product_ids,
+            discount_request.discount_rate,
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+    if not updated_products:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No products found for the provided IDs",
+        )
+
+    return updated_products
+
+
+@router.patch("/discount/clear", response_model=List[ProductResponse])
+def clear_discount(discount_request: ProductDiscountClearRequest, db: Session = Depends(get_db)):
+    cleared_products = use_cases.clear_discount(db, discount_request.product_ids)
+    if not cleared_products:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No products found for the provided IDs",
+        )
+    return cleared_products

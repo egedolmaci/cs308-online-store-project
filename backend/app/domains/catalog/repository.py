@@ -43,21 +43,63 @@ class ProductRepository:
         self.db.commit()
         self.db.refresh(product)
         return self._to_entity(product)
+    
+    def apply_discount(self, product_ids: List[int], discount_rate: float) -> List[Product]:
+        """Set discount metadata without overwriting base price."""
+        if discount_rate <= 0 or discount_rate > 100:
+            raise ValueError("discount_rate must be between 0 and 100")
+
+        products = self.db.query(ProductModel).filter(ProductModel.id.in_(product_ids)).all()
+        if not products:
+            return []
+
+        for product in products:
+            product.discount_rate = discount_rate
+            product.discount_active = True
+
+        self.db.commit()
+        for product in products:
+            self.db.refresh(product)
+
+        return [self._to_entity(p) for p in products]
+
+    def clear_discount(self, product_ids: List[int]) -> List[Product]:
+        products = self.db.query(ProductModel).filter(ProductModel.id.in_(product_ids)).all()
+        if not products:
+            return []
+
+        for product in products:
+            product.discount_rate = 0.0
+            product.discount_active = False
+
+        self.db.commit()
+        for product in products:
+            self.db.refresh(product)
+
+        return [self._to_entity(p) for p in products]
+   
 
     def _to_entity(self, model: ProductModel) -> Product:
-        """Convert SQLAlchemy model to domain entity."""
+        final_price = (
+            round(model.price * (1 - model.discount_rate / 100), 2)
+            if model.discount_active and model.discount_rate > 0
+            else model.price
+        )
         return Product(
             id=model.id,
             name=model.name,
             model=model.model,
             serial_number=model.serial_number,
             description=model.description,
-            price=model.price,
+            price=model.price,  # base
             stock=model.stock,
             category_id=model.category_id,
-            category=model.category.name,  # Extract category name from relationship
+            category=model.category.name,
             image=model.image,
             rating=model.rating,
             warranty_status=model.warranty_status,
             distributor=model.distributor,
+            discount_rate=model.discount_rate,
+            discount_active=model.discount_active,
+            final_price=final_price,
         )
