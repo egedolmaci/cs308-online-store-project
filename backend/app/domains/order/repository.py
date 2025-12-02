@@ -2,6 +2,7 @@ from typing import List, Optional
 from datetime import datetime
 from sqlalchemy.orm import Session
 from app.infrastructure.database.sqlite.models.order import OrderModel, OrderItemModel
+from app.infrastructure.database.sqlite.models.user import UserModel
 from app.domains.order.entity import Order, OrderItem, OrderStatus
 
 
@@ -10,6 +11,13 @@ class OrderRepository:
 
     def __init__(self, db: Session):
         self.db = db
+
+    def _get_customer_name(self, customer_id: str) -> Optional[str]:
+        """Fetch the full name for a customer ID."""
+        user = self.db.query(UserModel).filter(UserModel.id == customer_id).first()
+        if not user:
+            return None
+        return f"{user.first_name} {user.last_name}".strip()
 
     def create(self, order: Order) -> Order:
         """Create a new order with items."""
@@ -40,15 +48,28 @@ class OrderRepository:
 
         self.db.commit()
         self.db.refresh(order_model)
-        return self._to_entity(order_model)
+        customer_name = self._get_customer_name(order_model.customer_id)
+        return self._to_entity(order_model, customer_name)
 
     def get_all(self, customer_id: Optional[str] = None) -> List[Order]:
-        """Retrieve all orders, optionally filtered by customer."""
+        """Retrieve all orders, optionally filtered by customer, and include customer name."""
         query = self.db.query(OrderModel)
         if customer_id:
             query = query.filter(OrderModel.customer_id == customer_id)
         orders = query.order_by(OrderModel.created_at.desc()).all()
-        return [self._to_entity(o) for o in orders]
+
+        customer_ids = {o.customer_id for o in orders}
+        users = (
+            self.db.query(UserModel)
+            .filter(UserModel.id.in_(customer_ids))
+            .all()
+        )
+        user_map = {
+            u.id: f"{u.first_name} {u.last_name}".strip()
+            for u in users
+        }
+
+        return [self._to_entity(o, user_map.get(o.customer_id)) for o in orders]
 
     def get_all_orders(self, customer_id: Optional[str] = None) -> List[Order]:
         """Compatibility wrapper for domains that still call get_all_orders."""
@@ -57,7 +78,10 @@ class OrderRepository:
     def get_by_id(self, order_id: int) -> Optional[Order]:
         """Retrieve a single order by ID."""
         order = self.db.query(OrderModel).filter(OrderModel.id == order_id).first()
-        return self._to_entity(order) if order else None
+        if not order:
+            return None
+        customer_name = self._get_customer_name(order.customer_id)
+        return self._to_entity(order, customer_name)
 
     def update_status(self, order_id: int, status: OrderStatus) -> Optional[Order]:
         """Update order status."""
@@ -79,7 +103,8 @@ class OrderRepository:
 
         self.db.commit()
         self.db.refresh(order)
-        return self._to_entity(order)
+        customer_name = self._get_customer_name(order.customer_id)
+        return self._to_entity(order, customer_name)
 
     def cancel_order(self, order_id: int) -> Optional[Order]:
         """Cancel an order (only if in processing status)."""
@@ -95,7 +120,8 @@ class OrderRepository:
 
         self.db.commit()
         self.db.refresh(order)
-        return self._to_entity(order)
+        customer_name = self._get_customer_name(order.customer_id)
+        return self._to_entity(order, customer_name)
 
     def request_refund(self, order_id: int, reason: Optional[str] = None) -> Optional[Order]:
         """Request a refund for a delivered order."""
@@ -118,7 +144,8 @@ class OrderRepository:
 
         self.db.commit()
         self.db.refresh(order)
-        return self._to_entity(order)
+        customer_name = self._get_customer_name(order.customer_id)
+        return self._to_entity(order, customer_name)
 
     def approve_refund(self, order_id: int, refund_amount: float) -> Optional[Order]:
         """Approve a refund request."""
@@ -135,7 +162,8 @@ class OrderRepository:
 
         self.db.commit()
         self.db.refresh(order)
-        return self._to_entity(order)
+        customer_name = self._get_customer_name(order.customer_id)
+        return self._to_entity(order, customer_name)
 
     def reject_refund(self, order_id: int) -> Optional[Order]:
         """Reject a refund request and revert to delivered status."""
@@ -150,7 +178,8 @@ class OrderRepository:
 
         self.db.commit()
         self.db.refresh(order)
-        return self._to_entity(order)
+        customer_name = self._get_customer_name(order.customer_id)
+        return self._to_entity(order, customer_name)
 
     def delete(self, order_id: int) -> bool:
         """Delete an order by ID. Returns True if deleted, False if not found."""
@@ -161,7 +190,7 @@ class OrderRepository:
             return True
         return False
 
-    def _to_entity(self, model: OrderModel) -> Order:
+    def _to_entity(self, model: OrderModel, customer_name: Optional[str] = None) -> Order:
         """Convert SQLAlchemy model to domain entity."""
         items = [
             OrderItem(
@@ -193,4 +222,5 @@ class OrderRepository:
             refunded_at=model.refunded_at,
             refund_amount=model.refund_amount,
             refund_reason=model.refund_reason,
+            customer_name=customer_name,
         )

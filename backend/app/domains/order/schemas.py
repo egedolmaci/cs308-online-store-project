@@ -52,6 +52,7 @@ class OrderResponse(BaseModel):
     refunded_at: Optional[datetime] = None
     refund_amount: Optional[float] = None
     refund_reason: Optional[str] = None
+    customer_name: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
 
