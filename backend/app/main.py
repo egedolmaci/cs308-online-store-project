@@ -18,6 +18,7 @@ from app.api.endpoints import orders as orders_endpoints
 from app.api.endpoints import categories as categories_endpoints
 from app.api.endpoints import reviews as reviews_endpoints
 from app.api.endpoints import support as support_endpoints
+from app.api.endpoints import users as users_endpoints
 
 settings = get_settings()
 
@@ -41,6 +42,7 @@ def create_application() -> FastAPI:
     app.include_router(orders_endpoints.router)
     app.include_router(reviews_endpoints.router)
     app.include_router(support_endpoints.router)
+    app.include_router(users_endpoints.router)
 
     @app.get("/health")
     def health_check():

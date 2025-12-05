@@ -1,6 +1,6 @@
 from typing import List, Optional
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 from app.domains.order.entity import OrderStatus
 
 
@@ -28,8 +28,16 @@ class OrderItemResponse(BaseModel):
 class OrderCreate(BaseModel):
     """Schema for creating an order."""
 
-    delivery_address: str
+    delivery_address: str = Field(min_length=1, max_length=500, description="Delivery address is required")
     items: List[OrderItemCreate] = Field(min_length=1, description="Order must have at least one item")
+
+    @field_validator('delivery_address')
+    @classmethod
+    def validate_address(cls, v: str) -> str:
+        """Validate that address is not empty or whitespace only."""
+        if not v or not v.strip():
+            raise ValueError('Delivery address cannot be empty')
+        return v.strip()
 
 
 class OrderResponse(BaseModel):

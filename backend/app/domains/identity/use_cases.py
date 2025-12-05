@@ -37,3 +37,6 @@ def verify_token(token: str) -> Optional[dict]:
 
 def get_user(user_id: str) -> Optional[User]:
     return repo.get_by_id(user_id)
+
+def update_user_profile(user_id: str, first_name: Optional[str] = None, last_name: Optional[str] = None, address: Optional[str] = None) -> Optional[User]:
+    return repo.update_user(user_id=user_id, first_name=first_name, last_name=last_name, address=address)

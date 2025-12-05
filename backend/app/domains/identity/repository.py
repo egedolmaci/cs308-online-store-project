@@ -132,4 +132,21 @@ class SQLAlchemyUserRepository:
                 return None
             return self._to_entity(model)
 
+    def update_user(self, user_id: str, first_name: Optional[str] = None, last_name: Optional[str] = None, address: Optional[str] = None) -> Optional[User]:
+        with SessionLocal() as db:
+            model = db.query(UserModel).filter(UserModel.id == user_id).first()
+            if not model:
+                return None
+
+            if first_name is not None:
+                model.first_name = first_name
+            if last_name is not None:
+                model.last_name = last_name
+            if address is not None:
+                model.address = address
+
+            db.commit()
+            db.refresh(model)
+            return self._to_entity(model)
+
 repo = SQLAlchemyUserRepository()

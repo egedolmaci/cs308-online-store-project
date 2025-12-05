@@ -1,11 +1,11 @@
 from fastapi import APIRouter, HTTPException, Depends, Response, Request, status
 from typing import Optional, Iterable
 from app.core.config import get_settings
-from app.domains.identity.schemas import UserCreate, UserRead, LoginRequest, Message, LoginResponse
+from app.domains.identity.schemas import UserCreate, UserRead, LoginRequest, Message, LoginResponse, UserUpdate
 from app.domains.identity.use_cases import (
     register_user, authenticate_user,
     create_access_token, create_refresh_token,
-    verify_token, get_user,
+    verify_token, get_user, update_user_profile,
 )
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
