@@ -1,3 +1,6 @@
+import { useSelector } from "react-redux";
+import { MANAGEMENT_ROLES } from "../../../constants";
+
 const Sidebar = ({
   activeSection,
   setActiveSection,
@@ -5,11 +8,22 @@ const Sidebar = ({
   setIsMobileSidebarOpen,
   onLogout,
 }) => {
+  const userRole = useSelector((state) => state.user.role);
+  const isManagementUser = MANAGEMENT_ROLES.includes(userRole);
+
   const menuItems = [
-    { id: "dashboard", label: "Dashboard", icon: "dashboard" },
-    { id: "orders", label: "Order History", icon: "orders" },
+    !isManagementUser && {
+      id: "dashboard",
+      label: "Dashboard",
+      icon: "dashboard",
+    },
+    !isManagementUser && {
+      id: "orders",
+      label: "Order History",
+      icon: "orders",
+    },
     { id: "personal", label: "Personal Details", icon: "personal" },
-  ];
+  ].filter(Boolean);
 
   const getIcon = (iconType) => {
     const icons = {
@@ -79,10 +93,11 @@ const Sidebar = ({
                 setActiveSection(item.id);
                 setIsMobileSidebarOpen(false);
               }}
-              className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl font-semibold transition-all duration-300 ${activeSection === item.id
+              className={`w-full flex items-center justify-between px-4 py-3 rounded-2xl font-semibold transition-all duration-300 ${
+                activeSection === item.id
                   ? "bg-linear-to-br from-sand to-sage text-white shadow-lg"
                   : "text-gray-700 hover:bg-gray-50 hover:text-gray-900"
-                }`}
+              }`}
             >
               <div className="flex items-center gap-3">
                 <svg
