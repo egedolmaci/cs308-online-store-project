@@ -44,11 +44,10 @@ const ReviewSection = ({ productId }) => {
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
-            className={`w-5 h-5 ${
-              star <= rating
-                ? "fill-yellow-400 text-yellow-400"
-                : "text-gray-300"
-            }`}
+            className={`w-5 h-5 ${star <= rating
+              ? "fill-yellow-400 text-yellow-400"
+              : "text-gray-300"
+              }`}
           />
         ))}
       </div>
@@ -145,7 +144,7 @@ const ReviewSection = ({ productId }) => {
               </div>
 
               {/* Review Content */}
-              <p className="text-gray-700 leading-relaxed">{review.comment}</p>
+              <p className="text-gray-700 leading-relaxed">{review.is_approved ? review.comment : "This review is pending approval."}</p>
             </div>
           ))}
         </div>
