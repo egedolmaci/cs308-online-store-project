@@ -56,6 +56,13 @@ export const productsAPI = {
     );
     return response.data;
   },
+  removeDiscount: async (productIds) => {
+    const response = await apiClient.patch(
+      `${API_ENDPOINTS.PRODUCTS}/discount/clear`,
+      { product_ids: productIds }
+    );
+    return response.data;
+  },
 };
 
 export const ordersAPI = {

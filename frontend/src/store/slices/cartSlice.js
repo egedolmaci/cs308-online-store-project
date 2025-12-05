@@ -14,6 +14,9 @@ const cartSlice = createSlice({
       const newItem = action.payload;
       const existingItem = state.items.find((item) => item.id === newItem.id);
 
+      // Use final_price if discount is active, otherwise use regular price
+      const effectivePrice = newItem.discount_active ? newItem.final_price : newItem.price;
+
       if (existingItem) {
         // If item exists, increase quantity only if under stock limit
         if (existingItem.quantity < existingItem.stock) {
@@ -29,16 +32,19 @@ const cartSlice = createSlice({
           state.items.push({
             id: newItem.id,
             name: newItem.name,
-            price: newItem.price,
+            price: effectivePrice, // Store the effective price (discounted or regular)
+            originalPrice: newItem.price, // Store original price for reference
             quantity: 1,
-            totalPrice: newItem.price,
+            totalPrice: effectivePrice,
             image: newItem.image,
             model: newItem.model,
             stock: newItem.stock,
             category: newItem.category,
+            discount_active: newItem.discount_active || false,
+            discount_rate: newItem.discount_rate || 0,
           });
           state.totalQuantity++;
-          state.totalAmount += newItem.price;
+          state.totalAmount += effectivePrice;
           state.totalAmount = Math.max(0, state.totalAmount);
         }
       }

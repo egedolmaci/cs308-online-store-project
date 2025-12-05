@@ -229,7 +229,7 @@ const ProductManagerView = () => {
                   key={product.id}
                   className="p-4 rounded-2xl border-2 border-gray-200 hover:border-sand hover:shadow-md transition-all duration-300"
                 >
-                  <div className="aspect-square rounded-xl overflow-hidden mb-3 bg-gray-100">
+                  <div className="aspect-square rounded-xl overflow-hidden mb-3 bg-gray-100 relative">
                     {product.image ? (
                       <img
                         src={product.image}
@@ -241,14 +241,33 @@ const ProductManagerView = () => {
                         No image
                       </div>
                     )}
+                    {product.discount_active && (
+                      <div className="absolute top-2 left-2 bg-error text-white px-2 py-1 rounded-full text-xs font-bold">
+                        {product.discount_rate}% OFF
+                      </div>
+                    )}
                   </div>
                   <h4 className="font-bold text-gray-900 mb-1">{product.name}</h4>
                   <p className="text-sm text-gray-500 mb-2">{product.category}</p>
                   <div className="flex justify-between items-center mb-3">
                     <div>
-                      <p className="text-sm text-gray-600">Price: ${product.price}</p>
-                      {product.cost_price && (
-                        <p className="text-sm text-gray-600">Cost: ${product.cost_price}</p>
+                      {product.discount_active ? (
+                        <>
+                          <div className="flex items-center gap-2">
+                            <p className="text-xs text-gray-400 line-through">${product.price.toFixed(2)}</p>
+                            <p className="text-sm font-bold text-success">${product.final_price.toFixed(2)}</p>
+                          </div>
+                          {product.cost_price && (
+                            <p className="text-xs text-gray-500">Cost: ${product.cost_price}</p>
+                          )}
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm text-gray-600">Price: ${product.price.toFixed(2)}</p>
+                          {product.cost_price && (
+                            <p className="text-sm text-gray-600">Cost: ${product.cost_price}</p>
+                          )}
+                        </>
                       )}
                     </div>
                     <div className="text-right">

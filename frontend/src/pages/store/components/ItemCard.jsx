@@ -49,6 +49,14 @@ const ItemCard = ({ product }) => {
           </div>
         )}
 
+        {product.discount_active && (
+          <div className="absolute top-4 left-4">
+            <span className="bg-error text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg backdrop-blur-sm animate-pulse">
+              {product.discount_rate}% OFF
+            </span>
+          </div>
+        )}
+
         {product.stock > 0 && product.stock < 20 && (
           <div className="absolute top-4 right-4">
             <span className="bg-warning text-white px-4 py-2 rounded-full text-xs font-bold shadow-lg backdrop-blur-sm">
@@ -68,7 +76,11 @@ const ItemCard = ({ product }) => {
         </div>
 
         {/* Rating Badge */}
-        <div className="absolute top-4 left-4 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg">
+        <div
+          className={`absolute ${
+            product.discount_active ? "top-16 left-4" : "top-4 left-4"
+          } bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full flex items-center gap-1.5 shadow-lg`}
+        >
           <svg
             className="w-4 h-4 text-warning"
             fill="currentColor"
@@ -126,7 +138,20 @@ const ItemCard = ({ product }) => {
         {/* Price and CTA */}
         <div className="flex items-center justify-between pt-4">
           <div className="space-y-1">
-            <p className="text-3xl font-bold text-gray-900">${product.price}</p>
+            {product.discount_active ? (
+              <>
+                <p className="text-3xl font-bold text-success">
+                  ${product.final_price.toFixed(2)}
+                </p>
+                <p className="text-lg font-bold text-gray-400 line-through">
+                  ${product.price.toFixed(2)}
+                </p>
+              </>
+            ) : (
+              <p className="text-3xl font-bold text-gray-900">
+                ${product.price.toFixed(2)}
+              </p>
+            )}
             <p className="text-xs text-gray-500">
               {product.stock > 0 ? `${product.stock} in stock` : "Unavailable"}
             </p>
@@ -134,25 +159,17 @@ const ItemCard = ({ product }) => {
           <button
             onClick={handleAddToCart}
             disabled={availableLeft === 0}
-            className={`flex items-center gap-2 mx-4 px-6 py-3.5 rounded-xl font-bold text-sm transition-all duration-300 ${availableLeft === 0
-              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-              : "bg-gray-900 text-white hover:bg-gray-800 hover:shadow-xl active:scale-95 shadow-lg"
-              }`}
+            className={`flex items-center ml-2 gap-2 px-5 py-3.5 rounded-xl font-bold text-sm transition-all duration-300 ${
+              availableLeft === 0
+                ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+                : "bg-gray-900 text-white hover:bg-gray-800 hover:shadow-xl active:scale-95 shadow-lg"
+            }`}
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-              />
-            </svg>
-            <span>{availableLeft === 0 ? "Max Reached" : "Add"}</span>
+            {product.stock > 0 ? (
+              <span>{availableLeft === 0 ? "Max Reached" : "Add"}</span>
+            ) : (
+              <span>{"Out of stock"}</span>
+            )}
           </button>
         </div>
       </div>

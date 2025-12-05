@@ -67,6 +67,15 @@ const RelatedProducts = ({ products }) => {
               {/* Overlay Gradient */}
               <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
+              {/* Discount Badge */}
+              {product.discount_active && (
+                <div className="absolute top-3 left-3">
+                  <span className="bg-error text-white px-3 py-1.5 rounded-full text-xs font-bold shadow-lg backdrop-blur-sm animate-pulse">
+                    {product.discount_rate}% OFF
+                  </span>
+                </div>
+              )}
+
               {/* Stock Status */}
               {product.stock === 0 && (
                 <div className="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center">
@@ -85,7 +94,7 @@ const RelatedProducts = ({ products }) => {
               )}
 
               {/* Rating Badge */}
-              <div className="absolute top-3 left-3 bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1 shadow-lg">
+              <div className={`absolute ${product.discount_active ? 'top-14 left-3' : 'top-3 left-3'} bg-white/95 backdrop-blur-sm px-2.5 py-1 rounded-full flex items-center gap-1 shadow-lg`}>
                 <svg
                   className="w-3.5 h-3.5 text-warning"
                   fill="currentColor"
@@ -119,9 +128,21 @@ const RelatedProducts = ({ products }) => {
               {/* Price and CTA */}
               <div className="flex items-center justify-between pt-3">
                 <div className="space-y-0.5">
-                  <p className="text-2xl font-bold text-gray-900">
-                    ${product.price}
-                  </p>
+                  {product.discount_active ? (
+                    <>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-sm font-bold text-gray-400 line-through">${product.price.toFixed(2)}</p>
+                        <p className="text-2xl font-bold text-success">${product.final_price.toFixed(2)}</p>
+                      </div>
+                      <p className="text-xs text-success font-semibold">
+                        Save ${(product.price - product.final_price).toFixed(2)}
+                      </p>
+                    </>
+                  ) : (
+                    <p className="text-2xl font-bold text-gray-900">
+                      ${product.price.toFixed(2)}
+                    </p>
+                  )}
                   <p className="text-xs text-gray-500">
                     {product.stock > 0 ? "In stock" : "Unavailable"}
                   </p>
