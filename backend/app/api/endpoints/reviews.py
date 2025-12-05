@@ -75,18 +75,23 @@ def get_product_reviews(
     db: Session = Depends(get_db),
 ):
     """
-    Get all approved reviews for a product (public endpoint).
+    Get all reviews for a product (public endpoint).
+
+    Returns all reviews with their is_approved status.
+    Frontend should:
+    - Display all ratings (both approved and unapproved)
+    - Only display comments where is_approved=true
 
     Args:
         product_id: ID of the product
 
     Returns:
-        List of approved reviews
+        List of all reviews with is_approved field
     """
-    logger.info(f"GET /api/v1/products/{product_id}/reviews - Fetching approved reviews")
+    logger.info(f"GET /api/v1/products/{product_id}/reviews - Fetching all reviews")
 
-    reviews = use_cases.get_product_reviews(db, product_id, include_pending=False)
-    logger.info(f"Found {len(reviews)} approved reviews for product {product_id}")
+    reviews = use_cases.get_product_reviews(db, product_id, include_pending=True)
+    logger.info(f"Found {len(reviews)} reviews for product {product_id}")
 
     return reviews
 
