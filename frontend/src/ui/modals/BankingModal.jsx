@@ -1,20 +1,25 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
 import { clearModal } from "../../store/slices/modalSlice";
 import { clearCart } from "../../store/slices/cartSlice";
-import { X, CreditCard, Lock, CheckCircle2, AlertCircle } from "lucide-react";
+import { X, CreditCard, Lock, CheckCircle2, AlertCircle, FileText, Download, ShoppingBag } from "lucide-react";
 import { createOrder } from "../../store/slices/ordersSlice";
 
 const BankingModal = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { totalAmount } = useSelector((state) => state.cart);
   const cartItems = useSelector((state) => state.cart.items);
+  const user = useSelector((state) => state.user);
 
   const shipping = totalAmount > 0 ? (totalAmount > 100 ? 0 : 9.99) : 0;
   const tax = totalAmount * 0.08;
   const finalTotal = totalAmount + shipping + tax;
 
-  const [step, setStep] = useState("payment"); // payment, processing, success, error
+  const [step, setStep] = useState("payment"); // payment, processing, success, invoice
+  const [orderId, setOrderId] = useState(null);
+  const [orderDate, setOrderDate] = useState(null);
   const [formData, setFormData] = useState({
     cardNumber: "",
     cardName: "",
@@ -113,15 +118,34 @@ const BankingModal = () => {
     setStep("processing");
 
     // Mock payment processing (2 seconds delay)
-    setTimeout(() => {
+    setTimeout(async () => {
+      // Generate order details
+      const generatedOrderId = Math.random().toString(36).substr(2, 9).toUpperCase();
+      const orderDateTime = new Date();
+
+      setOrderId(generatedOrderId);
+      setOrderDate(orderDateTime);
+
       setStep("success");
-      // Clear cart after successful payment
+
+      // After showing success, transition to invoice
       setTimeout(() => {
-        dispatch(clearCart());
+        setStep("invoice");
+        // Create order in backend
         dispatch(createOrder(cartItems));
-        handleClose();
-      }, 3000);
+      }, 2000);
     }, 2000);
+  };
+
+  const handleDownloadInvoice = () => {
+    // TODO: Implement PDF download functionality
+    alert("Invoice download functionality will be implemented soon!");
+  };
+
+  const handleContinueShopping = () => {
+    dispatch(clearCart());
+    dispatch(clearModal());
+    navigate("/store");
   };
 
   // Payment Form Step
@@ -318,38 +342,225 @@ const BankingModal = () => {
     );
   }
 
-  // Success Step
+  // Success Step (Brief celebration before invoice)
   if (step === "success") {
     return (
-      <div className="flex flex-col items-center justify-center p-12">
+      <div className="flex flex-col items-center justify-center p-12 animate-fade-in">
         <div className="relative mb-6">
-          <div className="w-20 h-20 bg-success/10 rounded-full flex items-center justify-center animate-scale-in">
-            <CheckCircle2 className="w-12 h-12 text-success" />
+          {/* Animated success circle */}
+          <div className="absolute inset-0 w-20 h-20 bg-success/20 rounded-full animate-ping"></div>
+          <div className="relative w-20 h-20 bg-success/10 rounded-full flex items-center justify-center animate-scale-in">
+            <CheckCircle2 className="w-12 h-12 text-success animate-bounce-once" />
           </div>
         </div>
-        <h3 className="text-2xl font-bold text-gray-800 mb-2">
+        <h3 className="text-3xl font-bold text-gray-800 mb-2 animate-slide-up">
           Payment Successful!
         </h3>
-        <p className="text-gray-600 text-center mb-4">
-          Your order has been placed successfully.
+        <p className="text-gray-600 text-center animate-slide-up animation-delay-100">
+          Preparing your invoice...
         </p>
-        <div className="bg-gradient-to-br from-cream to-linen rounded-2xl p-4 w-full max-w-sm">
-          <div className="text-sm text-gray-700 space-y-2">
-            <div className="flex justify-between">
-              <span>Order ID:</span>
-              <span className="font-mono font-semibold">
-                #{Math.random().toString(36).substr(2, 9).toUpperCase()}
-              </span>
+      </div>
+    );
+  }
+
+  // Invoice Step
+  if (step === "invoice") {
+    return (
+      <div className="flex flex-col max-h-[90vh] animate-fade-in">
+        {/* Header */}
+        <div className="flex items-center justify-between p-6 border-b border-sage/20 bg-linear-to-r from-sand/10 to-sage/10">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-linear-to-br from-success to-success/80 rounded-xl shadow-lg animate-scale-in">
+              <FileText className="w-6 h-6 text-white" />
             </div>
-            <div className="flex justify-between">
-              <span>Amount Paid:</span>
-              <span className="font-semibold">${finalTotal.toFixed(2)}</span>
+            <div>
+              <h2 className="text-2xl font-bold text-gray-800">
+                Order Invoice
+              </h2>
+              <p className="text-sm text-gray-600">
+                Order #{orderId}
+              </p>
             </div>
           </div>
+          <button
+            onClick={handleClose}
+            className="p-2 hover:bg-linen rounded-xl transition-all duration-300 hover:scale-110 active:scale-95"
+          >
+            <X className="w-6 h-6 text-gray-600" />
+          </button>
         </div>
-        <p className="text-xs text-gray-500 mt-6 text-center">
-          Redirecting to store in a moment...
-        </p>
+
+        {/* Invoice Body */}
+        <div className="p-6 overflow-y-auto flex-1">
+          {/* Success Badge */}
+          <div className="flex items-center justify-center mb-6 animate-slide-down">
+            <div className="flex items-center gap-2 px-4 py-2 bg-success/10 border-2 border-success/30 rounded-full">
+              <CheckCircle2 className="w-5 h-5 text-success" />
+              <span className="font-semibold text-success">Payment Confirmed</span>
+            </div>
+          </div>
+
+          {/* Order & Customer Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {/* Order Details */}
+            <div className="bg-linear-to-br from-cream to-linen rounded-2xl p-5 animate-slide-right">
+              <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <ShoppingBag className="w-5 h-5" />
+                Order Details
+              </h3>
+              <div className="space-y-2 text-sm text-gray-700">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Order ID:</span>
+                  <span className="font-mono font-semibold">#{orderId}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Order Date:</span>
+                  <span className="font-semibold">
+                    {orderDate?.toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Order Time:</span>
+                  <span className="font-semibold">
+                    {orderDate?.toLocaleTimeString('en-US', {
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* Customer Details */}
+            <div className="bg-linear-to-br from-linen to-sage/10 rounded-2xl p-5 animate-slide-left animation-delay-100">
+              <h3 className="font-bold text-gray-800 mb-3 flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Customer Details
+              </h3>
+              <div className="space-y-2 text-sm text-gray-700">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Name:</span>
+                  <span className="font-semibold">
+                    {user.firstName} {user.lastName}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Email:</span>
+                  <span className="font-semibold text-xs">{user.email}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Address:</span>
+                  <span className="font-semibold text-xs text-right max-w-[180px]">
+                    {user.address || "N/A"}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Items List */}
+          <div className="bg-white rounded-2xl border-2 border-sand/20 overflow-hidden mb-6 animate-slide-up animation-delay-200">
+            <div className="bg-linear-to-r from-sand/20 to-sage/20 px-5 py-3 border-b border-sand/20">
+              <h3 className="font-bold text-gray-800">Order Items</h3>
+            </div>
+            <div className="p-5">
+              <div className="space-y-3 max-h-[200px] overflow-y-auto">
+                {cartItems.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0 hover:bg-linen/30 px-2 rounded-lg transition-all duration-300"
+                    style={{ animationDelay: `${index * 50}ms` }}
+                  >
+                    <div className="flex items-center gap-3 flex-1">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-12 h-12 object-cover rounded-lg shadow-sm"
+                      />
+                      <div className="flex-1">
+                        <p className="font-semibold text-gray-800 text-sm">
+                          {item.name}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          Qty: {item.quantity} × ${item.price.toFixed(2)}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="font-bold text-gray-900">
+                      ${(item.price * item.quantity).toFixed(2)}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Payment Summary */}
+          <div className="bg-linear-to-br from-sand/10 via-cream to-linen rounded-2xl p-6 animate-slide-up animation-delay-300">
+            <h3 className="font-bold text-gray-800 mb-4">Payment Summary</h3>
+            <div className="space-y-3">
+              <div className="flex justify-between text-gray-700">
+                <span>Subtotal ({cartItems.length} items)</span>
+                <span className="font-semibold">${totalAmount.toFixed(2)}</span>
+              </div>
+              <div className="flex justify-between text-gray-700">
+                <span>Shipping</span>
+                <span className="font-semibold">
+                  {shipping === 0 ? (
+                    <span className="text-success">FREE</span>
+                  ) : (
+                    `$${shipping.toFixed(2)}`
+                  )}
+                </span>
+              </div>
+              <div className="flex justify-between text-gray-700">
+                <span>Tax (8%)</span>
+                <span className="font-semibold">${tax.toFixed(2)}</span>
+              </div>
+              <div className="h-px bg-sand/30 my-3"></div>
+              <div className="flex justify-between text-xl font-bold text-gray-900">
+                <span>Total Paid</span>
+                <span className="text-success">${finalTotal.toFixed(2)}</span>
+              </div>
+              <div className="flex items-center gap-2 mt-2 text-sm text-gray-600">
+                <Lock className="w-4 h-4 text-success" />
+                <span>Payment processed securely</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Thank You Message */}
+          <div className="mt-6 text-center p-4 bg-linear-to-r from-success/5 to-success/10 rounded-2xl animate-fade-in animation-delay-400">
+            <p className="text-gray-700 font-medium">
+              Thank you for your purchase! 🎉
+            </p>
+            <p className="text-sm text-gray-600 mt-1">
+              A confirmation email has been sent to {user.email}
+            </p>
+          </div>
+        </div>
+
+        {/* Footer Actions */}
+        <div className="flex items-center justify-between gap-3 p-6 border-t border-sage/20 bg-linen/30 animate-slide-up animation-delay-500">
+          <button
+            onClick={handleDownloadInvoice}
+            className="flex-1 px-6 py-3 rounded-xl border-2 border-sand text-sand font-semibold hover:bg-sand hover:text-white transition-all duration-300 hover:shadow-lg active:scale-95 flex items-center justify-center gap-2"
+          >
+            <Download className="w-5 h-5" />
+            Download Invoice
+          </button>
+          <button
+            onClick={handleContinueShopping}
+            className="flex-1 px-6 py-3 rounded-xl bg-linear-to-r from-success to-success/90 text-white font-semibold hover:shadow-xl transition-all duration-300 hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+          >
+            <ShoppingBag className="w-5 h-5" />
+            Continue Shopping
+          </button>
+        </div>
       </div>
     );
   }
