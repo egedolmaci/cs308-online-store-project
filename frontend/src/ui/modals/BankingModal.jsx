@@ -5,6 +5,7 @@ import { clearModal } from "../../store/slices/modalSlice";
 import { clearCart } from "../../store/slices/cartSlice";
 import { X, CreditCard, Lock, CheckCircle2, AlertCircle, FileText, Download, ShoppingBag } from "lucide-react";
 import { createOrder } from "../../store/slices/ordersSlice";
+import { generateCheckoutInvoicePDF } from "../../utils/pdfGenerator";
 
 const BankingModal = () => {
   const dispatch = useDispatch();
@@ -138,8 +139,25 @@ const BankingModal = () => {
   };
 
   const handleDownloadInvoice = () => {
-    // TODO: Implement PDF download functionality
-    alert("Invoice download functionality will be implemented soon!");
+    const invoiceData = {
+      items: cartItems,
+      orderId: orderId,
+      orderDate: orderDate,
+      customer: {
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        address: user.address,
+      },
+      totals: {
+        subtotal: totalAmount,
+        tax: tax,
+        shipping: shipping,
+        total: finalTotal,
+      },
+    };
+
+    generateCheckoutInvoicePDF(invoiceData);
   };
 
   const handleContinueShopping = () => {

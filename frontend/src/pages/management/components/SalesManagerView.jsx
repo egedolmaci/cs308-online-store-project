@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import jsPDF from "jspdf";
 import {
   fetchUserOrders,
   selectOrders,
@@ -13,6 +12,7 @@ import {
   selectProducts,
   selectProductsLoading,
 } from "../../../store/slices/productsSlice";
+import { generateInvoiceReportPDF } from "../../../utils/pdfGenerator";
 
 const SalesManagerView = () => {
   const dispatch = useDispatch();
@@ -82,59 +82,7 @@ const SalesManagerView = () => {
   };
 
   const handleDownloadPDF = () => {
-    const doc = new jsPDF();
-
-    // Set up colors
-    const primaryColor = [182, 174, 159]; // sand color
-    const textColor = [31, 41, 55]; // gray-900
-
-    // Title
-    doc.setFontSize(20);
-    doc.setTextColor(...textColor);
-    doc.text("Invoice Report", 20, 20);
-
-    // Date Range
-    doc.setFontSize(12);
-    doc.text(`Period: ${startDate} to ${endDate}`, 20, 30);
-
-    // Table Header
-    doc.setFillColor(...primaryColor);
-    doc.rect(20, 40, 170, 10, "F");
-    doc.setFontSize(10);
-    doc.setTextColor(255, 255, 255);
-    doc.text("Order ID", 25, 47);
-    doc.text("Customer", 60, 47);
-    doc.text("Date", 110, 47);
-    doc.text("Amount", 140, 47);
-    doc.text("Status", 170, 47);
-
-    // Table Rows
-    let yPos = 58;
-    doc.setTextColor(...textColor);
-
-    filteredOrders.forEach((order) => {
-      if (yPos > 270) {
-        doc.addPage();
-        yPos = 20;
-      }
-
-      doc.text(order.id.toString(), 25, yPos);
-      doc.text((order.customer_name || "N/A").substring(0, 20), 60, yPos);
-      doc.text(new Date(order.created_at).toLocaleDateString(), 110, yPos);
-      doc.text(`$${order.total_amount || 0}`, 140, yPos);
-      doc.text(order.status || "pending", 170, yPos);
-
-      yPos += 10;
-    });
-
-    // Total
-    yPos += 10;
-    doc.setFontSize(12);
-    doc.setFont(undefined, "bold");
-    const total = filteredOrders.reduce((sum, order) => sum + parseFloat(order.total_amount || 0), 0);
-    doc.text(`Total: $${total.toFixed(2)}`, 140, yPos);
-
-    doc.save(`invoices-${startDate}-to-${endDate}.pdf`);
+    generateInvoiceReportPDF(filteredOrders, startDate, endDate);
   };
 
   // Stock Management Functions

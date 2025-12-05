@@ -8,7 +8,7 @@ import {
 import { ICON_NAMES, ORDER_STATUS_LABELS, ORDER_STATUSES } from "../../../constants";
 import { openModalWithPromise } from "../../../ui/modals/modalPromises";
 import { generateConfirmActionModal, generateConfirmActionWithReasonModal } from "../../../ui/modals";
-import jsPDF from "jspdf";
+import { generateOrderInvoicePDF } from "../../../utils/pdfGenerator";
 
 const OrderDetails = ({ onBack }) => {
   const dispatch = useDispatch();
@@ -48,123 +48,7 @@ const OrderDetails = ({ onBack }) => {
   };
 
   const handleDownloadInvoice = () => {
-    const doc = new jsPDF();
-
-    // Set up colors and fonts
-    const primaryColor = [182, 174, 159]; // sand color
-    const textColor = [31, 41, 55]; // gray-900
-    const lightGray = [156, 163, 175]; // gray-400
-
-    // Header - Company Name
-    doc.setFontSize(24);
-    doc.setTextColor(...textColor);
-    doc.text("Fashion Store", 20, 20);
-
-    // Invoice Title
-    doc.setFontSize(16);
-    doc.text("INVOICE", 20, 35);
-
-    // Order Information
-    doc.setFontSize(10);
-    doc.setTextColor(...lightGray);
-    doc.text("Order ID:", 20, 50);
-    doc.text("Order Date:", 20, 58);
-    doc.text("Customer:", 20, 74);
-    doc.text("Status:", 20, 66);
-
-    doc.setTextColor(...textColor);
-    doc.setFontSize(11);
-    doc.text(order.id.toString(), 50, 50);
-    doc.text(order.created_at, 50, 58);
-    doc.text(order.customer_name || order.user_name || "N/A", 50, 74);
-    doc.text(ORDER_STATUS_LABELS[order.status], 50, 66);
-
-    // Delivery Address
-    if (order.delivery_address) {
-      doc.setFontSize(10);
-      doc.setTextColor(...lightGray);
-      doc.text("Delivery Address:", 20, 80);
-      doc.setTextColor(...textColor);
-      doc.setFontSize(11);
-      const addressLines = doc.splitTextToSize(order.delivery_address, 80);
-      doc.text(addressLines, 20, 88);
-    }
-
-    // Items Table Header
-    const tableTop = order.delivery_address ? 110 : 85;
-    doc.setFillColor(...primaryColor);
-    doc.rect(20, tableTop, 170, 10, 'F');
-
-    doc.setFontSize(10);
-    doc.setTextColor(255, 255, 255);
-    doc.text("Item", 25, tableTop + 7);
-    doc.text("Qty", 120, tableTop + 7);
-    doc.text("Price", 145, tableTop + 7);
-    doc.text("Total", 170, tableTop + 7);
-
-    // Items
-    let yPos = tableTop + 18;
-    doc.setTextColor(...textColor);
-
-    order.items.forEach((item, index) => {
-      // Check if we need a new page
-      if (yPos > 250) {
-        doc.addPage();
-        yPos = 20;
-      }
-
-      const itemName = item.product_name || item.product?.name || `Product ID: ${item.product_id}`;
-      const itemLines = doc.splitTextToSize(itemName, 85);
-
-      doc.setFontSize(10);
-      doc.text(itemLines, 25, yPos);
-      doc.text(item.quantity.toString(), 120, yPos);
-      doc.text(`$${item.product_price.toFixed(2)}`, 145, yPos);
-      doc.text(`$${(item.product_price * item.quantity).toFixed(2)}`, 170, yPos);
-
-      yPos += (itemLines.length * 5) + 8;
-
-      // Add a separator line
-      if (index < order.items.length - 1) {
-        doc.setDrawColor(...lightGray);
-        doc.line(20, yPos - 4, 190, yPos - 4);
-      }
-    });
-
-    // Totals
-    yPos += 10;
-    doc.setDrawColor(...textColor);
-    doc.setLineWidth(0.5);
-    doc.line(130, yPos, 190, yPos);
-
-    yPos += 10;
-    doc.setFontSize(11);
-    doc.setFont(undefined, "normal");
-    doc.text("Subtotal:", 130, yPos);
-    doc.text(`$${(order.total_amount - order.tax_amount - order.shipping_amount).toFixed(2)}`, 170, yPos);
-
-    yPos += 8;
-    doc.text("Tax:", 130, yPos);
-    doc.text(`$${order.tax_amount.toFixed(2)}`, 170, yPos);
-
-    yPos += 8;
-    doc.text("Shipping:", 130, yPos);
-    doc.text(`$${order.shipping_amount.toFixed(2)}`, 170, yPos);
-
-    yPos += 10;
-    doc.setFontSize(12);
-    doc.setFont(undefined, "bold");
-    doc.text("Total Amount:", 130, yPos);
-    doc.text(`$${order.total_amount.toFixed(2)}`, 170, yPos);
-
-    // Footer
-    doc.setFontSize(8);
-    doc.setFont(undefined, 'normal');
-    doc.setTextColor(...lightGray);
-    doc.text("Thank you for your purchase!", 105, 280, { align: 'center' });
-
-    // Save the PDF
-    doc.save(`invoice-${order.id}.pdf`);
+    generateOrderInvoicePDF(order);
   };
 
   // Check if order is eligible for refund (not already refunded or cancelled)
