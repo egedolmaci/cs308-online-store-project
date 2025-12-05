@@ -69,12 +69,14 @@ const OrderDetails = ({ onBack }) => {
     doc.setTextColor(...lightGray);
     doc.text("Order ID:", 20, 50);
     doc.text("Order Date:", 20, 58);
+    doc.text("Customer:", 20, 74);
     doc.text("Status:", 20, 66);
 
     doc.setTextColor(...textColor);
     doc.setFontSize(11);
     doc.text(order.id.toString(), 50, 50);
     doc.text(order.created_at, 50, 58);
+    doc.text(order.customer_name || order.user_name || "N/A", 50, 74);
     doc.text(ORDER_STATUS_LABELS[order.status], 50, 66);
 
     // Delivery Address
@@ -111,7 +113,7 @@ const OrderDetails = ({ onBack }) => {
         yPos = 20;
       }
 
-      const itemName = item.product?.name || `Product ID: ${item.product_id}`;
+      const itemName = item.product_name || item.product?.name || `Product ID: ${item.product_id}`;
       const itemLines = doc.splitTextToSize(itemName, 85);
 
       doc.setFontSize(10);
@@ -129,15 +131,29 @@ const OrderDetails = ({ onBack }) => {
       }
     });
 
-    // Total Section
+    // Totals
     yPos += 10;
     doc.setDrawColor(...textColor);
     doc.setLineWidth(0.5);
     doc.line(130, yPos, 190, yPos);
 
     yPos += 10;
+    doc.setFontSize(11);
+    doc.setFont(undefined, "normal");
+    doc.text("Subtotal:", 130, yPos);
+    doc.text(`$${(order.total_amount - order.tax_amount - order.shipping_amount).toFixed(2)}`, 170, yPos);
+
+    yPos += 8;
+    doc.text("Tax:", 130, yPos);
+    doc.text(`$${order.tax_amount.toFixed(2)}`, 170, yPos);
+
+    yPos += 8;
+    doc.text("Shipping:", 130, yPos);
+    doc.text(`$${order.shipping_amount.toFixed(2)}`, 170, yPos);
+
+    yPos += 10;
     doc.setFontSize(12);
-    doc.setFont(undefined, 'bold');
+    doc.setFont(undefined, "bold");
     doc.text("Total Amount:", 130, yPos);
     doc.text(`$${order.total_amount.toFixed(2)}`, 170, yPos);
 
@@ -281,7 +297,7 @@ const OrderDetails = ({ onBack }) => {
               {/* Product Info */}
               <div className="flex-1">
                 <h4 className="font-bold text-gray-900">
-                  {item.product?.name || `Product ID: ${item.product_id}`}
+                  {item.product_name || item.product?.name || `Product ID: ${item.product_id}`}
                 </h4>
                 {item.product?.description && (
                   <p className="text-sm text-gray-500 mt-1">
