@@ -7,6 +7,7 @@ import Dashboard from "./components/Dashboard";
 import OrderHistory from "./components/OrderHistory";
 import PersonalDetails from "./components/PersonalDetails";
 import { fetchUserOrders } from "../../store/slices/ordersSlice";
+import { MANAGEMENT_ROLES } from "../../constants";
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -14,6 +15,14 @@ const Profile = () => {
   const [activeSection, setActiveSection] = useState("dashboard");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const user = useSelector((state) => state.user);
+  const userRole = useSelector((state) => state.user.role);
+  const isManagementUser = MANAGEMENT_ROLES.includes(userRole);
+
+  useEffect(() => {
+    if (isManagementUser) {
+      setActiveSection("personal");
+    }
+  }, [isManagementUser, setActiveSection]);
 
   // Mock order data
   const orders = useSelector((state) => state.orders.orders);
@@ -74,8 +83,9 @@ const Profile = () => {
           >
             <span className="font-bold text-gray-900">Menu</span>
             <svg
-              className={`w-6 h-6 text-gray-700 transform transition-transform ${isMobileSidebarOpen ? "rotate-180" : ""
-                }`}
+              className={`w-6 h-6 text-gray-700 transform transition-transform ${
+                isMobileSidebarOpen ? "rotate-180" : ""
+              }`}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
