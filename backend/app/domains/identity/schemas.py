@@ -33,3 +33,8 @@ class LoginResponse(BaseModel):
     email: EmailStr
     role: Role
     address: Optional[str] = None
+
+class UserUpdate(BaseModel):
+    first_name: Optional[str] = Field(None, min_length=1, max_length=100)
+    last_name: Optional[str] = Field(None, min_length=1, max_length=100)
+    address: Optional[str] = Field(None, max_length=500)
