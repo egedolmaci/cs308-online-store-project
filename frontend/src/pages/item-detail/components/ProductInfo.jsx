@@ -39,6 +39,11 @@ const ProductInfo = ({ product }) => {
           <span className="inline-block bg-sand/30 text-gray-700 px-4 py-2 rounded-full text-sm font-semibold tracking-wider uppercase">
             {product.category}
           </span>
+          {product.discount_active && (
+            <span className="inline-block bg-error text-white px-4 py-2 rounded-full text-sm font-bold animate-pulse">
+              {product.discount_rate}% OFF SALE
+            </span>
+          )}
           {product.stock > 0 && product.stock < 20 && (
             <span className="inline-block bg-warning/20 text-warning px-4 py-2 rounded-full text-sm font-bold animate-pulse">
               Only {product.stock} left!
@@ -58,13 +63,32 @@ const ProductInfo = ({ product }) => {
 
         {/* Price */}
         <div className="bg-white rounded-3xl p-6 shadow-lg">
-          <div className="flex items-baseline gap-3">
-            <span className="text-5xl font-bold text-gray-900">
-              ${product.price}
-            </span>
-            <span className="text-lg text-gray-500">USD</span>
-          </div>
-          <p className="text-sm text-gray-500 mt-2">
+          {product.discount_active ? (
+            <>
+              <div className="flex items-baseline gap-3 mb-2">
+                <span className="text-3xl font-bold text-gray-400 line-through">
+                  ${product.price.toFixed(2)}
+                </span>
+                <span className="text-5xl font-bold text-success">
+                  ${product.final_price.toFixed(2)}
+                </span>
+                <span className="text-lg text-gray-500">USD</span>
+              </div>
+              <div className="bg-success/10 border border-success/20 rounded-xl px-4 py-2 inline-block">
+                <p className="text-success font-bold text-sm">
+                  🎉 You save ${(product.price - product.final_price).toFixed(2)} ({product.discount_rate}% off)
+                </p>
+              </div>
+            </>
+          ) : (
+            <div className="flex items-baseline gap-3">
+              <span className="text-5xl font-bold text-gray-900">
+                ${product.price.toFixed(2)}
+              </span>
+              <span className="text-lg text-gray-500">USD</span>
+            </div>
+          )}
+          <p className="text-sm text-gray-500 mt-4">
             {product.stock > 0 ? (
               <span className="text-success font-semibold">
                 ✓ In Stock ({product.stock} available)

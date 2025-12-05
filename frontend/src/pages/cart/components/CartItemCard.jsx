@@ -26,6 +26,13 @@ const CartItemCard = ({ item }) => {
             alt={item.name}
             className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-700"
           />
+          {item.discount_active && (
+            <div className="absolute top-3 left-3 bg-error text-white px-3 py-1.5 rounded-full shadow-lg">
+              <span className="text-xs font-bold">
+                {item.discount_rate}% OFF
+              </span>
+            </div>
+          )}
           <div className="absolute top-3 right-3 bg-white/95 backdrop-blur-sm px-3 py-1.5 rounded-full shadow-lg">
             <span className="text-xs font-bold text-gray-900">
               {item.category}
@@ -145,12 +152,33 @@ const CartItemCard = ({ item }) => {
             {/* Price */}
             <div className="flex items-center gap-4">
               <div className="text-right">
-                <p className="text-sm text-gray-500 mb-0.5">
-                  ${item.price.toFixed(2)} each
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  ${item.totalPrice.toFixed(2)}
-                </p>
+                {item.discount_active ? (
+                  <>
+                    <div className="flex items-center justify-end gap-2 mb-0.5">
+                      <p className="text-xs text-gray-400 line-through">
+                        ${item.originalPrice?.toFixed(2) || item.price.toFixed(2)}
+                      </p>
+                      <p className="text-sm text-success font-bold">
+                        ${item.price.toFixed(2)} each
+                      </p>
+                    </div>
+                    <p className="text-2xl font-bold text-success">
+                      ${item.totalPrice.toFixed(2)}
+                    </p>
+                    <p className="text-xs text-success font-semibold mt-1">
+                      Discount applied
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <p className="text-sm text-gray-500 mb-0.5">
+                      ${item.price.toFixed(2)} each
+                    </p>
+                    <p className="text-2xl font-bold text-gray-900">
+                      ${item.totalPrice.toFixed(2)}
+                    </p>
+                  </>
+                )}
               </div>
             </div>
           </div>

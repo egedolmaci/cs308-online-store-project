@@ -74,12 +74,27 @@ export const applyDiscount = createAsyncThunk(
   }
 );
 
+export const clearDiscount = createAsyncThunk(
+  "products/clearDiscount",
+  async (productIds, { rejectWithValue }) => {
+    try {
+      const response = await productsAPI.removeDiscount(productIds);
+      return response;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to remove discount"
+      );
+    }
+  }
+);
+
 const initialState = {
   items: [], // Array of products
   categories: [], // Available categories
   loading: false,
   error: null,
   discountStatus: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
+  clearDiscountStatus: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
 };
 
 const productsSlice = createSlice({
@@ -194,6 +209,29 @@ const productsSlice = createSlice({
       .addCase(applyDiscount.rejected, (state, action) => {
         state.discountStatus = "failed";
         state.error = action.payload;
+      })
+      .addCase(clearDiscount.pending, (state) => {
+        state.clearDiscountStatus = "loading";
+        state.error = null;
+      })
+      .addCase(clearDiscount.fulfilled, (state, action) => {
+        state.clearDiscountStatus = "succeeded";
+        // Update products to remove discount
+        if (action.payload && Array.isArray(action.payload)) {
+          action.payload.forEach((updatedProduct) => {
+            const index = state.items.findIndex(
+              (item) => item.id === updatedProduct.id
+            );
+            if (index !== -1) {
+              state.items[index] = updatedProduct;
+            }
+          });
+        }
+        state.error = null;
+      })
+      .addCase(clearDiscount.rejected, (state, action) => {
+        state.clearDiscountStatus = "failed";
+        state.error = action.payload;
       });
   },
 });
@@ -207,5 +245,6 @@ export const selectProductsLoading = (state) => state.products.loading;
 export const selectProductsError = (state) => state.products.error;
 export const selectProductCategories = (state) => state.products.categories;
 export const selectDiscountStatus = (state) => state.products.discountStatus;
+export const selectClearDiscountStatus = (state) => state.products.clearDiscountStatus;
 
 export default productsSlice.reducer;

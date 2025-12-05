@@ -1,9 +1,22 @@
 import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { USER_ROLES, USER_ROLE_LABELS, ORDER_STATUSES } from "../../../constants";
-import { fetchAllOrders, selectOrders } from "../../../store/slices/ordersSlice";
-import { fetchProducts, selectProducts } from "../../../store/slices/productsSlice";
-import { getPendingReviews, selectPendingReviews } from "../../../store/slices/reviewsSlice";
+import {
+  USER_ROLES,
+  USER_ROLE_LABELS,
+  ORDER_STATUSES,
+} from "../../../constants";
+import {
+  fetchAllOrders,
+  selectOrders,
+} from "../../../store/slices/ordersSlice";
+import {
+  fetchProducts,
+  selectProducts,
+} from "../../../store/slices/productsSlice";
+import {
+  getPendingReviews,
+  selectPendingReviews,
+} from "../../../store/slices/reviewsSlice";
 
 const Dashboard = ({ userRole, setActiveSection }) => {
   const dispatch = useDispatch();
@@ -15,11 +28,14 @@ const Dashboard = ({ userRole, setActiveSection }) => {
 
   // Load data on mount
   useEffect(() => {
-    if (userRole === USER_ROLES.SALES_MANAGER || userRole === USER_ROLES.PRODUCT_MANAGER) {
+    if (
+      userRole === USER_ROLES.SALES_MANAGER ||
+      userRole === USER_ROLES.PRODUCT_MANAGER
+    ) {
       dispatch(fetchAllOrders());
+      dispatch(fetchProducts()); // Fetch products for both roles to get discount data
     }
     if (userRole === USER_ROLES.PRODUCT_MANAGER) {
-      dispatch(fetchProducts());
       dispatch(getPendingReviews());
     }
   }, [dispatch, userRole]);
@@ -33,17 +49,30 @@ const Dashboard = ({ userRole, setActiveSection }) => {
     // Calculate monthly orders
     const monthlyOrders = orders.filter((order) => {
       const orderDate = new Date(order.created_at);
-      return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear;
+      return (
+        orderDate.getMonth() === currentMonth &&
+        orderDate.getFullYear() === currentYear
+      );
     });
 
     // Calculate total revenue
-    const totalRevenue = orders.reduce((sum, order) => sum + (order.total_amount || 0), 0);
+    const totalRevenue = orders.reduce(
+      (sum, order) => sum + (order.total_amount || 0),
+      0
+    );
 
     // Calculate low stock items (stock < 10)
     const lowStockItems = products.filter((product) => product.stock < 10);
 
     // Calculate active deliveries (in-transit orders)
-    const activeDeliveries = orders.filter((order) => order.status === ORDER_STATUSES.IN_TRANSIT);
+    const activeDeliveries = orders.filter(
+      (order) => order.status === ORDER_STATUSES.IN_TRANSIT
+    );
+
+    // Calculate active discounts
+    const activeDiscounts = products.filter(
+      (product) => product.discount_active === true
+    );
 
     return {
       totalRevenue,
@@ -52,6 +81,7 @@ const Dashboard = ({ userRole, setActiveSection }) => {
       lowStockItems: lowStockItems.length,
       activeDeliveries: activeDeliveries.length,
       pendingReviews: pendingReviews.length,
+      activeDiscounts: activeDiscounts.length,
     };
   }, [orders, products, pendingReviews]);
 
@@ -83,13 +113,16 @@ const Dashboard = ({ userRole, setActiveSection }) => {
           stats: [
             {
               label: "Total Revenue",
-              value: `$${statistics.totalRevenue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`,
+              value: `$${statistics.totalRevenue.toLocaleString("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}`,
               icon: "dollar",
               color: "from-sand to-sage",
             },
             {
               label: "Active Discounts",
-              value: "0",
+              value: statistics.activeDiscounts.toString(),
               icon: "tag",
               color: "from-success-light to-success",
             },
@@ -357,13 +390,20 @@ const Dashboard = ({ userRole, setActiveSection }) => {
       <div className="bg-linear-to-br from-sand via-sage to-sand rounded-3xl p-8 text-white shadow-xl">
         <h2 className="text-3xl font-bold mb-2">{content.title}</h2>
         <p className="text-white/90">
-          Manage your {USER_ROLE_LABELS[userRole].toLowerCase()} responsibilities
+          Manage your {USER_ROLE_LABELS[userRole].toLowerCase()}{" "}
+          responsibilities
         </p>
       </div>
 
       {/* Quick Stats */}
       {content.stats.length > 0 && (
-        <div className={`grid grid-cols-1 ${content.stats.length === 4 ? 'md:grid-cols-2 lg:grid-cols-4' : 'md:grid-cols-3'} gap-6`}>
+        <div
+          className={`grid grid-cols-1 ${
+            content.stats.length === 4
+              ? "md:grid-cols-2 lg:grid-cols-4"
+              : "md:grid-cols-3"
+          } gap-6`}
+        >
           {content.stats.map((stat, index) => (
             <div
               key={index}
@@ -383,7 +423,9 @@ const Dashboard = ({ userRole, setActiveSection }) => {
                   </svg>
                 </div>
                 <div>
-                  <p className="text-2xl font-bold text-gray-900">{stat.value}</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {stat.value}
+                  </p>
                   <p className="text-sm text-gray-500">{stat.label}</p>
                 </div>
               </div>
@@ -416,7 +458,9 @@ const Dashboard = ({ userRole, setActiveSection }) => {
                 <p className="font-bold text-gray-900 group-hover:text-sand transition-colors">
                   {action.label}
                 </p>
-                <p className="text-sm text-gray-500 mt-1">{action.description}</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  {action.description}
+                </p>
               </div>
             </button>
           ))}
