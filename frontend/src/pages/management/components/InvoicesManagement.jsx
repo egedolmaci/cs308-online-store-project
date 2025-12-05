@@ -63,7 +63,7 @@ const InvoicesManagement = () => {
     doc.text(order.id.toString(), 50, 50);
     doc.text(order.created_at || "N/A", 50, 58);
     doc.text(ORDER_STATUS_LABELS[order.status] || order.status, 50, 66);
-    doc.text(order.user_name || "N/A", 50, 74);
+    doc.text(order.customer_name || order.user_name || "N/A", 50, 74);
 
     // Delivery Address
     if (order.delivery_address) {
@@ -97,7 +97,7 @@ const InvoicesManagement = () => {
         yPos = 20;
       }
 
-      const itemName = item.product?.name || `Product #${item.product_id}`;
+      const itemName = item.product_name || item.product?.name || `Product #${item.product_id}`;
       const itemLines = doc.splitTextToSize(itemName, 85);
 
       doc.setFontSize(10);
@@ -114,11 +114,25 @@ const InvoicesManagement = () => {
       }
     });
 
-    // Total
+    // Totals
     yPos += 10;
     doc.setDrawColor(...textColor);
     doc.setLineWidth(0.5);
     doc.line(130, yPos, 190, yPos);
+
+    yPos += 10;
+    doc.setFontSize(11);
+    doc.setFont(undefined, "normal");
+    doc.text("Subtotal:", 130, yPos);
+    doc.text(`$${(order.total_amount - order.tax_amount - order.shipping_amount).toFixed(2)}`, 170, yPos);
+
+    yPos += 8;
+    doc.text("Tax:", 130, yPos);
+    doc.text(`$${order.tax_amount.toFixed(2)}`, 170, yPos);
+
+    yPos += 8;
+    doc.text("Shipping:", 130, yPos);
+    doc.text(`$${order.shipping_amount.toFixed(2)}`, 170, yPos);
 
     yPos += 10;
     doc.setFontSize(12);
@@ -170,7 +184,7 @@ const InvoicesManagement = () => {
           <p><strong>Order ID:</strong> ${order.id}</p>
           <p><strong>Date:</strong> ${order.created_at}</p>
           <p><strong>Status:</strong> ${ORDER_STATUS_LABELS[order.status]}</p>
-          <p><strong>Customer:</strong> ${order.user_name || "N/A"}</p>
+          <p><strong>Customer:</strong> ${order.customer_name || order.user_name || "N/A"}</p>
           ${order.delivery_address ? `<p><strong>Address:</strong> ${order.delivery_address}</p>` : ""}
 
           <table>
@@ -187,7 +201,7 @@ const InvoicesManagement = () => {
                 .map(
                   (item) => `
                 <tr>
-                  <td>${item.product?.name || `Product #${item.product_id}`}</td>
+                  <td>${item.product_name || item.product?.name || `Product #${item.product_id}`}</td>
                   <td>${item.quantity}</td>
                   <td>$${item.product_price.toFixed(2)}</td>
                   <td>$${(item.product_price * item.quantity).toFixed(2)}</td>
@@ -199,7 +213,10 @@ const InvoicesManagement = () => {
           </table>
 
           <div class="total">
-            Total: $${order.total_amount.toFixed(2)}
+            <div><strong>Subtotal:</strong> $${(order.total_amount - order.tax_amount - order.shipping_amount).toFixed(2)}</div>
+            <div><strong>Tax:</strong> $${order.tax_amount.toFixed(2)}</div>
+            <div><strong>Shipping:</strong> $${order.shipping_amount.toFixed(2)}</div>
+            <div style="margin-top:6px;"><strong>Total:</strong> $${order.total_amount.toFixed(2)}</div>
           </div>
 
           <script>window.print(); window.onafterprint = function(){ window.close(); }</script>
