@@ -51,15 +51,19 @@ export const fetchOrderById = createAsyncThunk(
 // Create a new order
 export const createOrder = createAsyncThunk(
   "orders/createOrder",
-  async (orderData, { rejectWithValue }) => {
+  async (orderData, { rejectWithValue, getState }) => {
     try {
+      // Get user address from Redux state
+      const { user } = getState();
+      const deliveryAddress = user.address || "No address provided";
+
       const orderDataAPIFormatted = orderData.map((item) => ({
         product_id: item.id,
         quantity: item.quantity,
       }));
       const orderDataFinal = {
         items: orderDataAPIFormatted,
-        delivery_address: "adressData",
+        delivery_address: deliveryAddress,
       };
       const response = await ordersAPI.createOrder(orderDataFinal);
       return response;

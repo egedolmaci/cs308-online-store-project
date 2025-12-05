@@ -31,14 +31,6 @@ const Profile = () => {
     dispatch(fetchUserOrders());
   }, [dispatch]);
 
-  // User's single address
-  const [address, setAddress] = useState({
-    street: "123 Fashion Avenue",
-    city: "New York",
-    state: "NY",
-    zip: "10001",
-    country: "USA",
-  });
 
   const handleLogout = () => {
     dispatch(logoutUser());
@@ -52,20 +44,18 @@ const Profile = () => {
           <Dashboard
             user={user}
             orders={orders}
-            address={address}
             setActiveSection={setActiveSection}
           />
         );
       case "orders":
         return <OrderHistory orders={orders} />;
       case "personal":
-        return <PersonalDetails user={user} address={address} />;
+        return <PersonalDetails />;
       default:
         return (
           <Dashboard
             user={user}
             orders={orders}
-            address={address}
             setActiveSection={setActiveSection}
           />
         );

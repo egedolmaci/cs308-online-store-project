@@ -221,5 +221,15 @@ export const reviewsAPI = {
   },
 };
 
+export const usersAPI = {
+  updateUserInfo: async (userId, userData) => {
+    const response = await apiClient.put(
+      `${API_ENDPOINTS.USERS}/${userId}`,
+      userData
+    );
+    return response.data;
+  },
+};
+
 // Export the configured axios instance for custom requests
 export default apiClient;

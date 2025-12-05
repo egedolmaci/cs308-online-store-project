@@ -1,16 +1,25 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Filter from "./components/Filter";
 import ItemGrid from "./components/ItemGrid";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { fetchProducts } from "../../store/slices/productsSlice";
+import LoadingScreen from "../../ui/components/LoadingScreen";
 
 function Store() {
 
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [sortBy, setSortBy] = useState("name");
   const [searchQuery, setSearchQuery] = useState("");
+  const dispatch = useDispatch();
 
   const categories = useSelector((state) => state.products.categories);
   const products = useSelector((state) => state.products.items);
+
+  const loading = useSelector((state) => state.products.loading);
+
+  useEffect(() => {
+    dispatch(fetchProducts());
+  }, []);
 
   // Filter products
   const filteredProducts = products.filter((product) => {
@@ -44,6 +53,12 @@ function Store() {
         return a.name.localeCompare(b.name);
     }
   });
+
+  if (loading) {
+    return (
+      <LoadingScreen message="Loading products..." />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-linear-to-br from-linen via-cream to-linen">

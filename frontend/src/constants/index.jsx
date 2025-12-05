@@ -14,6 +14,7 @@ export const API_ENDPOINTS = {
   ORDERS: "/orders",
   CATEGORIES: "/categories",
   reviews: "/reviews",
+  USERS: "/users",
   // Add other endpoints here
 };
 
