@@ -64,7 +64,10 @@ export const applyDiscount = createAsyncThunk(
   "products/applyDiscount",
   async ({ productIds, discountRate }, { rejectWithValue }) => {
     try {
-      const response = await productsAPI.applyDiscount(productIds, discountRate);
+      const response = await productsAPI.applyDiscount(
+        productIds,
+        discountRate
+      );
       return response;
     } catch (error) {
       return rejectWithValue(
@@ -91,7 +94,7 @@ export const clearDiscount = createAsyncThunk(
 const initialState = {
   items: [], // Array of products
   categories: [], // Available categories
-  loading: false,
+  loading: true,
   error: null,
   discountStatus: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
   clearDiscountStatus: "idle", // 'idle' | 'loading' | 'succeeded' | 'failed'
@@ -245,6 +248,7 @@ export const selectProductsLoading = (state) => state.products.loading;
 export const selectProductsError = (state) => state.products.error;
 export const selectProductCategories = (state) => state.products.categories;
 export const selectDiscountStatus = (state) => state.products.discountStatus;
-export const selectClearDiscountStatus = (state) => state.products.clearDiscountStatus;
+export const selectClearDiscountStatus = (state) =>
+  state.products.clearDiscountStatus;
 
 export default productsSlice.reducer;

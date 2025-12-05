@@ -1,5 +1,5 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import { authAPI } from "../../api";
+import { authAPI, usersAPI } from "../../api";
 
 // Async thunk for login
 export const loginUser = createAsyncThunk(
@@ -61,12 +61,24 @@ export const me = createAsyncThunk(
   }
 );
 
+export const updateUserInfo = createAsyncThunk(
+  "user/updateUserInfo",
+  async ({ userId, userData }, { rejectWithValue }) => {
+    try {
+      return await usersAPI.updateUserInfo(userId, userData);
+    } catch (error) {
+      return rejectWithValue(error.message || "Update user info failed");
+    }
+  }
+);
+
 const initialState = {
   id: null,
   email: null,
   role: null,
   firstName: null,
   lastName: null,
+  address: null,
   isAuthenticated: false,
   isLoading: true,
   error: null,
@@ -89,6 +101,7 @@ const userSlice = createSlice({
       state.id = null;
       state.email = null;
       state.role = null;
+      state.address = null;
       state.isAuthenticated = false;
       state.error = null;
     },
@@ -119,6 +132,7 @@ const userSlice = createSlice({
         state.lastName = action.payload.last_name;
         state.email = action.payload.email;
         state.role = action.payload.role;
+        state.address = action.payload.address;
         state.isAuthenticated = true;
         state.error = null;
       })
@@ -153,6 +167,7 @@ const userSlice = createSlice({
         state.isAuthenticated = false;
         state.firstName = null;
         state.lastName = null;
+        state.address = null;
         state.error = null;
       })
       .addCase(logoutUser.rejected, (state, action) => {
@@ -170,6 +185,7 @@ const userSlice = createSlice({
         state.lastName = action.payload.last_name;
         state.email = action.payload.email;
         state.role = action.payload.role;
+        state.address = action.payload.address;
         state.isAuthenticated = true;
         state.error = null;
       })
@@ -181,7 +197,25 @@ const userSlice = createSlice({
         state.isAuthenticated = false;
         state.firstName = null;
         state.lastName = null;
+        state.address = null;
         state.error = null;
+      })
+      // Update user info cases
+      .addCase(updateUserInfo.pending, (state) => {
+        state.isLoading = true;
+        state.error = null;
+      })
+      .addCase(updateUserInfo.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.firstName = action.payload.first_name;
+        state.lastName = action.payload.last_name;
+        state.email = action.payload.email;
+        state.address = action.payload.address;
+        state.error = null;
+      })
+      .addCase(updateUserInfo.rejected, (state, action) => {
+        state.isLoading = false;
+        state.error = action.payload;
       });
   },
 });

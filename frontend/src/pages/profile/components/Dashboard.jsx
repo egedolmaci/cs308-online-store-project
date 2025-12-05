@@ -1,6 +1,6 @@
 import { ORDER_STATUS_LABELS } from "../../../constants";
 
-const Dashboard = ({ user, orders, address, setActiveSection }) => {
+const Dashboard = ({ user, orders, setActiveSection }) => {
   return (
     <div className="space-y-6">
       {/* Welcome Section */}
@@ -14,7 +14,7 @@ const Dashboard = ({ user, orders, address, setActiveSection }) => {
       </div>
 
       {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Total Orders */}
         <div className="bg-white rounded-3xl p-6 shadow-lg border border-sand/20 hover:shadow-xl transition-shadow duration-300">
           <div className="flex items-center gap-4">
@@ -65,33 +65,6 @@ const Dashboard = ({ user, orders, address, setActiveSection }) => {
                 {orders.length > 0 ? ORDER_STATUS_LABELS[orders[0].status] : "No Orders"}
               </p>
               <p className="text-sm text-gray-500">Last Order</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Shipping Address Status */}
-        <div className="bg-white rounded-3xl p-6 shadow-lg border border-sand/20 hover:shadow-xl transition-shadow duration-300">
-          <div className="flex items-center gap-4">
-            <div className="w-12 h-12 bg-linear-to-br from-sage to-linen rounded-2xl flex items-center justify-center">
-              <svg
-                className="w-6 h-6 text-gray-700"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
-                />
-              </svg>
-            </div>
-            <div>
-              <p className="text-lg font-bold text-gray-900">
-                {address?.city ? `${address.city}, ${address.state}` : "Not Set"}
-              </p>
-              <p className="text-sm text-gray-500">Shipping Address</p>
             </div>
           </div>
         </div>

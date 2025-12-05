@@ -1,24 +1,68 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { updateUserInfo } from "../../../store/slices/userSlice";
 
-const PersonalDetails = ({ user, address }) => {
+const PersonalDetails = () => {
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user);
+  const { isLoading } = user;
+
+  // Parse address string from user state
+  const parseAddress = (addressString) => {
+    if (!addressString) {
+      return { street: "", city: "", state: "", zip: "", country: "" };
+    }
+    // Split by spaces and extract parts
+    const parts = addressString.trim().split(/\s+/);
+    const country = parts.pop() || "";
+    const zip = parts.pop() || "";
+    const state = parts.pop() || "";
+    const city = parts.pop() || "";
+    const street = parts.join(" ") || "";
+
+    return { street, city, state, zip, country };
+  };
+
   const [editingPersonalDetails, setEditingPersonalDetails] = useState(false);
   const [personalDetailsForm, setPersonalDetailsForm] = useState({
-    firstName: user.firstName,
-    lastName: user.lastName,
-    email: user.email,
-    phone: user.phone,
-    street: address?.street || "",
-    city: address?.city || "",
-    state: address?.state || "",
-    zip: address?.zip || "",
-    country: address?.country || "",
+    firstName: user.firstName || "",
+    lastName: user.lastName || "",
+    email: user.email || "",
+    ...parseAddress(user.address),
   });
 
-  const handleSavePersonalDetails = () => {
-    // TODO: Implement actual API call
-    console.log("Saving personal details:", personalDetailsForm);
-    setEditingPersonalDetails(false);
-    alert("Personal details updated successfully!");
+  // Update form when user data changes
+  useEffect(() => {
+    setPersonalDetailsForm({
+      firstName: user.firstName || "",
+      lastName: user.lastName || "",
+      email: user.email || "",
+      ...parseAddress(user.address),
+    });
+  }, [user.firstName, user.lastName, user.email, user.address]);
+
+  const handleSavePersonalDetails = async () => {
+    try {
+      const result = await dispatch(
+        updateUserInfo({
+          userId: user.id,
+          userData: {
+            first_name: personalDetailsForm.firstName,
+            last_name: personalDetailsForm.lastName,
+            address: (personalDetailsForm.street + " " +
+              personalDetailsForm.city + " " +
+              personalDetailsForm.state + " " + personalDetailsForm.zip + " " +
+              personalDetailsForm.country),
+          },
+        })
+      ).unwrap();
+
+      console.log("Personal details updated successfully:", result);
+      setEditingPersonalDetails(false);
+    } catch (err) {
+      console.error("Failed to update personal details:", err);
+      alert(`Failed to update personal details: ${err}`);
+    }
   };
 
   return (
@@ -194,14 +238,16 @@ const PersonalDetails = ({ user, address }) => {
               <button
                 type="button"
                 onClick={handleSavePersonalDetails}
-                className="flex-1 py-3 rounded-xl bg-gray-900 text-white font-bold hover:bg-gray-800 hover:shadow-lg transition-all duration-300 active:scale-95"
+                disabled={isLoading}
+                className="flex-1 py-3 rounded-xl bg-gray-900 text-white font-bold hover:bg-gray-800 hover:shadow-lg transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Save Changes
+                {isLoading ? "Saving..." : "Save Changes"}
               </button>
               <button
                 type="button"
                 onClick={() => setEditingPersonalDetails(false)}
-                className="flex-1 py-3 rounded-xl border-2 border-gray-900 text-gray-900 font-bold hover:bg-gray-50 hover:shadow-lg transition-all duration-300 active:scale-95"
+                disabled={isLoading}
+                className="flex-1 py-3 rounded-xl border-2 border-gray-900 text-gray-900 font-bold hover:bg-gray-50 hover:shadow-lg transition-all duration-300 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Cancel
               </button>
@@ -252,13 +298,11 @@ const PersonalDetails = ({ user, address }) => {
                   <h3 className="text-lg font-bold text-gray-900 mb-1">
                     Shipping Address
                   </h3>
-                  {address ? (
+                  {user.address ? (
                     <div className="space-y-1 text-sm text-gray-600 mt-2">
-                      <p className="text-gray-900 font-semibold">{address.street}</p>
-                      <p>
-                        {address.city}, {address.state} {address.zip}
+                      <p className="text-gray-900 font-semibold">
+                        {user.address}
                       </p>
-                      <p>{address.country}</p>
                     </div>
                   ) : (
                     <p className="text-sm text-gray-500 mt-2">
