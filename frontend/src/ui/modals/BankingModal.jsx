@@ -31,6 +31,9 @@ const BankingModal = () => {
 
   const handleClose = () => {
     dispatch(clearModal());
+    if (step === "invoice") {
+      dispatch(clearCart());
+    }
   };
 
   const handleInputChange = (e) => {
