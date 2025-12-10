@@ -129,7 +129,7 @@ const ReviewSection = ({ productId }) => {
               className="bg-gradient-to-br from-linen to-cream rounded-2xl p-6 border-2 border-sand/30 hover:shadow-lg transition-all duration-300"
             >
               {/* Review Header */}
-              <div className="flex items-start justify-between mb-4">
+              <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <h4 className="font-bold text-gray-900">
@@ -144,7 +144,9 @@ const ReviewSection = ({ productId }) => {
               </div>
 
               {/* Review Content */}
-              <p className="text-gray-700 leading-relaxed">{review.is_approved ? review.comment : "This review is pending approval."}</p>
+              {review.is_approved &&
+                <p className="mt-4 text-gray-700 leading-relaxed">{review.is_approved ? review.comment : "This review is pending approval."}</p>
+              }
             </div>
           ))}
         </div>

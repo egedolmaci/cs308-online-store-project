@@ -219,7 +219,7 @@ const OrdersManagement = () => {
                             {item.product_name || `Product #${item.product_id}`}
                           </p>
                           <p>
-                            Qty: {item.quantity} × ${item.price?.toFixed(2) || "0.00"}
+                            Qty: {item.quantity} × ${item.product_price?.toFixed(2) || "0.00"}
                           </p>
                         </div>
                       ))}
