@@ -3,13 +3,20 @@ Review Domain Schemas (Pydantic models for API validation)
 """
 from typing import Optional
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class ReviewCreate(BaseModel):
     """Schema for creating a review."""
-    rating: int = Field(ge=1, le=5, description="Rating between 1 and 5 stars")
+    rating: Optional[int] = Field(None, ge=1, le=5, description="Optional rating between 1 and 5 stars")
     comment: Optional[str] = Field(None, min_length=10, max_length=1000, description="Optional comment (min 10 chars)")
+
+    @model_validator(mode='after')
+    def check_at_least_one_field(self):
+        """Ensure at least one of rating or comment is provided."""
+        if self.rating is None and (self.comment is None or not self.comment.strip()):
+            raise ValueError("At least one of rating or comment must be provided")
+        return self
 
 
 class ReviewResponse(BaseModel):
@@ -19,7 +26,7 @@ class ReviewResponse(BaseModel):
     user_id: str
     user_name: str
     order_id: int
-    rating: int
+    rating: Optional[int]
     comment: Optional[str]
     is_approved: bool
     approved_by: Optional[str]

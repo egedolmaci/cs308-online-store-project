@@ -32,10 +32,12 @@ const ReviewSection = ({ productId }) => {
     fetchReviews(); // Refresh reviews after adding
   };
 
-  // Calculate average rating
+  // Calculate average rating (only from reviews with ratings)
+  const reviewsWithRating = reviews.filter((r) => r.rating !== null);
   const averageRating =
-    reviews.length > 0
-      ? reviews.reduce((sum, review) => sum + review.rating, 0) / reviews.length
+    reviewsWithRating.length > 0
+      ? reviewsWithRating.reduce((sum, review) => sum + review.rating, 0) /
+        reviewsWithRating.length
       : 0;
 
   const renderStars = (rating) => {
@@ -73,11 +75,20 @@ const ReviewSection = ({ productId }) => {
           </h2>
           {reviews.length > 0 && (
             <div className="flex items-center gap-3">
-              {renderStars(Math.round(averageRating))}
-              <span className="text-2xl font-bold text-gray-900">
-                {averageRating.toFixed(1)}
-              </span>
-              <span className="text-gray-500">({reviews.length} reviews)</span>
+              {reviewsWithRating.length > 0 ? (
+                <>
+                  {renderStars(Math.round(averageRating))}
+                  <span className="text-2xl font-bold text-gray-900">
+                    {averageRating.toFixed(1)}
+                  </span>
+                  <span className="text-gray-500">
+                    ({reviewsWithRating.length}{" "}
+                    {reviewsWithRating.length === 1 ? "rating" : "ratings"})
+                  </span>
+                </>
+              ) : (
+                <span className="text-gray-500">({reviews.length} reviews)</span>
+              )}
             </div>
           )}
         </div>
@@ -135,7 +146,7 @@ const ReviewSection = ({ productId }) => {
                     <h4 className="font-bold text-gray-900">
                       {review.user_name || "Anonymous"}
                     </h4>
-                    {renderStars(review.rating)}
+                    {review.rating !== null && renderStars(review.rating)}
                   </div>
                   <p className="text-sm text-gray-500">
                     {formatDate(review.created_at)}
@@ -144,9 +155,16 @@ const ReviewSection = ({ productId }) => {
               </div>
 
               {/* Review Content */}
-              {review.is_approved &&
-                <p className="mt-4 text-gray-700 leading-relaxed">{review.is_approved ? review.comment : "This review is pending approval."}</p>
-              }
+              {review.comment && review.is_approved && (
+                <p className="mt-4 text-gray-700 leading-relaxed">
+                  {review.comment}
+                </p>
+              )}
+              {review.comment && !review.is_approved && (
+                <p className="mt-4 text-gray-500 italic">
+                  This review is pending approval.
+                </p>
+              )}
             </div>
           ))}
         </div>

@@ -13,13 +13,15 @@ const AddReviewForm = ({ productId, onReviewAdded, onCancel }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (rating === 0) {
-      setError("Please select a rating");
+    // Validate at least one field is provided
+    if (rating === 0 && comment.trim().length === 0) {
+      setError("Please provide either a rating or a comment");
       return;
     }
 
-    if (comment.trim().length < 10) {
-      setError("Review must be at least 10 characters long");
+    // Validate comment length if provided
+    if (comment.trim().length > 0 && comment.trim().length < 10) {
+      setError("Comment must be at least 10 characters long");
       return;
     }
 
@@ -27,10 +29,11 @@ const AddReviewForm = ({ productId, onReviewAdded, onCancel }) => {
       setSubmitting(true);
       setError(null);
 
-      await reviewsAPI.createReview(productId, {
-        rating,
-        comment: comment.trim(),
-      });
+      const reviewData = {};
+      if (rating > 0) reviewData.rating = rating;
+      if (comment.trim().length > 0) reviewData.comment = comment.trim();
+
+      await reviewsAPI.createReview(productId, reviewData);
 
       setSuccess(true);
       setTimeout(() => {
@@ -101,7 +104,7 @@ const AddReviewForm = ({ productId, onReviewAdded, onCancel }) => {
         {/* Rating Input */}
         <div>
           <label className="block text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3">
-            Rating *
+            Rating
           </label>
           {renderStarInput()}
         </div>
@@ -112,7 +115,7 @@ const AddReviewForm = ({ productId, onReviewAdded, onCancel }) => {
             htmlFor="comment"
             className="block text-sm font-semibold text-gray-700 uppercase tracking-wider mb-3"
           >
-            Your Review *
+            Your Review
           </label>
           <textarea
             id="comment"
@@ -124,7 +127,8 @@ const AddReviewForm = ({ productId, onReviewAdded, onCancel }) => {
             disabled={submitting}
           />
           <p className="text-sm text-gray-500 mt-2">
-            {comment.length} characters (minimum 10 required)
+            {comment.length} characters
+            {comment.length > 0 && comment.length < 10 && " (minimum 10 required)"}
           </p>
         </div>
 

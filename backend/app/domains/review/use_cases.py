@@ -17,7 +17,7 @@ def create_review(
     user_id: str,
     user_name: str,
     product_id: int,
-    rating: int,
+    rating: Optional[int] = None,
     comment: Optional[str] = None
 ) -> Optional[Review]:
     """
@@ -26,6 +26,7 @@ def create_review(
     Business rules:
     - User must have purchased the product in a delivered order
     - User can only review each product once (regardless of how many times purchased)
+    - At least one of rating or comment must be provided
     - Ratings (1-5) are automatically approved
     - Comments require product manager approval
 
@@ -34,7 +35,7 @@ def create_review(
         user_id: UUID of the user creating the review
         user_name: Full name of the user (for display)
         product_id: ID of the product being reviewed
-        rating: Rating (1-5 stars)
+        rating: Optional rating (1-5 stars)
         comment: Optional comment text
 
     Returns:
@@ -42,6 +43,10 @@ def create_review(
     """
     review_repo = ReviewRepository(db)
     order_repo = OrderRepository(db)
+
+    # 0. Validate at least one field is provided
+    if rating is None and (comment is None or not comment.strip()):
+        return None  # Must provide either rating or comment
 
     # 1. Check if user already reviewed this product (regardless of order)
     existing_reviews = db.query(ReviewModel).filter(

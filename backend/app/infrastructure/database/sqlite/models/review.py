@@ -21,7 +21,7 @@ class ReviewModel(Base):
     order_id = Column(Integer, ForeignKey('orders.id', ondelete='CASCADE'), nullable=False, index=True)
 
     # Review content
-    rating = Column(Integer, nullable=False)  # 1-5 stars
+    rating = Column(Integer, nullable=True)  # 1-5 stars (optional)
     comment = Column(Text, nullable=True)  # Optional comment
 
     # Approval workflow
