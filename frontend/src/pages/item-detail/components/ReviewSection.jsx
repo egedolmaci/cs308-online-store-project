@@ -46,10 +46,11 @@ const ReviewSection = ({ productId }) => {
         {[1, 2, 3, 4, 5].map((star) => (
           <Star
             key={star}
-            className={`w-5 h-5 ${star <= rating
-              ? "fill-yellow-400 text-yellow-400"
-              : "text-gray-300"
-              }`}
+            className={`w-5 h-5 ${
+              star <= rating
+                ? "fill-yellow-400 text-yellow-400"
+                : "text-gray-300"
+            }`}
           />
         ))}
       </div>
@@ -87,7 +88,9 @@ const ReviewSection = ({ productId }) => {
                   </span>
                 </>
               ) : (
-                <span className="text-gray-500">({reviews.length} reviews)</span>
+                <span className="text-gray-500">
+                  ({reviews.length} reviews)
+                </span>
               )}
             </div>
           )}
@@ -160,9 +163,16 @@ const ReviewSection = ({ productId }) => {
                   {review.comment}
                 </p>
               )}
-              {review.comment && !review.is_approved && (
+              {review.comment &&
+                !review.is_approved &&
+                review.status != "disapproved" && (
+                  <p className="mt-4 text-gray-500 italic">
+                    This review is pending approval.
+                  </p>
+                )}
+              {review.status === "disapproved" && (
                 <p className="mt-4 text-gray-500 italic">
-                  This review is pending approval.
+                  This review is not approved!
                 </p>
               )}
             </div>
