@@ -16,6 +16,7 @@ import Header from "./ui/components/Header";
 import Footer from "./ui/components/Footer";
 import ModalContainer from "./ui/components/ModalContainer";
 import { me } from "./store/slices/userSlice";
+import { fetchProducts } from "./store/slices/productsSlice";
 import { MANAGEMENT_ROLES } from "./constants";
 import ManagementPage from "./pages/management";
 import LoadingScreen from "./ui/components/LoadingScreen";
@@ -31,6 +32,7 @@ function AppContent() {
 
   useEffect(() => {
     dispatch(me()); // Initialize authentication state on app load
+    dispatch(fetchProducts()); // Preload products data
   }, []);
 
   if (isLoading) {
