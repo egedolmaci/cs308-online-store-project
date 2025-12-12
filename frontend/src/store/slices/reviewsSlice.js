@@ -40,6 +40,19 @@ export const approveReview = createAsyncThunk(
   }
 );
 
+export const disapproveReview = createAsyncThunk(
+  "reviews/disapproveReview",
+  async (reviewId, { rejectWithValue }) => {
+    try {
+      await reviewsAPI.disapproveReview(reviewId);
+      return reviewId;
+    } catch (error) {
+      return rejectWithValue(
+        error.response?.data?.message || "Failed to disapprove review"
+      );
+    }
+  }
+);
 const reviewsSlice = createSlice({
   name: "reviews",
   initialState,
@@ -81,6 +94,23 @@ const reviewsSlice = createSlice({
         state.error = null;
       })
       .addCase(approveReview.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      });
+     
+    builder
+      .addCase(disapproveReview.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(disapproveReview.fulfilled, (state, action) => {
+        state.loading = false;
+        state.pendingReviews = state.pendingReviews.filter(
+          (review) => review.id !== action.payload
+        );
+        state.error = null;
+      })
+      .addCase(disapproveReview.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
       });

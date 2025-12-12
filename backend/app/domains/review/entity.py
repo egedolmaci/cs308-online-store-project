@@ -4,7 +4,12 @@ Review Domain Entity
 from dataclasses import dataclass
 from typing import Optional
 from datetime import datetime
+from enum import Enum
 
+class ReviewStatus(str, Enum):
+    PENDING = "pending"
+    APPROVED = "approved"
+    DISAPPROVED = "disapproved"
 
 @dataclass
 class Review:
@@ -17,6 +22,7 @@ class Review:
     order_id: int
     rating: Optional[int]  # 1-5 stars (optional)
     comment: Optional[str]
+    status: ReviewStatus
     is_approved: bool
     approved_by: Optional[str]  # UUID of product manager who approved
     approved_at: Optional[datetime]

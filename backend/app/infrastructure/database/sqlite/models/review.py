@@ -25,6 +25,7 @@ class ReviewModel(Base):
     comment = Column(Text, nullable=True)  # Optional comment
 
     # Approval workflow
+    status = Column(String(20), default="pending", nullable=False, index=True)
     is_approved = Column(Boolean, default=False, nullable=False, index=True)  # Comments need approval
     approved_by = Column(String(36), nullable=True)  # Product manager who approved
     approved_at = Column(DateTime(timezone=True), nullable=True)

@@ -4,7 +4,7 @@ Review Domain Schemas (Pydantic models for API validation)
 from typing import Optional
 from datetime import datetime
 from pydantic import BaseModel, ConfigDict, Field, model_validator
-
+from app.domains.review.entity import ReviewStatus
 
 class ReviewCreate(BaseModel):
     """Schema for creating a review."""
@@ -28,6 +28,7 @@ class ReviewResponse(BaseModel):
     order_id: int
     rating: Optional[int]
     comment: Optional[str]
+    status: ReviewStatus
     is_approved: bool
     approved_by: Optional[str]
     approved_at: Optional[datetime]

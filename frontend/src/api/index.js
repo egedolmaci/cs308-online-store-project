@@ -213,6 +213,12 @@ export const reviewsAPI = {
     );
     return response.data;
   },
+    disapproveReview: async (reviewId) => {
+    const response = await apiClient.delete(
+      `${API_ENDPOINTS.reviews}/${reviewId}/reject`
+    );
+    return response.data;
+  },
   fetchReviewById: async (reviewId) => {
     const response = await apiClient.get(
       `${API_ENDPOINTS.reviews}/${reviewId}`

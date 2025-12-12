@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from sqlalchemy import and_
 
 from app.infrastructure.database.sqlite.models.review import ReviewModel
-from app.domains.review.entity import Review
+from app.domains.review.entity import Review, ReviewStatus
 
 
 class ReviewRepository:
@@ -25,6 +25,7 @@ class ReviewRepository:
             order_id=review.order_id,
             rating=review.rating,
             comment=review.comment,
+            status=review.status.value, 
             is_approved=review.is_approved,
         )
 
@@ -51,10 +52,7 @@ class ReviewRepository:
     def get_pending_reviews(self) -> List[Review]:
         """Get all reviews pending approval."""
         models = self.db.query(ReviewModel).filter(
-            and_(
-                ReviewModel.is_approved == False,
-                ReviewModel.comment.isnot(None)  # Only reviews with comments need approval
-            )
+            ReviewModel.status == ReviewStatus.PENDING.value
         ).order_by(ReviewModel.created_at.asc()).all()
         return [self._to_entity(model) for model in models]
 
@@ -74,11 +72,10 @@ class ReviewRepository:
         model = self.db.query(ReviewModel).filter(ReviewModel.id == review_id).first()
         if not model:
             return None
-
+        model.status = ReviewStatus.APPROVED.value
         model.is_approved = True
         model.approved_by = approved_by
         model.approved_at = datetime.utcnow()
-
         self.db.commit()
         self.db.refresh(model)
         return self._to_entity(model)
@@ -88,11 +85,10 @@ class ReviewRepository:
         model = self.db.query(ReviewModel).filter(ReviewModel.id == review_id).first()
         if not model:
             return False
-
+        model.status = ReviewStatus.DISAPPROVED.value
         model.is_approved = False
         model.approved_by = None
         model.approved_at = None
-        
         self.db.commit()
         self.db.refresh(model)
         return True
@@ -114,6 +110,7 @@ class ReviewRepository:
             order_id=model.order_id,
             rating=model.rating,
             comment=model.comment,
+            status=ReviewStatus(model.status),
             is_approved=model.is_approved,
             approved_by=model.approved_by,
             approved_at=model.approved_at,

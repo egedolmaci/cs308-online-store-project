@@ -4,7 +4,7 @@ Review Domain Use Cases (Business Logic)
 from typing import List, Optional
 from sqlalchemy.orm import Session
 
-from app.domains.review.entity import Review
+from app.domains.review.entity import Review, ReviewStatus
 from app.domains.review.repository import ReviewRepository
 from app.domains.order.repository import OrderRepository
 from app.domains.order.entity import OrderStatus
@@ -81,6 +81,7 @@ def create_review(
     # 4. Create review
     # Comments require approval, ratings are auto-approved
     is_approved = comment is None or len(comment.strip()) == 0
+    status = ReviewStatus.APPROVED if is_approved else ReviewStatus.PENDING
 
     review = Review(
         id=None,
@@ -90,6 +91,7 @@ def create_review(
         order_id=valid_order_id,
         rating=rating,
         comment=comment if comment and comment.strip() else None,
+        status=status, 
         is_approved=is_approved,
         approved_by=None,
         approved_at=None,

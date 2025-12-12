@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   getPendingReviews,
   approveReview,
+  disapproveReview,
   selectPendingReviews,
   selectReviewsLoading,
   selectReviewsError,
@@ -23,6 +24,14 @@ const ReviewsManagement = () => {
       await dispatch(approveReview(reviewId)).unwrap();
     } catch (error) {
       alert(error || "Error approving review");
+    }
+  };
+
+  const handleDisapproveComment = async (reviewId) => {
+    try {
+      await dispatch(disapproveReview(reviewId)).unwrap();
+    } catch (error) {
+      alert(error || "Error disapproving review");
     }
   };
 
@@ -93,6 +102,12 @@ const ReviewsManagement = () => {
                     className="flex-1 px-4 py-2 rounded-xl bg-success-light text-success font-semibold hover:bg-success hover:text-white transition-all duration-300"
                   >
                     Approve
+                  </button>
+                  <button
+                    onClick={() => handleDisapproveComment(review.id)}
+                    className="flex-1 px-4 py-2 rounded-xl bg-error/10 text-error font-semibold hover:bg-error hover:text-white transition-all duration-300"
+                  >
+                    Disapprove
                   </button>
                 </div>
               </div>
