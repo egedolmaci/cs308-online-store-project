@@ -89,8 +89,12 @@ class ReviewRepository:
         if not model:
             return False
 
-        self.db.delete(model)
+        model.is_approved = False
+        model.approved_by = None
+        model.approved_at = None
+        
         self.db.commit()
+        self.db.refresh(model)
         return True
 
     def get_user_reviews(self, user_id: str) -> List[Review]:
