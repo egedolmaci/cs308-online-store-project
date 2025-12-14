@@ -237,5 +237,89 @@ export const usersAPI = {
   },
 };
 
+export const supportAPI = {
+  // Start a new conversation (for customers)
+  startConversation: async (data) => {
+    const response = await apiClient.post(
+      `${API_ENDPOINTS.SUPPORT}/conversations`,
+      data
+    );
+    return response.data;
+  },
+
+  // Get conversation queue (for support agents)
+  fetchQueue: async () => {
+    const response = await apiClient.get(
+      `${API_ENDPOINTS.SUPPORT}/conversations/queue`
+    );
+    return response.data;
+  },
+
+  // Get a specific conversation
+  getConversation: async (conversationId, conversationToken = null) => {
+    const params = conversationToken ? { conversation_token: conversationToken } : {};
+    const response = await apiClient.get(
+      `${API_ENDPOINTS.SUPPORT}/conversations/${conversationId}`,
+      { params }
+    );
+    return response.data;
+  },
+
+  // Claim a conversation (assign to current agent)
+  claimConversation: async (conversationId) => {
+    const response = await apiClient.post(
+      `${API_ENDPOINTS.SUPPORT}/conversations/${conversationId}/claim`
+    );
+    return response.data;
+  },
+
+  // Close a conversation
+  closeConversation: async (conversationId, resolutionNotes = null, conversationToken = null) => {
+    const params = conversationToken ? { conversation_token: conversationToken } : {};
+    const response = await apiClient.post(
+      `${API_ENDPOINTS.SUPPORT}/conversations/${conversationId}/close`,
+      { resolution_notes: resolutionNotes },
+      { params }
+    );
+    return response.data;
+  },
+
+  // Get messages for a conversation
+  getMessages: async (conversationId, conversationToken = null) => {
+    const params = conversationToken ? { conversation_token: conversationToken } : {};
+    const response = await apiClient.get(
+      `${API_ENDPOINTS.SUPPORT}/conversations/${conversationId}/messages`,
+      { params }
+    );
+    return response.data;
+  },
+
+  // Upload attachment
+  uploadAttachment: async (conversationId, file, conversationToken = null) => {
+    const formData = new FormData();
+    formData.append("file", file);
+    const params = conversationToken ? { conversation_token: conversationToken } : {};
+    const response = await apiClient.post(
+      `${API_ENDPOINTS.SUPPORT}/conversations/${conversationId}/attachments`,
+      formData,
+      {
+        params,
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    );
+    return response.data;
+  },
+
+  // Create WebSocket URL for real-time chat
+  getWebSocketUrl: (conversationId, conversationToken = null) => {
+    const wsBase = API_URL.replace(/^http/, "ws");
+    let url = `${wsBase}${API_ENDPOINTS.SUPPORT}/ws?conversation_id=${conversationId}`;
+    if (conversationToken) {
+      url += `&conversation_token=${conversationToken}`;
+    }
+    return url;
+  },
+};
+
 // Export the configured axios instance for custom requests
 export default apiClient;

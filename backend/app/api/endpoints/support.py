@@ -170,6 +170,16 @@ def start_conversation(
     messages = use_cases.recent_messages(db, conversation.id, limit=settings.SUPPORT_HISTORY_LIMIT)
     return _map_conversation(conversation, messages=messages)
 
+@router.get(
+    "/conversations/queue",
+    response_model=SupportQueueResponse,
+    dependencies=[Depends(require_roles("support_agent", "support_admin"))],
+)
+def get_queue(db=Depends(get_db)):
+    items = use_cases.list_queue(db, limit=settings.SUPPORT_QUEUE_LIMIT)
+    summaries = [_map_summary(item) for item in items]
+    return SupportQueueResponse(conversations=summaries)
+
 
 @router.get("/conversations/{conversation_id}", response_model=SupportConversationResponse)
 def get_conversation(
@@ -187,17 +197,6 @@ def get_conversation(
 
     messages = use_cases.recent_messages(db, conversation_id, limit=settings.SUPPORT_HISTORY_LIMIT)
     return _map_conversation(conversation, messages=messages)
-
-
-@router.get(
-    "/conversations/queue",
-    response_model=SupportQueueResponse,
-    dependencies=[Depends(require_roles("support_agent", "support_admin"))],
-)
-def get_queue(db=Depends(get_db)):
-    items = use_cases.list_queue(db, limit=settings.SUPPORT_QUEUE_LIMIT)
-    summaries = [_map_summary(item) for item in items]
-    return SupportQueueResponse(conversations=summaries)
 
 
 @router.post(

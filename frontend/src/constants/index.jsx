@@ -15,7 +15,7 @@ export const API_ENDPOINTS = {
   CATEGORIES: "/categories",
   reviews: "/reviews",
   USERS: "/users",
-  // Add other endpoints here
+  SUPPORT: "/support",
 };
 
 export const MODAL_NAMES = {

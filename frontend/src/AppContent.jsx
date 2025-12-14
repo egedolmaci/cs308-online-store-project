@@ -20,6 +20,7 @@ import { fetchProducts } from "./store/slices/productsSlice";
 import { MANAGEMENT_ROLES } from "./constants";
 import ManagementPage from "./pages/management";
 import LoadingScreen from "./ui/components/LoadingScreen";
+import LiveChatWidget from "./ui/chat/LiveChatWidget";
 
 function AppContent() {
   const isLoading = useSelector((state) => state.user.isLoading);
@@ -77,6 +78,7 @@ function AppContent() {
         <Route path="*" element={<NotFound />} />
       </Routes>
       <Footer />
+      {!isManagementUser && <LiveChatWidget />}
     </>
   );
 }
