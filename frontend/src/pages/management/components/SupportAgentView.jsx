@@ -74,6 +74,13 @@ const SupportAgentView = () => {
       const data = JSON.parse(event.data);
       if (data.type === "history") {
         setMessages(data.messages || []);
+        // Update conversation with context_snapshot if provided
+        if (data.context_snapshot) {
+          setActiveConversation((prev) => ({
+            ...prev,
+            context_snapshot: data.context_snapshot,
+          }));
+        }
       } else if (data.type === "message") {
         setMessages((prev) => [...prev, data.payload]);
         setIsTyping(false);
