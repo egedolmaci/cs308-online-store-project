@@ -1,5 +1,6 @@
-from typing import List, Optional
+from typing import List, Optional, Dict
 from datetime import datetime
+import json
 from sqlalchemy.orm import Session
 from app.infrastructure.database.sqlite.models.order import OrderModel, OrderItemModel
 from app.infrastructure.database.sqlite.models.user import UserModel
@@ -124,8 +125,8 @@ class OrderRepository:
         customer_name = self._get_customer_name(order.customer_id)
         return self._to_entity(order, customer_name)
 
-    def request_refund(self, order_id: int, reason: Optional[str] = None) -> Optional[Order]:
-        """Request a refund for a delivered order."""
+    def request_refund(self, order_id: int, reason: Optional[str] = None, items: Optional[List[Dict]] = None) -> Optional[Order]:
+        """Request a refund for a delivered order (optionally partial by items)."""
         order = self.db.query(OrderModel).filter(OrderModel.id == order_id).first()
         if not order:
             return None
@@ -139,16 +140,29 @@ class OrderRepository:
             if days_since_delivery > 30:
                 return None
 
+        # Validate requested items against order items
+        if items:
+            order_item_map = {item.product_id: item for item in order.items}
+            for payload in items:
+                product_id = payload.get("product_id")
+                qty = payload.get("quantity")
+                if not product_id or not qty or qty <= 0:
+                    return None
+                order_item = order_item_map.get(product_id)
+                if not order_item or qty > order_item.quantity:
+                    return None
+
         order.status = OrderStatus.REFUND_REQUESTED
         order.refund_requested_at = datetime.utcnow()
         order.refund_reason = reason  # Save the refund reason
+        order.refund_items = json.dumps(items) if items else None
 
         self.db.commit()
         self.db.refresh(order)
         customer_name = self._get_customer_name(order.customer_id)
         return self._to_entity(order, customer_name)
 
-    def approve_refund(self, order_id: int, refund_amount: float) -> Optional[Order]:
+    def approve_refund(self, order_id: int, refund_amount: float, items: Optional[List[Dict]] = None) -> Optional[Order]:
         """Approve a refund request."""
         order = self.db.query(OrderModel).filter(OrderModel.id == order_id).first()
         if not order:
@@ -160,6 +174,7 @@ class OrderRepository:
         order.status = OrderStatus.REFUNDED
         order.refunded_at = datetime.utcnow()
         order.refund_amount = refund_amount
+        order.refund_items = json.dumps(items) if items else order.refund_items
 
         self.db.commit()
         self.db.refresh(order)
@@ -176,6 +191,8 @@ class OrderRepository:
             return None
 
         order.status = OrderStatus.DELIVERED
+        order.refund_items = None
+        order.refund_amount = None
 
         self.db.commit()
         self.db.refresh(order)
@@ -223,5 +240,6 @@ class OrderRepository:
             refunded_at=model.refunded_at,
             refund_amount=model.refund_amount,
             refund_reason=model.refund_reason,
+            refund_items=json.loads(model.refund_items) if model.refund_items else None,
             customer_name=customer_name,
         )

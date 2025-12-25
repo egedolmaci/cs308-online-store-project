@@ -27,6 +27,7 @@ class OrderModel(Base):
     refunded_at = Column(DateTime(timezone=True), nullable=True)
     refund_amount = Column(Float, nullable=True)
     refund_reason = Column(String(500), nullable=True)  # Reason for refund request
+    refund_items = Column(String(1000), nullable=True)  # JSON payload of requested refund items
 
     # Relationship to order items
     items = relationship("OrderItemModel", back_populates="order", cascade="all, delete-orphan")

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional, List, Dict
 from datetime import datetime
 from enum import Enum
 
@@ -49,4 +49,5 @@ class Order:
     refunded_at: Optional[datetime] = None
     refund_amount: Optional[float] = None
     refund_reason: Optional[str] = None
+    refund_items: Optional[List[Dict]] = None  # Requested refund items (product_id, quantity)
     customer_name: Optional[str] = None

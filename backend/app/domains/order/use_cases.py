@@ -69,6 +69,14 @@ def _notify_if_stock_depleted(
     )
 
 
+def _process_payment_refund(order: Order, amount: float) -> bool:
+    """
+    Simulated refund processing (no external payment gateway in this project).
+    Always returns True.
+    """
+    return True
+
+
 def create_order(
     db: Session,
     customer_id: str,
@@ -110,7 +118,9 @@ def create_order(
         if product.stock < item_data["quantity"]:
             return None  # Insufficient stock
 
-        item_subtotal = product.price * item_data["quantity"]
+        # Use purchase-time effective price (discounted if applicable)
+        effective_price = getattr(product, "final_price", None) or product.price
+        item_subtotal = effective_price * item_data["quantity"]
         subtotal += item_subtotal
 
         order_items.append(
@@ -119,7 +129,7 @@ def create_order(
                 order_id=None,
                 product_id=product.id,
                 product_name=product.name,
-                product_price=product.price,
+                product_price=effective_price,
                 quantity=item_data["quantity"],
                 subtotal=item_subtotal,
             )
@@ -230,7 +240,7 @@ def cancel_order(
     return order
 
 
-def request_refund(db: Session, order_id: int, reason: Optional[str] = None) -> Optional[Order]:
+def request_refund(db: Session, order_id: int, reason: Optional[str] = None, items: Optional[List[dict]] = None) -> Optional[Order]:
     """
     Request a refund for a delivered order (within 30 days).
 
@@ -238,17 +248,19 @@ def request_refund(db: Session, order_id: int, reason: Optional[str] = None) -> 
         db: Database session
         order_id: ID of the order to refund
         reason: Optional reason for the refund request
+        items: Optional list of specific items/quantities to refund
 
     Returns:
         Updated Order entity if successful, None otherwise
     """
     repository = OrderRepository(db)
-    return repository.request_refund(order_id, reason)
+    return repository.request_refund(order_id, reason, items)
 
 
 def approve_refund(
     db: Session,
     order_id: int,
+    refund_amount: Optional[float] = None,
     wishlist_repo: Optional[WishlistRepository] = None,
     notifier: Optional[WishlistNotifier] = None,
 ) -> Optional[Order]:
@@ -258,6 +270,7 @@ def approve_refund(
     Args:
         db: Database session
         order_id: ID of the order to approve refund for
+        refund_amount: Optional override for refund amount (defaults to calculated)
 
     Returns:
         Updated Order entity if successful, None otherwise
@@ -268,18 +281,44 @@ def approve_refund(
     if not order:
         return None
 
-    # Calculate refund amount (the original purchase price with discount if applicable)
-    refund_amount = order.total_amount
+    # Determine which items were requested for refund; default to full order
+    refund_items = order.refund_items or [{"product_id": item.product_id, "quantity": item.quantity} for item in order.items]
 
-    approved_order = repository.approve_refund(order_id, refund_amount)
+    # Calculate refund amount (purchase-time prices, respect discounts at purchase time)
+    if refund_amount is None:
+        price_map = {item.product_id: item.product_price for item in order.items}
+        refund_amount = 0.0
+        for payload in refund_items:
+            pid = payload.get("product_id")
+            qty = payload.get("quantity", 0)
+            if pid is None or qty <= 0:
+                return None
+            unit_price = price_map.get(pid)
+            if unit_price is None:
+                return None
+            refund_amount += unit_price * qty
+
+    approved_order = repository.approve_refund(order_id, refund_amount, refund_items)
 
     if approved_order:
+        # Simulated payment refund (no external gateway)
+        _process_payment_refund(
+            approved_order, approved_order.refund_amount or refund_amount or 0.0
+        )
+
         # Add products back to stock
         product_repo = ProductRepository(db)
+        # Use requested quantities if present for restocking
+        restock_quantities = {
+            item["product_id"]: item["quantity"] for item in (approved_order.refund_items or refund_items or [])
+        }
         for item in approved_order.items:
+            requested_qty = restock_quantities.get(item.product_id, item.quantity)
+            if requested_qty <= 0:
+                continue
             product = product_repo.get_by_id(item.product_id)
             if product:
-                updated = product_repo.update(item.product_id, {"stock": product.stock + item.quantity})
+                updated = product_repo.update(item.product_id, {"stock": product.stock + requested_qty})
                 if updated:
                     _notify_if_restocked(wishlist_repo, notifier, product, updated)
 

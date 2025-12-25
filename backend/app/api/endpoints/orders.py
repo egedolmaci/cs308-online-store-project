@@ -16,8 +16,9 @@ from app.domains.order.schemas import (
 from app.domains.order import use_cases
 from app.api.endpoints.auth import get_current_user, require_roles
 from app.domains.identity.repository import User
-from app.infrastructure.notifications.invoice_email import send_order_invoice_email
+from app.infrastructure.notifications.invoice_email import send_order_invoice_email, send_refund_notification_email, send_refund_decision_email
 from app.core.config import get_settings
+from app.infrastructure.database.sqlite.models.user import UserModel
 
 router = APIRouter(prefix="/api/v1/orders", tags=["orders"])
 settings = get_settings()
@@ -259,7 +260,8 @@ def request_refund(
     if order_check.customer_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your order")
 
-    order = use_cases.request_refund(db, order_id, refund_data.reason)
+    items_payload = [item.model_dump() for item in refund_data.items] if refund_data.items else None
+    order = use_cases.request_refund(db, order_id, refund_data.reason, items_payload)
     if not order:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -269,7 +271,13 @@ def request_refund(
 
 
 @router.post("/{order_id}/refund/approve", response_model=OrderResponse)
-def approve_refund(order_id: int, approval_data: OrderRefundApproval, db: Session = Depends(get_db)):
+def approve_refund(
+    order_id: int,
+    approval_data: OrderRefundApproval,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_roles("sales_manager")),
+):
     """
     Approve or reject a refund request (for sales managers).
 
@@ -291,6 +299,7 @@ def approve_refund(order_id: int, approval_data: OrderRefundApproval, db: Sessio
         order = use_cases.approve_refund(
             db,
             order_id,
+            refund_amount=approval_data.refund_amount,
             wishlist_repo=wishlist_repo,
             notifier=notifier,
         )
@@ -300,6 +309,19 @@ def approve_refund(order_id: int, approval_data: OrderRefundApproval, db: Sessio
                 detail=f"Order with id {order_id} refund cannot be approved. "
                 "It must be in 'refund_requested' status.",
             )
+        # Notify customer about approval
+        customer = db.query(UserModel).filter(UserModel.id == order.customer_id).first()
+        if customer:
+            customer_name = f"{customer.first_name} {customer.last_name}".strip()
+            background_tasks.add_task(
+                send_refund_decision_email,
+                order,
+                customer.email,
+                True,
+                order.refund_amount or approval_data.refund_amount or 0.0,
+                approval_data.notes,
+                customer_name,
+            )
     else:
         order = use_cases.reject_refund(db, order_id)
         if not order:
@@ -307,6 +329,19 @@ def approve_refund(order_id: int, approval_data: OrderRefundApproval, db: Sessio
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=f"Order with id {order_id} refund cannot be rejected. "
                 "It must be in 'refund_requested' status.",
+            )
+        # Notify customer about rejection
+        customer = db.query(UserModel).filter(UserModel.id == order.customer_id).first()
+        if customer:
+            customer_name = f"{customer.first_name} {customer.last_name}".strip()
+            background_tasks.add_task(
+                send_refund_decision_email,
+                order,
+                customer.email,
+                False,
+                None,
+                approval_data.notes,
+                customer_name,
             )
     return order
 

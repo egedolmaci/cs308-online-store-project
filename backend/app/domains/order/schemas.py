@@ -60,6 +60,7 @@ class OrderResponse(BaseModel):
     refunded_at: Optional[datetime] = None
     refund_amount: Optional[float] = None
     refund_reason: Optional[str] = None
+    refund_items: Optional[List[dict]] = None
     customer_name: Optional[str] = None
 
     model_config = ConfigDict(from_attributes=True)
@@ -74,7 +75,22 @@ class OrderStatusUpdate(BaseModel):
 class OrderRefundRequest(BaseModel):
     """Schema for requesting a refund."""
 
+    class RefundItem(BaseModel):
+        product_id: int
+        quantity: int = Field(gt=0, description="Quantity to refund must be greater than 0")
+
     reason: Optional[str] = None
+    items: Optional[List[RefundItem]] = Field(
+        default=None,
+        description="List of items (product_id, quantity) to refund. If omitted, full order is requested.",
+    )
+
+    @field_validator("items")
+    @classmethod
+    def validate_items(cls, v):
+        if v is not None and len(v) == 0:
+            raise ValueError("Refund items list cannot be empty")
+        return v
 
 
 class OrderRefundApproval(BaseModel):
@@ -83,3 +99,11 @@ class OrderRefundApproval(BaseModel):
     approved: bool
     refund_amount: Optional[float] = None
     notes: Optional[str] = None
+
+    @field_validator("refund_amount")
+    @classmethod
+    def validate_refund_amount(cls, v, info):
+        approved = getattr(info, "data", {}).get("approved")
+        if approved and v is not None and v <= 0:
+            raise ValueError("Refund amount must be positive when approving a refund")
+        return v
