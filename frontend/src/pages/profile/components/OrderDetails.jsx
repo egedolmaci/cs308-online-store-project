@@ -15,14 +15,26 @@ const OrderDetails = ({ onBack }) => {
   const refundRequestStatus = useSelector(selectRefundRequestStatus);
   const cancelOrderStatus = useSelector(selectCancelOrderStatus);
   const order = useSelector((state) => state.orders.currentOrder);
+  const today = new Date();
 
   if (!order) return null;
 
+  const orderCreated = order.created_at ? new Date(order.created_at) : null;
+  const deliveredAt = order.delivered_at ? new Date(order.delivered_at) : null;
+  const daysSinceDelivery =
+    deliveredAt && !isNaN(deliveredAt) ? Math.floor((today - deliveredAt) / (1000 * 60 * 60 * 24)) : null;
+
   const handleRequestRefund = async () => {
     try {
-      const reason = await dispatch(openModalWithPromise(generateConfirmActionWithReasonModal(
-        ICON_NAMES.REFUND_ICON, "Request Refund", "What is the reason for your refund request?"
-      )));
+      const reason = await dispatch(
+        openModalWithPromise(
+          generateConfirmActionWithReasonModal(
+            ICON_NAMES.REFUND_ICON,
+            "Request Refund",
+            "What is the reason for your refund request?"
+          )
+        )
+      );
       dispatch(requestRefund({ orderId: order.id, reason }));
     } catch {
       return;
@@ -51,11 +63,14 @@ const OrderDetails = ({ onBack }) => {
     generateOrderInvoicePDF(order);
   };
 
-  // Check if order is eligible for refund (not already refunded or cancelled)
+  // Check if order is eligible for refund (delivered, not cancelled/refunded, within 30 days)
   const isRefundEligible =
+    order.status === ORDER_STATUSES.DELIVERED &&
     order.status !== ORDER_STATUSES.REFUNDED &&
     order.status !== ORDER_STATUSES.CANCELLED &&
-    order.status !== ORDER_STATUSES.REFUND_REQUESTED;
+    order.status !== ORDER_STATUSES.REFUND_REQUESTED &&
+    daysSinceDelivery !== null &&
+    daysSinceDelivery <= 30;
 
   // Check if order is eligible for cancellation (only processing orders can be cancelled)
   const isCancelEligible =

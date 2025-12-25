@@ -123,9 +123,9 @@ export const updateOrderStatus = createAsyncThunk(
 // Request refund for an order
 export const requestRefund = createAsyncThunk(
   "orders/requestRefund",
-  async ({ orderId, reason }, { rejectWithValue }) => {
+  async ({ orderId, reason, items }, { rejectWithValue }) => {
     try {
-      const response = await ordersAPI.requestRefund({ orderId, reason });
+      const response = await ordersAPI.requestRefund({ orderId, reason, items });
       return { orderId, ...response };
     } catch (error) {
       return rejectWithValue(
@@ -138,9 +138,14 @@ export const requestRefund = createAsyncThunk(
 // Approve refund for an order (admin action)
 export const approveRefund = createAsyncThunk(
   "orders/approveRefund",
-  async (orderId, { rejectWithValue }) => {
+  async ({ orderId, approved, refundAmount, notes }, { rejectWithValue }) => {
     try {
-      const response = await ordersAPI.approveRefund(orderId);
+      const response = await ordersAPI.approveRefund({
+        orderId,
+        approved,
+        refundAmount,
+        notes,
+      });
       return { orderId, ...response };
     } catch (error) {
       return rejectWithValue(

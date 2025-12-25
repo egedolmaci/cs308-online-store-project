@@ -98,16 +98,21 @@ export const ordersAPI = {
     );
     return response.data;
   },
-  requestRefund: async ({ orderId, reason }) => {
+  requestRefund: async ({ orderId, reason, items }) => {
     const response = await apiClient.post(
       `${API_ENDPOINTS.ORDERS}/${orderId}/refund/request`,
-      { reason }
+      { reason, items }
     );
     return response.data;
   },
-  approveRefund: async (orderId) => {
+  approveRefund: async ({ orderId, approved, refundAmount, notes }) => {
     const response = await apiClient.post(
-      `${API_ENDPOINTS.ORDERS}/${orderId}/refund/approve`
+      `${API_ENDPOINTS.ORDERS}/${orderId}/refund/approve`,
+      {
+        approved,
+        refund_amount: refundAmount,
+        notes,
+      }
     );
     return response.data;
   },

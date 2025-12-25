@@ -34,6 +34,12 @@ const Sidebar = ({
         icon: "chart",
         roles: [USER_ROLES.SALES_MANAGER],
       });
+      roleSpecificItems.push({
+        id: "orders",
+        label: "Refunds & Orders",
+        icon: "orders",
+        roles: [USER_ROLES.SALES_MANAGER],
+      });
     }
 
     if (userRole === USER_ROLES.PRODUCT_MANAGER) {

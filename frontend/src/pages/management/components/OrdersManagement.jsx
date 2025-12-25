@@ -3,23 +3,29 @@ import { useDispatch, useSelector } from "react-redux";
 import {
   fetchAllOrders,
   updateOrderStatus,
+  approveRefund,
   selectOrders,
   selectOrdersLoading,
   selectOrdersError,
   selectUpdateOrderStatus,
+  selectRefundApproveStatus,
 } from "../../../store/slices/ordersSlice";
-import { ORDER_STATUSES, ORDER_STATUS_LABELS } from "../../../constants";
+import { ORDER_STATUSES, ORDER_STATUS_LABELS, USER_ROLES } from "../../../constants";
 
-const OrdersManagement = () => {
+const OrdersManagement = ({ userRole = USER_ROLES.SALES_MANAGER }) => {
   const dispatch = useDispatch();
   const orders = useSelector(selectOrders);
   const isLoading = useSelector(selectOrdersLoading);
   const error = useSelector(selectOrdersError);
   const updateStatus = useSelector(selectUpdateOrderStatus);
+  const refundApproveStatus = useSelector(selectRefundApproveStatus);
 
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [showStatusModal, setShowStatusModal] = useState(false);
   const [newStatus, setNewStatus] = useState("");
+  const [showRefundModal, setShowRefundModal] = useState(false);
+  const [refundAmount, setRefundAmount] = useState("");
+  const [refundNotes, setRefundNotes] = useState("");
   const [filterStatus, setFilterStatus] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
 
@@ -67,6 +73,36 @@ const OrdersManagement = () => {
   const getStatusLabel = (status) => {
     const statusOption = statusOptions.find((opt) => opt.value === status);
     return statusOption?.label || status;
+  };
+
+  const openRefundModal = (order) => {
+    if (userRole !== USER_ROLES.SALES_MANAGER) return;
+    setSelectedOrder(order);
+    setRefundAmount(order.total_amount?.toFixed(2) || "");
+    setRefundNotes("");
+    setShowRefundModal(true);
+  };
+
+  const handleApproveRefund = async (approved) => {
+    if (userRole !== USER_ROLES.SALES_MANAGER) return;
+    if (!selectedOrder) return;
+    try {
+      await dispatch(
+        approveRefund({
+          orderId: selectedOrder.id,
+          approved,
+          refundAmount: approved ? Number(refundAmount || 0) : undefined,
+          notes: refundNotes || undefined,
+        })
+      ).unwrap();
+      setShowRefundModal(false);
+      setSelectedOrder(null);
+      setRefundAmount("");
+      setRefundNotes("");
+      dispatch(fetchAllOrders());
+    } catch (err) {
+      alert(err || "Failed to process refund decision");
+    }
   };
 
   // Filter orders
@@ -169,7 +205,7 @@ const OrdersManagement = () => {
                       </span>
                     </div>
 
-                    <div className="text-sm text-gray-600 space-y-1">
+                  <div className="text-sm text-gray-600 space-y-1">
                       {order.user_name && (
                         <p>
                           <span className="font-semibold">Customer:</span>{" "}
@@ -195,12 +231,24 @@ const OrdersManagement = () => {
                     </div>
                   </div>
 
-                  <button
-                    onClick={() => openStatusModal(order)}
-                    className="px-6 py-3 rounded-2xl bg-linear-to-r from-sand to-sage text-white font-semibold hover:shadow-lg transition-all duration-300 whitespace-nowrap"
-                  >
-                    Update Status
-                  </button>
+                  <div className="flex gap-3">
+                    {userRole === USER_ROLES.PRODUCT_MANAGER && (
+                      <button
+                        onClick={() => openStatusModal(order)}
+                        className="px-6 py-3 rounded-2xl bg-linear-to-r from-sand to-sage text-white font-semibold hover:shadow-lg transition-all duration-300 whitespace-nowrap"
+                      >
+                        Update Status
+                      </button>
+                    )}
+                    {userRole === USER_ROLES.SALES_MANAGER && order.status === ORDER_STATUSES.REFUND_REQUESTED && (
+                      <button
+                        onClick={() => openRefundModal(order)}
+                        className="px-6 py-3 rounded-2xl bg-error text-white font-semibold hover:shadow-lg transition-all duration-300 whitespace-nowrap"
+                      >
+                        Review Refund
+                      </button>
+                    )}
+                  </div>
                 </div>
 
                 {/* Order Items */}
@@ -233,7 +281,7 @@ const OrdersManagement = () => {
       </div>
 
       {/* Update Status Modal */}
-      {showStatusModal && selectedOrder && (
+      {userRole === USER_ROLES.PRODUCT_MANAGER && showStatusModal && selectedOrder && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-3xl p-8 max-w-md w-full">
             <h3 className="text-2xl font-bold text-gray-900 mb-6">
@@ -282,6 +330,83 @@ const OrdersManagement = () => {
                   Cancel
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Refund Approval Modal */}
+      {userRole === USER_ROLES.SALES_MANAGER && showRefundModal && selectedOrder && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-3xl p-8 max-w-md w-full">
+            <h3 className="text-2xl font-bold text-gray-900 mb-6">
+              Refund Request
+            </h3>
+
+            <div className="mb-4 p-4 rounded-2xl bg-gray-50 space-y-2 text-sm text-gray-700">
+              <p><span className="font-semibold">Order ID:</span> #{selectedOrder.id}</p>
+              <p><span className="font-semibold">Status:</span> {getStatusLabel(selectedOrder.status)}</p>
+              {selectedOrder.refund_reason && (
+                <p><span className="font-semibold">Reason:</span> {selectedOrder.refund_reason}</p>
+              )}
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Refund Amount
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  value={refundAmount}
+                  onChange={(e) => setRefundAmount(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-sand focus:outline-none transition-colors"
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Notes (optional)
+                </label>
+                <textarea
+                  value={refundNotes}
+                  onChange={(e) => setRefundNotes(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-sand focus:outline-none transition-colors"
+                  rows={3}
+                  placeholder="Add any notes about the decision"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => handleApproveRefund(true)}
+                  disabled={refundApproveStatus === "loading"}
+                  className="flex-1 px-6 py-3 rounded-2xl bg-success text-white font-bold hover:shadow-lg transition-all duration-300 disabled:opacity-50"
+                >
+                  {refundApproveStatus === "loading" ? "Approving..." : "Approve Refund"}
+                </button>
+                <button
+                  onClick={() => handleApproveRefund(false)}
+                  disabled={refundApproveStatus === "loading"}
+                  className="flex-1 px-6 py-3 rounded-2xl border-2 border-gray-300 text-gray-700 font-semibold hover:bg-gray-50 transition-all duration-300"
+                >
+                  Reject
+                </button>
+              </div>
+
+              <button
+                onClick={() => {
+                  setShowRefundModal(false);
+                  setSelectedOrder(null);
+                  setRefundAmount("");
+                  setRefundNotes("");
+                }}
+                className="w-full mt-2 px-6 py-3 rounded-2xl text-center border-2 border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition-all duration-300"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>

@@ -71,8 +71,8 @@ const Management = () => {
         }
         return <Dashboard userRole={userRole} setActiveSection={setActiveSection} />;
       case "orders":
-        if (userRole === USER_ROLES.PRODUCT_MANAGER) {
-          return <OrdersManagement />;
+        if (userRole === USER_ROLES.PRODUCT_MANAGER || userRole === USER_ROLES.SALES_MANAGER) {
+          return <OrdersManagement userRole={userRole} />;
         }
         return <Dashboard userRole={userRole} setActiveSection={setActiveSection} />;
       case "support":
