@@ -6,6 +6,7 @@ import productsReducer from "./slices/productsSlice";
 import ordersReducer from "./slices/ordersSlice";
 import categoriesReducer from "./slices/categoriesSlice";
 import reviewsReducer from "./slices/reviewsSlice";
+import wishlistReducer from "./slices/wishlistSlice";
 import { persistStore, persistReducer } from "redux-persist";
 import storage from "redux-persist/lib/storage";
 
@@ -25,6 +26,7 @@ export const store = configureStore({
     orders: ordersReducer,
     categories: categoriesReducer,
     reviews: reviewsReducer,
+    wishlist: wishlistReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -7,6 +7,8 @@ import Dashboard from "./components/Dashboard";
 import OrderHistory from "./components/OrderHistory";
 import PersonalDetails from "./components/PersonalDetails";
 import { fetchUserOrders } from "../../store/slices/ordersSlice";
+import Wishlist from "./components/Wishlist";
+import { fetchWishlist } from "../../store/slices/wishlistSlice";
 import { MANAGEMENT_ROLES } from "../../constants";
 
 const Profile = () => {
@@ -29,6 +31,7 @@ const Profile = () => {
 
   useEffect(() => {
     dispatch(fetchUserOrders());
+    dispatch(fetchWishlist());
   }, [dispatch]);
 
 
@@ -49,6 +52,8 @@ const Profile = () => {
         );
       case "orders":
         return <OrderHistory orders={orders} />;
+      case "wishlist":
+        return <Wishlist />;
       case "personal":
         return <PersonalDetails />;
       default:

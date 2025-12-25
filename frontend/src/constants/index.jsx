@@ -11,6 +11,7 @@ export const API_ENDPOINTS = {
   LOGOUT: "/auth/logout",
   REFRESH: "/auth/refresh",
   PRODUCTS: "/products",
+  WISHLIST: "/wishlist",
   ORDERS: "/orders",
   CATEGORIES: "/categories",
   reviews: "/reviews",

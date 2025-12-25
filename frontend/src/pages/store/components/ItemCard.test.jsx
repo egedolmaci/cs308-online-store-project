@@ -4,11 +4,16 @@ import { Provider } from "react-redux";
 import { configureStore } from "@reduxjs/toolkit";
 import { MemoryRouter } from "react-router-dom";
 import cartReducer from "../../../store/slices/cartSlice";
+import wishlistReducer from "../../../store/slices/wishlistSlice";
 import ItemCard from "./ItemCard";
 
 const renderWithStore = (ui, { preloadedState } = {}) => {
   const store = configureStore({
-    reducer: { cart: cartReducer },
+    reducer: {
+      cart: cartReducer,
+      wishlist: wishlistReducer,
+      user: () => ({ isAuthenticated: false }),
+    },
     preloadedState,
   });
 

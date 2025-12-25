@@ -17,6 +17,7 @@ import Footer from "./ui/components/Footer";
 import ModalContainer from "./ui/components/ModalContainer";
 import { me } from "./store/slices/userSlice";
 import { fetchProducts } from "./store/slices/productsSlice";
+import { fetchWishlist } from "./store/slices/wishlistSlice";
 import { MANAGEMENT_ROLES } from "./constants";
 import ManagementPage from "./pages/management";
 import LoadingScreen from "./ui/components/LoadingScreen";
@@ -35,6 +36,12 @@ function AppContent() {
     dispatch(me()); // Initialize authentication state on app load
     dispatch(fetchProducts()); // Preload products data
   }, []);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      dispatch(fetchWishlist());
+    }
+  }, [dispatch, isAuthenticated]);
 
   if (isLoading) {
     return <LoadingScreen message="Initializing application..." />;

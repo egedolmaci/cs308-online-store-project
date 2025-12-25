@@ -227,6 +227,29 @@ export const reviewsAPI = {
   },
 };
 
+export const wishlistAPI = {
+  fetchWishlist: async () => {
+    const response = await apiClient.get(API_ENDPOINTS.WISHLIST);
+    return response.data;
+  },
+  addToWishlist: async (productId) => {
+    const response = await apiClient.post(API_ENDPOINTS.WISHLIST, {
+      product_id: productId,
+    });
+    return response.data;
+  },
+  removeFromWishlist: async (productId) => {
+    const response = await apiClient.delete(
+      `${API_ENDPOINTS.WISHLIST}/${productId}`
+    );
+    return response.data;
+  },
+  clearWishlist: async () => {
+    const response = await apiClient.delete(API_ENDPOINTS.WISHLIST);
+    return response.data;
+  },
+};
+
 export const usersAPI = {
   updateUserInfo: async (userId, userData) => {
     const response = await apiClient.put(

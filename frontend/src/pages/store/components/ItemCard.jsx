@@ -1,13 +1,20 @@
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { addToCart } from "../../../store/slices/cartSlice";
+import {
+  addToWishlist,
+  removeFromWishlist,
+} from "../../../store/slices/wishlistSlice";
 
 const ItemCard = ({ product }) => {
   const dispatch = useDispatch();
   const cartQty = useSelector(
     (state) => state.cart.items.find((i) => i.id === product.id)?.quantity || 0
   );
+  const wishlistItems = useSelector((state) => state.wishlist.items);
+  const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
   const availableLeft = Math.max(0, (product.stock ?? 0) - cartQty);
+  const isWishlisted = wishlistItems.some((item) => item.id === product.id);
   const navigate = useNavigate();
 
   const handleAddToCart = (e) => {
@@ -19,6 +26,19 @@ const ItemCard = ({ product }) => {
 
   const handleCardClick = () => {
     navigate(`/item/${product.id}`);
+  };
+
+  const handleToggleWishlist = (e) => {
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      alert("Please log in to add items to your wishlist.");
+      return;
+    }
+    if (isWishlisted) {
+      dispatch(removeFromWishlist(product.id));
+    } else {
+      dispatch(addToWishlist(product.id));
+    }
   };
 
   return (
@@ -101,10 +121,19 @@ const ItemCard = ({ product }) => {
           <span className="text-xs font-semibold tracking-wider uppercase text-gray-500">
             {product.category}
           </span>
-          <button className="text-gray-400 hover:text-error transition-colors duration-300">
+          <button
+            onClick={handleToggleWishlist}
+            aria-label={isWishlisted ? "Remove from wishlist" : "Add to wishlist"}
+            aria-pressed={isWishlisted}
+            className={`transition-colors duration-300 ${
+              isWishlisted
+                ? "text-error"
+                : "text-gray-400 hover:text-error"
+            }`}
+          >
             <svg
               className="w-5 h-5"
-              fill="none"
+              fill={isWishlisted ? "currentColor" : "none"}
               stroke="currentColor"
               viewBox="0 0 24 24"
             >

@@ -1,7 +1,28 @@
 import { useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import {
+  addToWishlist,
+  removeFromWishlist,
+} from "../../../store/slices/wishlistSlice";
 
 const ProductImages = ({ product }) => {
   const [selectedImage, setSelectedImage] = useState(product.image);
+  const dispatch = useDispatch();
+  const wishlistItems = useSelector((state) => state.wishlist.items);
+  const isAuthenticated = useSelector((state) => state.user.isAuthenticated);
+  const isWishlisted = wishlistItems.some((item) => item.id === product.id);
+
+  const handleToggleWishlist = () => {
+    if (!isAuthenticated) {
+      alert("Please log in to add items to your wishlist.");
+      return;
+    }
+    if (isWishlisted) {
+      dispatch(removeFromWishlist(product.id));
+    } else {
+      dispatch(addToWishlist(product.id));
+    }
+  };
 
   // In a real app, products would have multiple images
   // For now, we'll use the same image as placeholder
@@ -45,10 +66,23 @@ const ProductImages = ({ product }) => {
         </div>
 
         {/* Wishlist Button */}
-        <button className="absolute top-6 right-6 bg-white/95 backdrop-blur-sm p-3 rounded-full shadow-lg hover:bg-white transition-all duration-300 group/wishlist">
+        <button
+          onClick={handleToggleWishlist}
+          aria-label={
+            isWishlisted ? "Remove from wishlist" : "Add to wishlist"
+          }
+          aria-pressed={isWishlisted}
+          className={`absolute top-6 right-6 bg-white/95 backdrop-blur-sm p-3 rounded-full shadow-lg transition-all duration-300 group/wishlist ${
+            isWishlisted ? "ring-2 ring-error/30" : "hover:bg-white"
+          }`}
+        >
           <svg
-            className="w-6 h-6 text-gray-400 group-hover/wishlist:text-error transition-colors duration-300"
-            fill="none"
+            className={`w-6 h-6 transition-colors duration-300 ${
+              isWishlisted
+                ? "text-error"
+                : "text-gray-400 group-hover/wishlist:text-error"
+            }`}
+            fill={isWishlisted ? "currentColor" : "none"}
             stroke="currentColor"
             viewBox="0 0 24 24"
           >
