@@ -6,6 +6,7 @@ from app.infrastructure.database.sqlite.models.user import UserModel
 from app.infrastructure.database.sqlite.seed_data import PRODUCTS, CATEGORIES
 from app.core.security import hash_password
 from app.core.logging import logger
+from app.core.crypto import encrypt_str
 
 
 def seed_database(db: Session) -> None:
@@ -35,7 +36,7 @@ def seed_database(db: Session) -> None:
                 "last_name": "Manager",
                 "email": "manager@example.com",
                 "password_hash": hash_password("12345678"),
-                "address": "123 Manager Rd, Business City",
+                "address": encrypt_str("123 Manager Rd, Business City"),
                 "role": "product_manager",
             },
             {
@@ -44,7 +45,7 @@ def seed_database(db: Session) -> None:
                 "last_name": "Manager",
                 "email": "sales@example.com",
                 "password_hash": hash_password("12345678"),
-                "address": "123 Sales St, Commerce City",
+                "address": encrypt_str("123 Sales St, Commerce City"),
                 "role": "sales_manager",
             },
         ]

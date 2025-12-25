@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.infrastructure.database.sqlite.models.order import OrderModel, OrderItemModel
 from app.infrastructure.database.sqlite.models.user import UserModel
 from app.domains.order.entity import Order, OrderItem, OrderStatus
+from app.core.crypto import encrypt_str, decrypt_str
 
 
 class OrderRepository:
@@ -28,7 +29,7 @@ class OrderRepository:
             total_amount=order.total_amount,
             tax_amount=order.tax_amount,
             shipping_amount=order.shipping_amount,
-            delivery_address=order.delivery_address,
+            delivery_address=encrypt_str(order.delivery_address),
         )
 
         self.db.add(order_model)
@@ -212,7 +213,7 @@ class OrderRepository:
             total_amount=model.total_amount,
             tax_amount=model.tax_amount,
             shipping_amount=model.shipping_amount,
-            delivery_address=model.delivery_address,
+            delivery_address=decrypt_str(model.delivery_address),
             created_at=model.created_at,
             updated_at=model.updated_at,
             items=items,

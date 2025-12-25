@@ -8,6 +8,7 @@ from app.infrastructure.database.sqlite.session import SessionLocal, engine
 from app.core.logging import logger
 
 from app.core.security import hash_password, verify_password
+from app.core.crypto import encrypt_str, decrypt_str
 from app.infrastructure.database.sqlite.models.user import UserModel
 
 @dataclass
@@ -32,7 +33,7 @@ class SQLAlchemyUserRepository:
             email=model.email,
             password_hash=model.password_hash,
             role=model.role,
-            address=model.address,
+            address=decrypt_str(model.address),
         )
 
     def _ensure_seed_user(self):
@@ -52,7 +53,7 @@ class SQLAlchemyUserRepository:
                     last_name="Manager",
                     email="manager@example.com",
                     password_hash=hash_password("12345678"),
-                    address="123 Manager Rd, Business City",
+                    address=encrypt_str("123 Manager Rd, Business City"),
                     role="product_manager",
                 )
                 db.add(seeded)
@@ -68,7 +69,7 @@ class SQLAlchemyUserRepository:
                     last_name="Agent",
                     email="support@example.com",
                     password_hash=hash_password("12345678"),
-                    address="456 Helpdesk Rd, Service City",
+                    address=encrypt_str("456 Helpdesk Rd, Service City"),
                     role="support_agent",
                 )
                 db.add(seeded)
@@ -84,7 +85,7 @@ class SQLAlchemyUserRepository:
                     last_name="Manager",
                     email="sales@example.com",
                     password_hash=hash_password("12345678"),
-                    address="123 Sales St, Commerce City",
+                    address=encrypt_str("123 Sales St, Commerce City"),
                     role="sales_manager",
                 )
                 db.add(seeded)
@@ -104,8 +105,8 @@ class SQLAlchemyUserRepository:
                 email=email_l,
                 password_hash=hash_password(password),
                 role=role,
-                address="123 Sales St, Commerce City",
-            )
+            address=encrypt_str(address) if address else None,
+        )
             db.add(model)
             try:
                 db.commit()
@@ -143,7 +144,7 @@ class SQLAlchemyUserRepository:
             if last_name is not None:
                 model.last_name = last_name
             if address is not None:
-                model.address = address
+                model.address = encrypt_str(address) if address else None
 
             db.commit()
             db.refresh(model)
