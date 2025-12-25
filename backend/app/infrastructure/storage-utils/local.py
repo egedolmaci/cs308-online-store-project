@@ -57,4 +57,6 @@ def save_support_attachment(
     checksum = digest.hexdigest()
     logger.info(f"Stored support attachment {storage_path} ({size} bytes)")
 
-    return str(storage_path), size, checksum
+    # Return relative path from base_dir (conversation_id/filename)
+    relative_path = f"{conversation_id}/{storage_name}"
+    return relative_path, size, checksum

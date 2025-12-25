@@ -11,6 +11,7 @@ from fastapi import (
     WebSocketDisconnect,
     status,
 )
+from fastapi.responses import FileResponse
 
 from app.api.endpoints.auth import ACCESS_COOKIE_NAME, get_current_user, require_roles
 from app.core.config import get_settings
@@ -318,6 +319,42 @@ def upload_attachment(
     # Notify live participants
     manager.broadcast_sync(conversation_id, {"type": "message", "payload": mapped.model_dump(mode="json")})
     return mapped
+
+
+@router.get("/attachments/{attachment_id}/download")
+def download_attachment(
+    attachment_id: str,
+    request: Request,
+    conversation_token: Optional[str] = None,
+    db=Depends(get_db),
+):
+    """Download an attachment file."""
+    import os
+
+    user_with_role = _optional_user(request)
+    user_id = user_with_role[0].id if user_with_role else None
+    role = user_with_role[1] if user_with_role else None
+
+    # Get attachment
+    attachment = use_cases.get_attachment(db, attachment_id)
+    if not attachment:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Attachment not found")
+
+    # Verify access to the conversation
+    conversation = use_cases.get_conversation(db, attachment.conversation_id)
+    _ensure_conversation_access(conversation, user_id, role, conversation_token)
+
+    # Build full file path
+    file_path = os.path.join(settings.SUPPORT_ATTACHMENT_DIR, attachment.storage_path)
+
+    if not os.path.exists(file_path):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found on server")
+
+    return FileResponse(
+        path=file_path,
+        filename=attachment.filename,
+        media_type=attachment.mime_type,
+    )
 
 
 class SupportConnectionManager:

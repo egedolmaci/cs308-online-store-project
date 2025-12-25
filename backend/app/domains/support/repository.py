@@ -221,6 +221,15 @@ class SupportRepository:
         self.db.refresh(model)
         return self._to_attachment(model)
 
+    def get_attachment(self, attachment_id: str) -> Optional[SupportAttachment]:
+        """Get an attachment by ID."""
+        model = (
+            self.db.query(SupportAttachmentModel)
+            .filter(SupportAttachmentModel.id == attachment_id)
+            .first()
+        )
+        return self._to_attachment(model) if model else None
+
     def add_message(
         self,
         *,

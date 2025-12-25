@@ -396,9 +396,17 @@ const SupportAgentView = () => {
                             >
                               {msg.body && <p className="text-sm whitespace-pre-wrap wrap-break-word">{msg.body}</p>}
                               {msg.attachment && (
-                                <p className={`text-xs mt-1 ${isAgent ? "text-white/70" : "text-gray-500"}`}>
-                                  📎 {msg.attachment.filename}
-                                </p>
+                                <a
+                                  href={`${import.meta.env.VITE_API_URL || 'http://localhost:8000'}/api/v1/support/attachments/${msg.attachment.id}/download`}
+                                  download={msg.attachment.filename}
+                                  className={`text-xs mt-1 flex items-center gap-1 hover:underline cursor-pointer ${isAgent ? "text-white/90 hover:text-white" : "text-gray-600 hover:text-gray-900"}`}
+                                >
+                                  <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                  </svg>
+                                  {msg.attachment.filename}
+                                  <span className="text-[10px] opacity-70">({(msg.attachment.size_bytes / 1024).toFixed(1)}KB)</span>
+                                </a>
                               )}
                               <p className={`text-xs mt-2 ${isAgent ? "text-white/60" : "text-gray-400"}`}>
                                 {formatTime(msg.created_at)}

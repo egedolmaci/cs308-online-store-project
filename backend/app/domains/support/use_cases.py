@@ -164,6 +164,12 @@ def add_attachment(
     )
 
 
+def get_attachment(db: Session, attachment_id: str) -> Optional[SupportAttachment]:
+    """Get an attachment by ID."""
+    repo = SupportRepository(db)
+    return repo.get_attachment(attachment_id)
+
+
 def recent_messages(db: Session, conversation_id: str, limit: int = 50) -> List[SupportMessage]:
     repo = SupportRepository(db)
     return repo.get_recent_messages(conversation_id, limit=limit)
