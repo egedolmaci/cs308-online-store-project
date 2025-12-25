@@ -48,6 +48,15 @@ def seed_database(db: Session) -> None:
                 "address": encrypt_str("123 Sales St, Commerce City"),
                 "role": "sales_manager",
             },
+            {
+                "id": str(uuid.uuid4()),
+                "first_name": "Support",
+                "last_name": "Agent",
+                "email": "support@example.com",
+                "password_hash": hash_password("12345678"),
+                "address": encrypt_str("123 Sales St, Commerce City"),
+                "role": "support_agent",
+            },
         ]
 
         for user_data in seed_users:

@@ -12,6 +12,7 @@ const LiveChatWidget = () => {
   const [isConnecting, setIsConnecting] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
   const [hasUnread, setHasUnread] = useState(false);
+  const [isClosed, setIsClosed] = useState(false);
 
   // Guest form state
   const [guestName, setGuestName] = useState("");
@@ -111,6 +112,17 @@ const LiveChatWidget = () => {
           clearTimeout(typingTimeoutRef.current);
         }
         typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 3000);
+      } else if (data.type === "conversation_closed") {
+        // Handle conversation close event
+        setIsClosed(true);
+        // Add system message to chat
+        const systemMessage = {
+          id: `system-${Date.now()}`,
+          body: `This conversation has been closed by ${data.closed_by === "agent" ? "a support agent" : "you"}.`,
+          sender_role: "system",
+          created_at: data.closed_at,
+        };
+        setMessages((prev) => [...prev, systemMessage]);
       }
     };
 
@@ -129,6 +141,7 @@ const LiveChatWidget = () => {
   const startConversation = async (e) => {
     e.preventDefault();
     setIsConnecting(true);
+    setIsClosed(false); // Reset closed state when starting new conversation
 
     try {
       // Prepare cart items for context
@@ -200,7 +213,17 @@ const LiveChatWidget = () => {
     e.target.value = "";
   };
 
-  const endChat = () => {
+  const endChat = async () => {
+    if (!conversation) return;
+
+    try {
+      // Call API to close conversation
+      await supportAPI.closeConversation(conversation.id, "", conversationToken);
+    } catch (err) {
+      console.error("Error closing conversation:", err);
+    }
+
+    // Cleanup local state (WebSocket close will be handled by conversation_closed event)
     if (wsRef.current) {
       wsRef.current.close();
     }
@@ -359,6 +382,20 @@ const LiveChatWidget = () => {
                       <>
                         {messages.map((message) => {
                           const isCustomer = message.sender_role === "customer";
+                          const isSystem = message.sender_role === "system";
+
+                          // System messages (centered, gray)
+                          if (isSystem) {
+                            return (
+                              <div key={message.id} className="flex justify-center my-3">
+                                <div className="bg-gray-100 text-gray-600 rounded-full px-4 py-1.5 text-xs">
+                                  {message.body}
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          // Regular customer/agent messages
                           return (
                             <div
                               key={message.id}
@@ -366,7 +403,7 @@ const LiveChatWidget = () => {
                             >
                               <div
                                 className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${isCustomer
-                                  ? "bg-gradient-to-r from-sand to-sage text-white"
+                                  ? "bg-linear-to-r from-sand to-sage text-white"
                                   : "bg-white text-gray-900 shadow-sm border border-gray-100"
                                   }`}
                               >
@@ -403,48 +440,70 @@ const LiveChatWidget = () => {
 
                   {/* Input Area */}
                   <div className="p-4 border-t border-gray-100 bg-white">
-                    <form onSubmit={handleSendMessage} className="flex items-center gap-2">
-                      <label className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 cursor-pointer transition-colors">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                        </svg>
-                        <input
-                          type="file"
-                          onChange={handleFileUpload}
-                          className="hidden"
-                          accept="image/*,video/*,application/pdf"
-                        />
-                      </label>
+                    {!isClosed ? (
+                      <>
+                        <form onSubmit={handleSendMessage} className="flex items-center gap-2">
+                          <label className="p-2 rounded-xl text-gray-400 hover:text-gray-600 hover:bg-gray-100 cursor-pointer transition-colors">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                            </svg>
+                            <input
+                              type="file"
+                              onChange={handleFileUpload}
+                              className="hidden"
+                              accept="image/*,video/*,application/pdf"
+                            />
+                          </label>
 
-                      <input
-                        type="text"
-                        value={messageInput}
-                        onChange={(e) => {
-                          setMessageInput(e.target.value);
-                          handleTyping();
-                        }}
-                        placeholder="Type a message..."
-                        className="flex-1 px-4 py-2.5 rounded-2xl border-2 border-gray-100 focus:border-sand focus:outline-none transition-colors text-sm"
-                      />
+                          <input
+                            type="text"
+                            value={messageInput}
+                            onChange={(e) => {
+                              setMessageInput(e.target.value);
+                              handleTyping();
+                            }}
+                            placeholder="Type a message..."
+                            className="flex-1 px-4 py-2.5 rounded-2xl border-2 border-gray-100 focus:border-sand focus:outline-none transition-colors text-sm"
+                          />
 
-                      <button
-                        type="submit"
-                        disabled={!messageInput.trim()}
-                        className="p-2.5 rounded-xl bg-gradient-to-r from-sand to-sage text-white hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
-                      >
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                        </svg>
-                      </button>
-                    </form>
+                          <button
+                            type="submit"
+                            disabled={!messageInput.trim()}
+                            className="p-2.5 rounded-xl bg-linear-to-r from-sand to-sage text-white hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                            </svg>
+                          </button>
+                        </form>
 
-                    {/* End Chat Button */}
-                    <button
-                      onClick={endChat}
-                      className="w-full mt-3 py-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
-                    >
-                      End conversation
-                    </button>
+                        {/* End Chat Button */}
+                        <button
+                          onClick={endChat}
+                          className="w-full mt-3 py-2 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                        >
+                          End conversation
+                        </button>
+                      </>
+                    ) : (
+                      <div className="text-center py-3">
+                        <div className="flex items-center justify-center gap-2 text-gray-600 mb-2">
+                          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span className="text-sm font-medium">This conversation has been closed</span>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setIsClosed(false);
+                            endChat();
+                          }}
+                          className="text-xs text-sand hover:text-sage transition-colors font-medium"
+                        >
+                          Start a new conversation
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </>
               )}

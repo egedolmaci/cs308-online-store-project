@@ -53,10 +53,20 @@ def start_conversation(
     """
     Create a new conversation. Returns conversation and optional guest token.
     """
+    from app.infrastructure.database.sqlite.models.user import UserModel
+
     repo = SupportRepository(db)
     token: Optional[str] = None
-    if not customer_id:
+
+    # For authenticated users, fetch their name and email from the database
+    if customer_id:
+        user = db.query(UserModel).filter(UserModel.id == customer_id).first()
+        if user:
+            guest_name = f"{user.first_name} {user.last_name}"
+            guest_email = user.email
+    else:
         token = str(uuid.uuid4())
+
     cart_payload = [
         item.model_dump() if hasattr(item, "model_dump") else item
         for item in (cart_items or [])

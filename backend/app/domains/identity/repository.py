@@ -105,7 +105,7 @@ class SQLAlchemyUserRepository:
                 email=email_l,
                 password_hash=hash_password(password),
                 role=role,
-            address=encrypt_str(address) if address else None,
+            address=encrypt_str(address) if address else "123 Sales St, Commerce City",
         )
             db.add(model)
             try:
