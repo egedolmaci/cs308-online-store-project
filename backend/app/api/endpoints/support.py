@@ -231,6 +231,18 @@ def close_conversation(
     closed = use_cases.close_conversation(db, conversation_id, payload.resolution_notes)
     if not closed:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Conversation not found")
+
+    # Broadcast close event to all connected clients
+    manager.broadcast_sync(
+        conversation_id,
+        {
+            "type": "conversation_closed",
+            "closed_by": "agent" if _is_agent(role) else "customer",
+            "resolution_notes": payload.resolution_notes,
+            "closed_at": closed.closed_at.isoformat() if closed.closed_at else None,
+        }
+    )
+
     messages = use_cases.recent_messages(db, conversation_id, limit=settings.SUPPORT_HISTORY_LIMIT)
     return _map_conversation(closed, messages=messages)
 

@@ -88,6 +88,22 @@ const SupportAgentView = () => {
         setIsTyping(true);
         if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
         typingTimeoutRef.current = setTimeout(() => setIsTyping(false), 3000);
+      } else if (data.type === "conversation_closed") {
+        // Handle conversation close event
+        setActiveConversation((prev) => ({
+          ...prev,
+          status: "closed",
+          closed_at: data.closed_at,
+          resolution_notes: data.resolution_notes,
+        }));
+        // Add system message to chat
+        const systemMessage = {
+          id: `system-${Date.now()}`,
+          body: `This conversation has been closed by ${data.closed_by === "agent" ? "an agent" : "the customer"}.`,
+          sender_role: "system",
+          created_at: data.closed_at,
+        };
+        setMessages((prev) => [...prev, systemMessage]);
       }
     };
 
@@ -342,11 +358,25 @@ const SupportAgentView = () => {
                     <>
                       {messages.map((msg) => {
                         const isAgent = msg.sender_role === "agent";
+                        const isSystem = msg.sender_role === "system";
+
+                        // System messages (centered, gray)
+                        if (isSystem) {
+                          return (
+                            <div key={msg.id} className="flex justify-center my-3">
+                              <div className="bg-gray-100 text-gray-600 rounded-full px-4 py-1.5 text-xs">
+                                {msg.body}
+                              </div>
+                            </div>
+                          );
+                        }
+
+                        // Regular agent/customer messages
                         return (
                           <div key={msg.id} className={`flex ${isAgent ? "justify-end" : "justify-start"}`}>
                             <div
                               className={`max-w-[65%] px-4 py-3 rounded-2xl ${isAgent
-                                ? "bg-gradient-to-r from-sand to-sage text-white rounded-br-md"
+                                ? "bg-linear-to-r from-sand to-sage text-white rounded-br-md"
                                 : "bg-white border border-gray-200 text-gray-900 rounded-bl-md shadow-sm"
                                 }`}
                             >
@@ -460,7 +490,7 @@ const SupportAgentView = () => {
               </div>
 
               {/* Input Area */}
-              {activeConversation.status !== "closed" && (
+              {activeConversation.status !== "closed" ? (
                 <div className="px-6 py-4 border-t border-gray-100">
                   <form onSubmit={handleSendMessage} className="flex items-center gap-3">
                     <label className="p-2.5 hover:bg-gray-100 rounded-xl cursor-pointer transition-colors text-gray-500 hover:text-gray-700">
@@ -489,6 +519,20 @@ const SupportAgentView = () => {
                       </svg>
                     </button>
                   </form>
+                </div>
+              ) : (
+                <div className="px-6 py-4 border-t border-gray-100 bg-gray-50">
+                  <div className="flex items-center gap-3 text-gray-600">
+                    <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-sm font-medium">This conversation has been closed</span>
+                  </div>
+                  {activeConversation.resolution_notes && (
+                    <p className="text-xs text-gray-500 mt-2 ml-8">
+                      Resolution: {activeConversation.resolution_notes}
+                    </p>
+                  )}
                 </div>
               )}
             </>
