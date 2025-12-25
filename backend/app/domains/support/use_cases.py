@@ -27,8 +27,20 @@ def _build_context_snapshot(db: Session, customer_id: Optional[str], cart_items:
                 "id": order.id,
                 "status": getattr(order.status, "value", order.status),
                 "total_amount": order.total_amount,
+                "tax_amount": order.tax_amount,
+                "shipping_amount": order.shipping_amount,
                 "created_at": order.created_at.isoformat() if order.created_at else None,
                 "delivery_address": order.delivery_address,
+                "delivered_at": order.delivered_at.isoformat() if order.delivered_at else None,
+                "items": [
+                    {
+                        "product_name": item.product_name,
+                        "product_price": item.product_price,
+                        "quantity": item.quantity,
+                        "subtotal": item.subtotal,
+                    }
+                    for item in order.items
+                ],
             }
             for order in orders
         ]

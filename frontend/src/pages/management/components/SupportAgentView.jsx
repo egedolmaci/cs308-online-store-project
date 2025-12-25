@@ -14,6 +14,11 @@ const SupportAgentView = () => {
   const [showCloseModal, setShowCloseModal] = useState(false);
   const [resolutionNotes, setResolutionNotes] = useState("");
   const [showContextPanel, setShowContextPanel] = useState(true);
+  const [expandedSections, setExpandedSections] = useState({
+    cart: true,
+    orders: true,
+    wishlist: true,
+  });
 
   const messagesEndRef = useRef(null);
   const messagesContainerRef = useRef(null);
@@ -181,6 +186,15 @@ const SupportAgentView = () => {
   };
 
   const getCustomerName = (conv) => conv.guest_name || (conv.customer_id ? "Customer" : "Guest");
+
+  const toggleSection = (section) => {
+    setExpandedSections((prev) => ({ ...prev, [section]: !prev[section] }));
+  };
+
+  const calculateCartTotal = (items) => {
+    if (!items || items.length === 0) return 0;
+    return items.reduce((total, item) => total + (item.price * item.quantity), 0);
+  };
 
   return (
     <div className="h-[calc(100vh-10rem)] flex flex-col gap-4">
@@ -364,7 +378,7 @@ const SupportAgentView = () => {
                         if (isSystem) {
                           return (
                             <div key={msg.id} className="flex justify-center my-3">
-                              <div className="bg-gray-100 text-gray-600 rounded-full px-4 py-1.5 text-xs">
+                              <div className="bg-gray-100 text-gray-600 rounded-full px-4 py-1.5 text-xs max-w-[80%] text-center wrap-break-word">
                                 {msg.body}
                               </div>
                             </div>
@@ -380,7 +394,7 @@ const SupportAgentView = () => {
                                 : "bg-white border border-gray-200 text-gray-900 rounded-bl-md shadow-sm"
                                 }`}
                             >
-                              {msg.body && <p className="text-sm whitespace-pre-wrap">{msg.body}</p>}
+                              {msg.body && <p className="text-sm whitespace-pre-wrap wrap-break-word">{msg.body}</p>}
                               {msg.attachment && (
                                 <p className={`text-xs mt-1 ${isAgent ? "text-white/70" : "text-gray-500"}`}>
                                   📎 {msg.attachment.filename}
@@ -411,69 +425,194 @@ const SupportAgentView = () => {
 
                 {/* Context Panel */}
                 {showContextPanel && (
-                  <div className="w-64 border-l border-gray-100 p-4 overflow-y-auto bg-gray-50/50">
-                    <h4 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                      </svg>
-                      Customer Info
-                    </h4>
+                  <div className="w-80 border-l border-gray-100 overflow-y-auto bg-gray-50/50">
+                    <div className="sticky top-0 bg-gray-50/95 backdrop-blur p-4 border-b border-gray-200 z-10">
+                      <h4 className="font-semibold text-gray-900 flex items-center gap-2">
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        Customer Context
+                      </h4>
+                    </div>
 
                     {activeConversation.context_snapshot ? (
-                      <div className="space-y-4">
-                        {/* Cart */}
+                      <div className="p-4 space-y-3">
+                        {/* Cart Section */}
                         {activeConversation.context_snapshot.cart_items?.length > 0 && (
-                          <div>
-                            <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Cart</p>
-                            {activeConversation.context_snapshot.cart_items.map((item, i) => (
-                              <div key={i} className="bg-white rounded-lg p-2 mb-1 border border-gray-100">
-                                <p className="text-xs font-medium text-gray-900 truncate">{item.name}</p>
-                                <p className="text-xs text-gray-500">Qty: {item.quantity} · ${item.price}</p>
+                          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                            <button
+                              onClick={() => toggleSection('cart')}
+                              className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                            >
+                              <div className="flex items-center gap-2">
+                                <svg className="w-4 h-4 text-sand" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z" />
+                                </svg>
+                                <span className="text-xs font-semibold text-gray-700 uppercase">
+                                  Cart ({activeConversation.context_snapshot.cart_items.length})
+                                </span>
                               </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Orders */}
-                        {activeConversation.context_snapshot.orders_summary?.length > 0 && (
-                          <div>
-                            <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Recent Orders</p>
-                            {activeConversation.context_snapshot.orders_summary.map((order, i) => (
-                              <div key={i} className="bg-white rounded-lg p-2 mb-1 border border-gray-100">
-                                <div className="flex justify-between items-center">
-                                  <p className="text-xs font-medium text-gray-900 truncate">Order #{order.id}</p>
-                                  <span className={`text-xs px-1.5 py-0.5 rounded ${order.status === "delivered" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}>
-                                    {order.status}
-                                  </span>
+                              <svg className={`w-4 h-4 text-gray-400 transition-transform ${expandedSections.cart ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                            {expandedSections.cart && (
+                              <div className="px-3 pb-3 space-y-2">
+                                {activeConversation.context_snapshot.cart_items.map((item, i) => (
+                                  <div key={i} className="bg-gray-50 rounded-lg p-2.5 border border-gray-100">
+                                    {item.image && (
+                                      <img src={item.image} alt={item.name} className="w-full h-20 object-cover rounded-md mb-2" />
+                                    )}
+                                    <p className="text-xs font-medium text-gray-900 mb-1">{item.name}</p>
+                                    {item.category && (
+                                      <p className="text-xs text-gray-500 mb-1">Category: {item.category}</p>
+                                    )}
+                                    <div className="flex justify-between items-center text-xs">
+                                      <span className="text-gray-600">Qty: {item.quantity} × ${item.price?.toFixed(2)}</span>
+                                      <span className="font-semibold text-sand">${(item.quantity * item.price)?.toFixed(2)}</span>
+                                    </div>
+                                  </div>
+                                ))}
+                                <div className="bg-sand/10 rounded-lg p-2.5 mt-2 border border-sand/20">
+                                  <div className="flex justify-between items-center">
+                                    <span className="text-xs font-semibold text-gray-700">Cart Total</span>
+                                    <span className="text-sm font-bold text-sand">
+                                      ${calculateCartTotal(activeConversation.context_snapshot.cart_items).toFixed(2)}
+                                    </span>
+                                  </div>
                                 </div>
                               </div>
-                            ))}
+                            )}
                           </div>
                         )}
 
-                        {/* Wishlist */}
-                        {activeConversation.context_snapshot.wish_list_items?.length > 0 && (
-                          <div>
-                            <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Wishlist</p>
-                            {activeConversation.context_snapshot.wish_list_items.map((item, i) => (
-                              <div key={i} className="bg-white rounded-lg p-2 mb-1 border border-gray-100">
-                                <p className="text-xs font-medium text-gray-900 truncate">{item.name}</p>
-                                <p className="text-xs text-gray-500">${item.price}</p>
+                        {/* Orders Section */}
+                        {activeConversation.context_snapshot.orders_summary?.length > 0 && (
+                          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                            <button
+                              onClick={() => toggleSection('orders')}
+                              className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                            >
+                              <div className="flex items-center gap-2">
+                                <svg className="w-4 h-4 text-sage" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                                </svg>
+                                <span className="text-xs font-semibold text-gray-700 uppercase">
+                                  Orders ({activeConversation.context_snapshot.orders_summary.length})
+                                </span>
                               </div>
-                            ))}
+                              <svg className={`w-4 h-4 text-gray-400 transition-transform ${expandedSections.orders ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                            {expandedSections.orders && (
+                              <div className="px-3 pb-3 space-y-2">
+                                {activeConversation.context_snapshot.orders_summary.map((order, i) => (
+                                  <div key={i} className="bg-gray-50 rounded-lg p-2.5 border border-gray-100">
+                                    <div className="flex justify-between items-center mb-2">
+                                      <p className="text-xs font-semibold text-gray-900">Order #{order.id}</p>
+                                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                        order.status === "delivered" ? "bg-green-100 text-green-700" :
+                                        order.status === "processing" ? "bg-blue-100 text-blue-700" :
+                                        order.status === "shipped" ? "bg-purple-100 text-purple-700" :
+                                        "bg-amber-100 text-amber-700"
+                                      }`}>
+                                        {order.status}
+                                      </span>
+                                    </div>
+                                    <p className="text-xs text-gray-500 mb-2">
+                                      {new Date(order.created_at).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                                    </p>
+
+                                    {/* Order Items */}
+                                    {order.items?.length > 0 && (
+                                      <div className="bg-white rounded p-2 mb-2 space-y-1">
+                                        <p className="text-xs font-medium text-gray-700 mb-1">Items:</p>
+                                        {order.items.map((item, idx) => (
+                                          <div key={idx} className="flex justify-between text-xs">
+                                            <span className="text-gray-600">{item.quantity}× {item.product_name}</span>
+                                            <span className="text-gray-700 font-medium">${item.subtotal?.toFixed(2)}</span>
+                                          </div>
+                                        ))}
+                                      </div>
+                                    )}
+
+                                    {/* Pricing Breakdown */}
+                                    <div className="bg-white rounded p-2 mb-2 space-y-1">
+                                      <div className="flex justify-between text-xs">
+                                        <span className="text-gray-600">Subtotal</span>
+                                        <span className="text-gray-700">${(order.total_amount - order.tax_amount - order.shipping_amount)?.toFixed(2)}</span>
+                                      </div>
+                                      <div className="flex justify-between text-xs">
+                                        <span className="text-gray-600">Tax</span>
+                                        <span className="text-gray-700">${order.tax_amount?.toFixed(2)}</span>
+                                      </div>
+                                      <div className="flex justify-between text-xs">
+                                        <span className="text-gray-600">Shipping</span>
+                                        <span className="text-gray-700">${order.shipping_amount?.toFixed(2)}</span>
+                                      </div>
+                                      <div className="flex justify-between text-xs pt-1 border-t border-gray-200">
+                                        <span className="font-semibold text-gray-800">Total</span>
+                                        <span className="font-bold text-sage">${order.total_amount?.toFixed(2)}</span>
+                                      </div>
+                                    </div>
+
+                                    {/* Delivery Address */}
+                                    {order.delivery_address && (
+                                      <div className="bg-blue-50 rounded p-2 border border-blue-100">
+                                        <p className="text-xs font-medium text-blue-900 mb-0.5">Delivery Address:</p>
+                                        <p className="text-xs text-blue-700">{order.delivery_address}</p>
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Wishlist Section */}
+                        {activeConversation.context_snapshot.wish_list_items?.length > 0 && (
+                          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                            <button
+                              onClick={() => toggleSection('wishlist')}
+                              className="w-full px-3 py-2.5 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                            >
+                              <div className="flex items-center gap-2">
+                                <svg className="w-4 h-4 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                </svg>
+                                <span className="text-xs font-semibold text-gray-700 uppercase">
+                                  Wishlist ({activeConversation.context_snapshot.wish_list_items.length})
+                                </span>
+                              </div>
+                              <svg className={`w-4 h-4 text-gray-400 transition-transform ${expandedSections.wishlist ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                              </svg>
+                            </button>
+                            {expandedSections.wishlist && (
+                              <div className="px-3 pb-3 space-y-2">
+                                {activeConversation.context_snapshot.wish_list_items.map((item, i) => (
+                                  <div key={i} className="bg-gray-50 rounded-lg p-2.5 border border-gray-100">
+                                    <p className="text-xs font-medium text-gray-900 mb-1">{item.name}</p>
+                                    <p className="text-xs font-semibold text-sand">${item.price?.toFixed(2)}</p>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
                           </div>
                         )}
 
                         {!activeConversation.context_snapshot.cart_items?.length &&
                           !activeConversation.context_snapshot.orders_summary?.length &&
                           !activeConversation.context_snapshot.wish_list_items?.length && (
-                            <p className="text-xs text-gray-400 text-center py-4">No context data</p>
+                            <p className="text-xs text-gray-400 text-center py-8">No context data available</p>
                           )}
                       </div>
                     ) : (
-                      <div className="text-center py-6">
-                        <div className="w-12 h-12 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-2">
-                          <svg className="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <div className="text-center py-8 px-4">
+                        <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mx-auto mb-3">
+                          <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                           </svg>
                         </div>

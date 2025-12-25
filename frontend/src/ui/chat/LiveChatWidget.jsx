@@ -408,7 +408,7 @@ const LiveChatWidget = () => {
                                   }`}
                               >
                                 {message.body && (
-                                  <p className="text-sm whitespace-pre-wrap">{message.body}</p>
+                                  <p className="text-sm whitespace-pre-wrap wrap-break-word">{message.body}</p>
                                 )}
                                 {message.attachment && (
                                   <div className={`text-xs mt-1 ${isCustomer ? "text-white/80" : "text-gray-500"}`}>
