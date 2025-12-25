@@ -5,6 +5,18 @@ from sqlalchemy.orm import Session
 from app.infrastructure.database.sqlite.session import get_db
 from app.domains.catalog.schemas import ProductResponse, ProductUpdate, ProductDiscountRequest, ProductDiscountClearRequest
 from app.domains.catalog import use_cases
+from app.infrastructure.database.sqlite.repositories.wishlist_repository import WishlistRepositorySQLite
+from app.domains.notifications.notifier import ConsoleWishlistNotifier
+from app.infrastructure.notifications.email_notifier import EmailWishlistNotifier
+from app.core.config import get_settings
+
+settings = get_settings()
+
+
+def _get_notifier(db: Session):
+    if settings.SMTP_HOST and settings.SMTP_USERNAME and settings.SMTP_PASSWORD:
+        return EmailWishlistNotifier(db)
+    return ConsoleWishlistNotifier()
 
 router = APIRouter(prefix="/api/v1/products", tags=["products"])
 
@@ -92,7 +104,16 @@ def update_product(
             detail="No fields provided for update"
         )
 
-    updated_product = use_cases.update_product(db, product_id, updates)
+    wishlist_repo = WishlistRepositorySQLite(db)
+    notifier = _get_notifier(db)
+
+    updated_product = use_cases.update_product(
+        db,
+        product_id,
+        updates,
+        wishlist_repo=wishlist_repo,
+        notifier=notifier,
+    )
     if not updated_product:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -107,10 +128,15 @@ def apply_discount(discount_request: ProductDiscountRequest, db: Session = Depen
     Apply a percentage discount to multiple products and return the updated products.
     """
     try:
+        wishlist_repo = WishlistRepositorySQLite(db)
+        notifier = _get_notifier(db)
+
         updated_products = use_cases.apply_discount(
             db,
             discount_request.product_ids,
-            discount_request.discount_rate,
+            discount_rate=discount_request.discount_rate,
+            wishlist_repo=wishlist_repo,
+            notifier=notifier,
         )
     except ValueError as e:
         raise HTTPException(
@@ -129,7 +155,15 @@ def apply_discount(discount_request: ProductDiscountRequest, db: Session = Depen
 
 @router.patch("/discount/clear", response_model=List[ProductResponse])
 def clear_discount(discount_request: ProductDiscountClearRequest, db: Session = Depends(get_db)):
-    cleared_products = use_cases.clear_discount(db, discount_request.product_ids)
+    wishlist_repo = WishlistRepositorySQLite(db)
+    notifier = _get_notifier(db)
+
+    cleared_products = use_cases.clear_discount(
+        db,
+        discount_request.product_ids,
+        wishlist_repo=wishlist_repo,
+        notifier=notifier,
+    )
     if not cleared_products:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,

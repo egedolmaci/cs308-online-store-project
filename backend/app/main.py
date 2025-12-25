@@ -10,6 +10,7 @@ from app.infrastructure.database.sqlite.models.category import CategoryModel
 from app.infrastructure.database.sqlite.models.order import OrderModel, OrderItemModel
 from app.infrastructure.database.sqlite.models.user import UserModel
 from app.infrastructure.database.sqlite.models.review import ReviewModel
+from app.infrastructure.database.sqlite.models.wishlist import WishlistModel
 from app.infrastructure.database.sqlite.seeder import seed_database
 
 from app.api.endpoints import auth as auth_endpoints
@@ -19,6 +20,7 @@ from app.api.endpoints import categories as categories_endpoints
 from app.api.endpoints import reviews as reviews_endpoints
 from app.api.endpoints import support as support_endpoints
 from app.api.endpoints import users as users_endpoints
+from app.api.endpoints import wishlist as wishlist_endpoints
 
 settings = get_settings()
 
@@ -43,6 +45,7 @@ def create_application() -> FastAPI:
     app.include_router(reviews_endpoints.router)
     app.include_router(support_endpoints.router)
     app.include_router(users_endpoints.router)
+    app.include_router(wishlist_endpoints.router)
 
     @app.get("/health")
     def health_check():

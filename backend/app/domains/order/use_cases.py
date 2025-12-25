@@ -3,6 +3,70 @@ from sqlalchemy.orm import Session
 from app.domains.order.repository import OrderRepository
 from app.domains.order.entity import Order, OrderItem, OrderStatus
 from app.domains.catalog.repository import ProductRepository
+from app.domains.notifications.notifier import WishlistNotifier
+from app.domains.wishlist.repository import WishlistRepository
+
+
+def _notify_if_restocked(
+    wishlist_repo: Optional[WishlistRepository],
+    notifier: Optional[WishlistNotifier],
+    previous_product,
+    updated_product,
+):
+    """
+    Send back-in-stock notification when stock crosses from 0 to >0.
+    """
+    if not wishlist_repo or not notifier:
+        return
+    if previous_product.stock != 0 or updated_product.stock <= 0:
+        return
+
+    user_ids = wishlist_repo.get_user_ids_by_product(int(updated_product.id))
+    if not user_ids:
+        return
+
+    notifier.send_stock_email(
+        user_ids,
+        {
+            "id": updated_product.id,
+            "name": updated_product.name,
+            "price": updated_product.price,
+            "final_price": updated_product.final_price or updated_product.price,
+            "stock": updated_product.stock,
+            "image": getattr(updated_product, "image", None),
+        },
+    )
+
+
+def _notify_if_stock_depleted(
+    wishlist_repo: Optional[WishlistRepository],
+    notifier: Optional[WishlistNotifier],
+    previous_product,
+    updated_product,
+):
+    """
+    Send out-of-stock notification when stock crosses from >0 to 0.
+    """
+    if not wishlist_repo or not notifier:
+        return
+    if previous_product.stock <= 0 or updated_product.stock != 0:
+        return
+
+    user_ids = wishlist_repo.get_user_ids_by_product(int(updated_product.id))
+    if not user_ids:
+        return
+
+    notifier.send_out_of_stock_email(
+        user_ids,
+        {
+            "id": updated_product.id,
+            "name": updated_product.name,
+            "price": updated_product.price,
+            "final_price": updated_product.final_price or updated_product.price,
+            "stock": updated_product.stock,
+            "image": getattr(updated_product, "image", None),
+        },
+    )
 
 
 def create_order(
@@ -13,6 +77,8 @@ def create_order(
     tax_rate: float = 0.08,
     shipping_threshold: float = 100.0,
     shipping_cost: float = 10.0,
+    wishlist_repo: Optional[WishlistRepository] = None,
+    notifier: Optional[WishlistNotifier] = None,
 ) -> Optional[Order]:
     """
     Create a new order.
@@ -60,7 +126,9 @@ def create_order(
         )
 
         # Decrease stock
-        product_repo.update(product.id, {"stock": product.stock - item_data["quantity"]})
+        updated_product = product_repo.update(product.id, {"stock": product.stock - item_data["quantity"]})
+        if updated_product:
+            _notify_if_stock_depleted(wishlist_repo, notifier, product, updated_product)
 
     # Calculate tax and shipping
     tax_amount = subtotal * tax_rate
@@ -130,7 +198,12 @@ def update_order_status(db: Session, order_id: int, status: OrderStatus) -> Opti
     return repository.update_status(order_id, status)
 
 
-def cancel_order(db: Session, order_id: int) -> Optional[Order]:
+def cancel_order(
+    db: Session,
+    order_id: int,
+    wishlist_repo: Optional[WishlistRepository] = None,
+    notifier: Optional[WishlistNotifier] = None,
+) -> Optional[Order]:
     """
     Cancel an order (only if in processing status).
 
@@ -150,7 +223,9 @@ def cancel_order(db: Session, order_id: int) -> Optional[Order]:
         for item in order.items:
             product = product_repo.get_by_id(item.product_id)
             if product:
-                product_repo.update(item.product_id, {"stock": product.stock + item.quantity})
+                updated = product_repo.update(item.product_id, {"stock": product.stock + item.quantity})
+                if updated:
+                    _notify_if_restocked(wishlist_repo, notifier, product, updated)
 
     return order
 
@@ -171,7 +246,12 @@ def request_refund(db: Session, order_id: int, reason: Optional[str] = None) -> 
     return repository.request_refund(order_id, reason)
 
 
-def approve_refund(db: Session, order_id: int) -> Optional[Order]:
+def approve_refund(
+    db: Session,
+    order_id: int,
+    wishlist_repo: Optional[WishlistRepository] = None,
+    notifier: Optional[WishlistNotifier] = None,
+) -> Optional[Order]:
     """
     Approve a refund request.
 
@@ -199,7 +279,9 @@ def approve_refund(db: Session, order_id: int) -> Optional[Order]:
         for item in approved_order.items:
             product = product_repo.get_by_id(item.product_id)
             if product:
-                product_repo.update(item.product_id, {"stock": product.stock + item.quantity})
+                updated = product_repo.update(item.product_id, {"stock": product.stock + item.quantity})
+                if updated:
+                    _notify_if_restocked(wishlist_repo, notifier, product, updated)
 
     return approved_order
 

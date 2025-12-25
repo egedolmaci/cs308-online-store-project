@@ -3,6 +3,9 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, Background
 from sqlalchemy.orm import Session
 
 from app.infrastructure.database.sqlite.session import get_db
+from app.infrastructure.database.sqlite.repositories.wishlist_repository import WishlistRepositorySQLite
+from app.domains.notifications.notifier import ConsoleWishlistNotifier
+from app.infrastructure.notifications.email_notifier import EmailWishlistNotifier
 from app.domains.order.schemas import (
     OrderCreate,
     OrderResponse,
@@ -14,8 +17,16 @@ from app.domains.order import use_cases
 from app.api.endpoints.auth import get_current_user, require_roles
 from app.domains.identity.repository import User
 from app.infrastructure.notifications.invoice_email import send_order_invoice_email
+from app.core.config import get_settings
 
 router = APIRouter(prefix="/api/v1/orders", tags=["orders"])
+settings = get_settings()
+
+
+def _get_notifier(db: Session):
+    if settings.SMTP_HOST and settings.SMTP_USERNAME and settings.SMTP_PASSWORD:
+        return EmailWishlistNotifier(db)
+    return ConsoleWishlistNotifier()
 
 
 @router.post("", response_model=OrderResponse, status_code=status.HTTP_201_CREATED)
@@ -43,11 +54,16 @@ def create_order(
     # Convert items to dict format for use_cases
     items = [{"product_id": item.product_id, "quantity": item.quantity} for item in order_data.items]
 
+    wishlist_repo = WishlistRepositorySQLite(db)
+    notifier = _get_notifier(db)
+
     order = use_cases.create_order(
         db=db,
         customer_id=current_user.id,  # Use UUID directly
         delivery_address=order_data.delivery_address,
         items=items,
+        wishlist_repo=wishlist_repo,
+        notifier=notifier,
     )
 
     if not order:
@@ -196,7 +212,15 @@ def cancel_order(
     if order_check.customer_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Not your order")
 
-    order = use_cases.cancel_order(db, order_id)
+    wishlist_repo = WishlistRepositorySQLite(db)
+    notifier = _get_notifier(db)
+
+    order = use_cases.cancel_order(
+        db,
+        order_id,
+        wishlist_repo=wishlist_repo,
+        notifier=notifier,
+    )
     if not order:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -260,8 +284,16 @@ def approve_refund(order_id: int, approval_data: OrderRefundApproval, db: Sessio
         HTTPException: 400 if order refund cannot be processed
         HTTPException: 404 if order not found
     """
+    wishlist_repo = WishlistRepositorySQLite(db)
+    notifier = _get_notifier(db)
+
     if approval_data.approved:
-        order = use_cases.approve_refund(db, order_id)
+        order = use_cases.approve_refund(
+            db,
+            order_id,
+            wishlist_repo=wishlist_repo,
+            notifier=notifier,
+        )
         if not order:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,

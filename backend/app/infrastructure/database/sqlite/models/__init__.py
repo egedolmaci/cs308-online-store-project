@@ -9,3 +9,4 @@ from app.infrastructure.database.sqlite.models.support import (
     SupportContextSnapshotModel,
     SupportMessageModel,
 )
+from app.infrastructure.database.sqlite.models.wishlist import WishlistModel
