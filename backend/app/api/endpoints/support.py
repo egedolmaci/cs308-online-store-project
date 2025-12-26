@@ -30,7 +30,7 @@ from app.domains.support.schemas import (
     SupportQueueResponse,
 )
 from app.infrastructure.database.sqlite.session import SessionLocal, get_db
-from app.infrastructure.storage.local import save_support_attachment
+from app.infrastructure.storageutils.local import save_support_attachment
 
 router = APIRouter(prefix="/api/v1/support", tags=["support"])
 settings = get_settings()
