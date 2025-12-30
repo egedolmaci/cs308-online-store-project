@@ -34,6 +34,27 @@ uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 - SMTP (optional for invoice email): `SMTP_HOST`, `SMTP_PORT`, `SMTP_USERNAME`, `SMTP_PASSWORD`, `SMTP_STARTTLS`, `EMAIL_FROM`
 - Support chat/attachments: `SUPPORT_ATTACHMENT_DIR`, `SUPPORT_ATTACHMENT_MAX_MB`, `SUPPORT_ALLOWED_MIME_PREFIXES`, `SUPPORT_HISTORY_LIMIT`, `SUPPORT_QUEUE_LIMIT`
 
+## Security & Data Encryption
+
+Sensitive data is encrypted at rest in the database using industry-standard cryptography:
+
+**Encrypted Fields:**
+- **User passwords**: Hashed with bcrypt (irreversible, one-way)
+- **User home addresses**: Encrypted with Fernet (AES-128 symmetric encryption)
+- **Order delivery addresses**: Encrypted with Fernet (AES-128 symmetric encryption)
+- **Guest email addresses** (in support conversations): Encrypted with Fernet (AES-128 symmetric encryption)
+
+**Implementation:**
+- Encryption/decryption handled automatically in repository layer (`backend/app/domains/*/repository.py`)
+- Encryption key derived from `SECRET_KEY` in `.env`
+- Data encrypted before database write, decrypted after database read
+- Encryption utilities: `backend/app/core/crypto.py` (Fernet) and `backend/app/core/security.py` (bcrypt)
+
+**Authentication:**
+- User emails remain unencrypted (required for login lookups)
+- JWTs issued as HTTP-only cookies to prevent XSS attacks
+- Role-based access control (RBAC) enforces permissions
+
 ## Data and seed users
 
 - On startup tables are created and seed data is added if the DB is empty (`backend/database.db`).

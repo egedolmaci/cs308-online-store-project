@@ -148,3 +148,19 @@ Relevant files:
 - Do not commit `.env` to version control.
 - Rotate credentials periodically and prefer provider‑specific App Passwords.
 - Consider a secrets manager for production (e.g., environment variables in your deployment platform).
+
+## Data Security & Encryption
+
+All sensitive data is encrypted at rest in the database:
+
+**Encrypted Fields:**
+- **User passwords**: Bcrypt hashing (irreversible)
+- **User home addresses**: Fernet encryption (AES-128)
+- **Order delivery addresses**: Fernet encryption (AES-128)
+- **Guest emails** (support): Fernet encryption (AES-128)
+
+**How It Works:**
+- Encryption key is derived from `SECRET_KEY` environment variable
+- Repository layer automatically encrypts on save, decrypts on read
+- User emails remain unencrypted for authentication lookups
+- Implementation files: `app/core/crypto.py` and `app/core/security.py`
