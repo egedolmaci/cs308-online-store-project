@@ -15,9 +15,17 @@ class ProductRepository:
         products = self.db.query(ProductModel).all()
         return [self._to_entity(p) for p in products]
 
-    def get_by_id(self, product_id: int) -> Optional[Product]:
-        """Retrieve a single product by ID."""
-        product = self.db.query(ProductModel).filter(ProductModel.id == product_id).first()
+    def get_by_id(self, product_id: int, lock_for_update: bool = False) -> Optional[Product]:
+        """Retrieve a single product by ID.
+
+        Args:
+            product_id: ID of the product
+            lock_for_update: If True, acquire row lock to prevent race conditions
+        """
+        query = self.db.query(ProductModel).filter(ProductModel.id == product_id)
+        if lock_for_update:
+            query = query.with_for_update()
+        product = query.first()
         return self._to_entity(product) if product else None
 
     def delete(self, product_id: int) -> bool:

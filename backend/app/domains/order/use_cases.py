@@ -111,7 +111,8 @@ def create_order(
     subtotal = 0.0
 
     for item_data in items:
-        product = product_repo.get_by_id(item_data["product_id"])
+        # Lock the product row to prevent race conditions during stock check
+        product = product_repo.get_by_id(item_data["product_id"], lock_for_update=True)
         if not product:
             return None  # Product not found
 

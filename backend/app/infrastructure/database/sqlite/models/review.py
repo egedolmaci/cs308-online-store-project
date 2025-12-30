@@ -1,7 +1,7 @@
 """
 Review Database Model
 """
-from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean, Text
+from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean, Text, UniqueConstraint
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql import func
 from app.infrastructure.database.sqlite.session import Base
@@ -11,6 +11,9 @@ class ReviewModel(Base):
     """SQLAlchemy model for product reviews and ratings."""
 
     __tablename__ = "reviews"
+    __table_args__ = (
+        UniqueConstraint('user_id', 'product_id', name='uq_user_product_review'),
+    )
 
     id = Column(Integer, primary_key=True, index=True, autoincrement=True)
 
