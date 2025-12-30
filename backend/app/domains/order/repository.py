@@ -134,11 +134,13 @@ class OrderRepository:
         if order.status != OrderStatus.DELIVERED:
             return None
 
-        # Check if within 30 days
-        if order.delivered_at:
-            days_since_delivery = (datetime.utcnow() - order.delivered_at).days
-            if days_since_delivery > 30:
-                return None
+        # Check if within 30 days (delivered_at must be set for delivered orders)
+        if not order.delivered_at:
+            return None  # Delivered order must have delivered_at timestamp
+
+        days_since_delivery = (datetime.utcnow() - order.delivered_at).days
+        if days_since_delivery > 30:
+            return None
 
         # Validate requested items against order items
         if items:
