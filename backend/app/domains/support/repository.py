@@ -4,6 +4,7 @@ from datetime import datetime
 
 from sqlalchemy.orm import Session
 
+from app.core.crypto import encrypt_str, decrypt_str
 from app.domains.support.entity import (
     ConversationStatus,
     MessageStatus,
@@ -73,7 +74,7 @@ class SupportRepository:
             conversation_token=model.conversation_token,
             assigned_agent_id=model.assigned_agent_id,
             guest_name=model.guest_name,
-            guest_email=model.guest_email,
+            guest_email=decrypt_str(model.guest_email),
             resolution_notes=model.resolution_notes,
             last_message_at=model.last_message_at,
             created_at=model.created_at,
@@ -102,7 +103,7 @@ class SupportRepository:
             customer_id=customer_id,
             conversation_token=conversation_token,
             guest_name=guest_name,
-            guest_email=guest_email,
+            guest_email=encrypt_str(guest_email),
             last_message_at=datetime.utcnow(),
         )
 
