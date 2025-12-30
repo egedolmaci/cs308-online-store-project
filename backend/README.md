@@ -164,3 +164,20 @@ All sensitive data is encrypted at rest in the database:
 - Repository layer automatically encrypts on save, decrypts on read
 - User emails remain unencrypted for authentication lookups
 - Implementation files: `app/core/crypto.py` and `app/core/security.py`
+
+## Concurrency & Thread Safety
+
+**Row-Level Locking:**
+- Stock management uses `with_for_update()` to prevent race conditions
+- Prevents overselling when multiple users order simultaneously
+- Implementation: `app/domains/catalog/repository.py:18-29`
+
+**Database Constraints:**
+- Unique constraint on reviews table: one review per user per product
+- Foreign key cascades maintain data integrity
+
+**Safe Operations:**
+- Order creation (stock locking prevents overselling)
+- Order cancellation/refund (atomic stock restoration)
+- Review creation (database prevents duplicates)
+- Discount application (transactional updates)

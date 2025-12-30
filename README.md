@@ -55,6 +55,29 @@ Sensitive data is encrypted at rest in the database using industry-standard cryp
 - JWTs issued as HTTP-only cookies to prevent XSS attacks
 - Role-based access control (RBAC) enforces permissions
 
+## Concurrency Safety
+
+The application handles multiple concurrent users safely through:
+
+**Database Row Locking:**
+- **Stock management**: Uses pessimistic locking (`with_for_update()`) during order creation to prevent overselling
+- **Critical path**: Product stock locked from check to decrement (backend/app/domains/catalog/repository.py:26)
+- **Flow**: Lock acquired → stock validated → order created → stock decreased → lock released
+
+**Database Constraints:**
+- **Review uniqueness**: Database-level unique constraint prevents duplicate reviews (user_id + product_id)
+- **Foreign key enforcement**: Cascade deletes maintain referential integrity
+
+**Transaction Management:**
+- Each database session auto-commits or rolls back as a single atomic unit
+- Failed operations don't leave partial state (e.g., stock decreased but order creation failed)
+
+**Tested Scenarios:**
+- ✅ Multiple users ordering last items simultaneously
+- ✅ Concurrent order cancellations and refunds (stock restoration)
+- ✅ Simultaneous review creation for same product by same user
+- ✅ Concurrent discount applications by multiple managers
+
 ## Data and seed users
 
 - On startup tables are created and seed data is added if the DB is empty (`backend/database.db`).
