@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { addToCart } from "../../../store/slices/cartSlice";
+import { addToast } from "../../../store/slices/toastSlice";
 
 const ProductInfo = ({ product }) => {
   const dispatch = useDispatch();
@@ -23,12 +24,26 @@ const ProductInfo = ({ product }) => {
 
   const handleAddToCart = () => {
     const toAdd = Math.min(quantity, availableLeft);
-    if (toAdd <= 0) return;
+    if (toAdd <= 0) {
+      dispatch(addToast({
+        type: "warning",
+        title: "Cannot Add",
+        message: "Product is out of stock",
+        duration: 3000
+      }));
+      return;
+    }
     for (let i = 0; i < toAdd; i++) {
       dispatch(addToCart(product));
     }
     setShowAddedMessage(true);
     setTimeout(() => setShowAddedMessage(false), 3000);
+    dispatch(addToast({
+      type: "success",
+      title: "Added to Cart",
+      message: `${toAdd} x ${product.name} added to your cart`,
+      duration: 3000
+    }));
   };
 
   return (

@@ -45,13 +45,30 @@ const ItemCard = ({ product }) => {
   const handleToggleWishlist = (e) => {
     e.stopPropagation();
     if (!isAuthenticated) {
-      alert("Please log in to add items to your wishlist.");
+      dispatch(addToast({
+        type: "warning",
+        title: "Login Required",
+        message: "Please log in to add items to your wishlist",
+        duration: 3000
+      }));
       return;
     }
     if (isWishlisted) {
       dispatch(removeFromWishlist(product.id));
+      dispatch(addToast({
+        type: "info",
+        title: "Removed from Wishlist",
+        message: `${product.name} removed from your wishlist`,
+        duration: 3000
+      }));
     } else {
       dispatch(addToWishlist(product.id));
+      dispatch(addToast({
+        type: "success",
+        title: "Added to Wishlist",
+        message: `${product.name} added to your wishlist`,
+        duration: 3000
+      }));
     }
   };
 

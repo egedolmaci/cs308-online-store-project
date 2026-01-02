@@ -7,6 +7,7 @@ import {
   selectWishlistItems,
   selectWishlistStatus,
 } from "../../../store/slices/wishlistSlice";
+import { addToast } from "../../../store/slices/toastSlice";
 
 const Wishlist = () => {
   const items = useSelector(selectWishlistItems);
@@ -16,7 +17,14 @@ const Wishlist = () => {
   const navigate = useNavigate();
 
   const handleRemove = (productId) => {
+    const product = items.find(item => item.id === productId);
     dispatch(removeFromWishlist(productId));
+    dispatch(addToast({
+      type: "info",
+      title: "Removed from Wishlist",
+      message: product ? `${product.name} removed from your wishlist` : "Item removed from wishlist",
+      duration: 3000
+    }));
   };
 
   const handleClear = () => {
@@ -26,6 +34,12 @@ const Wishlist = () => {
     );
     if (confirmed) {
       dispatch(clearWishlist());
+      dispatch(addToast({
+        type: "success",
+        title: "Wishlist Cleared",
+        message: "All items removed from your wishlist",
+        duration: 3000
+      }));
     }
   };
 
