@@ -8,6 +8,7 @@ import { ICON_NAMES, MODAL_NAMES } from "../../constants";
 import { openModalWithPromise } from "../../ui/modals/modalPromises";
 import { generateConfirmActionModal } from "../../ui/modals";
 import { clearCart } from "../../store/slices/cartSlice";
+import { addToast } from "../../store/slices/toastSlice";
 
 const Cart = () => {
   const dispatch = useDispatch();
@@ -37,6 +38,12 @@ const Cart = () => {
       // If confirmed, clear the cart
       dispatch(clearModal());
       dispatch(clearCart());
+      dispatch(addToast({
+        type: "success",
+        title: "Cart Cleared",
+        message: "All items removed from cart",
+        duration: 3000
+      }));
     } catch (error) {
       // Modal was cancelled, do nothing
       console.log("Clear cart action cancelled: " + error);

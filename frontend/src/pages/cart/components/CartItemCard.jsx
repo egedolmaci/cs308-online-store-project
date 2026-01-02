@@ -5,6 +5,7 @@ import {
   decreaseQuantity,
   updateQuantity,
 } from "../../../store/slices/cartSlice";
+import { addToast } from "../../../store/slices/toastSlice";
 
 const CartItemCard = ({ item }) => {
   const dispatch = useDispatch();
@@ -52,7 +53,15 @@ const CartItemCard = ({ item }) => {
                 <p className="text-sm text-gray-500">Model: {item.model}</p>
               </div>
               <button
-                onClick={() => dispatch(removeFromCart(item.id))}
+                onClick={() => {
+                  dispatch(removeFromCart(item.id));
+                  dispatch(addToast({
+                    type: "info",
+                    title: "Item Removed",
+                    message: `${item.name} removed from cart`,
+                    duration: 3000
+                  }));
+                }}
                 className="p-2 text-gray-400 hover:text-error hover:bg-error/10 rounded-xl transition-all duration-300"
                 aria-label="Remove item"
               >
@@ -127,7 +136,16 @@ const CartItemCard = ({ item }) => {
                   className="w-16 text-center font-bold text-gray-900 bg-transparent focus:outline-none"
                 />
                 <button
-                  onClick={() => dispatch(increaseQuantity(item.id))}
+                  onClick={() => {
+                    if (item.quantity < item.stock) {
+                      dispatch(increaseQuantity(item.id));
+                      dispatch(addToast({
+                        type: "success",
+                        message: `Quantity increased to ${item.quantity + 1}`,
+                        duration: 2000
+                      }));
+                    }
+                  }}
                   disabled={item.quantity >= item.stock}
                   className="w-9 h-9 flex items-center justify-center rounded-lg bg-white hover:bg-gray-900 hover:text-white transition-all duration-300 shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-gray-900"
                   aria-label="Increase quantity"

@@ -15,6 +15,7 @@ import NotFound from "./pages/not-found";
 import Header from "./ui/components/Header";
 import Footer from "./ui/components/Footer";
 import ModalContainer from "./ui/components/ModalContainer";
+import Toast from "./ui/components/Toast";
 import { me } from "./store/slices/userSlice";
 import { fetchProducts } from "./store/slices/productsSlice";
 import { fetchWishlist } from "./store/slices/wishlistSlice";
@@ -50,6 +51,7 @@ function AppContent() {
   return (
     <>
       <ModalContainer />
+      <Toast />
       <Header />
       <Routes>
         <Route path="/" element={<Home />} />

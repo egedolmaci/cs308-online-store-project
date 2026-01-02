@@ -5,6 +5,7 @@ import {
   addToWishlist,
   removeFromWishlist,
 } from "../../../store/slices/wishlistSlice";
+import { addToast } from "../../../store/slices/toastSlice";
 
 const ItemCard = ({ product }) => {
   const dispatch = useDispatch();
@@ -21,6 +22,19 @@ const ItemCard = ({ product }) => {
     e.stopPropagation();
     if (availableLeft > 0) {
       dispatch(addToCart(product));
+      dispatch(addToast({
+        type: "success",
+        title: "Added to Cart",
+        message: `${product.name} added to your cart`,
+        duration: 3000
+      }));
+    } else {
+      dispatch(addToast({
+        type: "warning",
+        title: "Cannot Add",
+        message: "Maximum stock reached for this item",
+        duration: 3000
+      }));
     }
   };
 
