@@ -47,7 +47,7 @@ describe("ItemCard", () => {
       </MemoryRouter>,
     );
 
-    await userEvent.click(screen.getByRole("button", { name: /add/i }));
+    await userEvent.click(screen.getByRole("button", { name: /^add$/i }));
 
     const state = store.getState().cart;
     expect(state.items).toHaveLength(1);
