@@ -4,6 +4,7 @@ from app.domains.catalog.entity import Product
 from app.domains.catalog.schemas import ProductResponse, ProductUpdate, ProductDiscountRequest, ProductDiscountClearRequest
 from app.domains.category.entity import Category
 from app.domains.order.entity import Order, OrderItem, OrderStatus
+from app.domains.order.schemas import OrderCreate, OrderRefundRequest, OrderRefundApproval
 
 
 # Product Entity Tests
@@ -236,3 +237,56 @@ def test_order_total_amount_type():
         items=[]
     )
     assert isinstance(order.total_amount, float)
+
+
+def test_order_create_requires_address():
+    """OrderCreate should reject empty or whitespace address."""
+    with pytest.raises(ValueError):
+        OrderCreate(delivery_address="   ", items=[{"product_id": 1, "quantity": 1}])
+
+
+def test_order_create_requires_items():
+    """OrderCreate should require at least one item."""
+    with pytest.raises(ValueError):
+        OrderCreate(delivery_address="123 Main", items=[])
+
+
+def test_order_refund_request_empty_items_raises():
+    """Refund request should reject empty items list."""
+    with pytest.raises(ValueError):
+        OrderRefundRequest(items=[])
+
+
+def test_order_refund_approval_requires_positive_amount():
+    """Approved refund with non-positive amount should raise."""
+    with pytest.raises(ValueError):
+        OrderRefundApproval(approved=True, refund_amount=0)
+
+
+def test_product_response_from_entity_mapping():
+    """ProductResponse should map dataclass fields via from_attributes."""
+    product = Product(
+        id=5,
+        name="Sneaker",
+        model="SN-1",
+        serial_number="SN-001",
+        description="Running shoe",
+        price=100.0,
+        stock=4,
+        category_id=2,
+        category="Shoes",
+        image=None,
+        rating=4.2,
+        warranty_status=None,
+        distributor=None,
+        discount_rate=10.0,
+        discount_active=True,
+        final_price=90.0,
+    )
+
+    response = ProductResponse.model_validate(product)
+
+    assert response.name == "Sneaker"
+    assert response.final_price == 90.0
+    assert response.discount_active is True
+    assert response.category == "Shoes"
