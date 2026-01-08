@@ -1,16 +1,29 @@
-# React + Vite
+# Online Store Frontend (React + Vite)
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React/Vite UI for the CS308 online fashion store. Uses Redux Toolkit for state, Tailwind for styles, and Vitest + Testing Library for unit tests.
 
-Currently, two official plugins are available:
+## Quick Start
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+```bash
+cd frontend
+npm install
+npm run dev        # http://localhost:5173
+```
 
-## React Compiler
+## Scripts
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- `npm run dev` – start Vite dev server with HMR
+- `npm run build` – production build
+- `npm run preview` – serve the production build locally
+- `npm run lint` – ESLint (flat config)
+- `npm run test` – Vitest unit tests (`-- --run` for single pass, `-- --coverage` for coverage)
 
-## Expanding the ESLint configuration
+## Testing Notes
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- Tests live under `src/store/slices` and `src/pages/**/components`.
+- Vitest runs in a JSDOM environment; no extra setup required.
+- Use `npm run test -- path/to/file.test.*` to run a specific file.
+
+## API Integration
+
+The frontend is ready to point at the FastAPI backend on `http://localhost:8000`. When adding data fetching, use the `src/api` layer and Redux thunks for consistency with existing slices.
