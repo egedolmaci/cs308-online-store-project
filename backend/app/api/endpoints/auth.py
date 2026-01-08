@@ -36,18 +36,18 @@ def clear_cookie(response: Response, name: str):
 def get_current_user(request: Request):
     token: Optional[str] = request.cookies.get(ACCESS_COOKIE_NAME)
     if not token:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication required")
     payload = verify_token(token)
     if not payload or payload.get("type") != "access":
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Access token is invalid")
     user = get_user(payload.get("sub"))
     if not user:
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found")
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User not found for token")
     return user, payload.get("role")
 
 def require_roles(*roles: Iterable[str]):
-    def dep(user_with_role = Depends(get_current_user)):
-        user, role = user_with_role
+    def dep(user_and_role = Depends(get_current_user)):
+        user, role = user_and_role
         if roles and role not in roles:
             raise HTTPException(status_code=403, detail="Forbidden")
         return user
@@ -65,13 +65,13 @@ def register(payload: UserCreate):
         )
         return UserRead(id=user.id, first_name=user.first_name, last_name=user.last_name, email=user.email, role=user.role, address=user.address)
     except ValueError:
-        raise HTTPException(status_code=400, detail="User already exists")
+        raise HTTPException(status_code=400, detail="User already exists with this email")
 
 @router.post("/login", response_model=LoginResponse)
 def login(payload: LoginRequest, response: Response):
     user = authenticate_user(payload.email, payload.password)
     if not user:
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(status_code=401, detail="Invalid email or password")
 
     access = create_access_token(user.id, user.role)
     refresh = create_refresh_token(user.id, user.role)
@@ -98,16 +98,16 @@ def logout(response: Response):
 def refresh(request: Request, response: Response):
     token: Optional[str] = request.cookies.get(REFRESH_COOKIE_NAME)
     if not token:
-        raise HTTPException(status_code=401, detail="No refresh token")
+        raise HTTPException(status_code=401, detail="Refresh token missing")
     payload = verify_token(token)
     if not payload or payload.get("type") != "refresh":
-        raise HTTPException(status_code=401, detail="Invalid refresh token")
+        raise HTTPException(status_code=401, detail="Refresh token is invalid")
     user = get_user(payload.get("sub"))
     if not user:
-        raise HTTPException(status_code=401, detail="User not found")
+        raise HTTPException(status_code=401, detail="User not found for token")
     new_access = create_access_token(user.id, user.role)
     set_cookie(response, ACCESS_COOKIE_NAME, new_access, max_age=60 * settings.ACCESS_TOKEN_EXPIRE_MINUTES)
-    return Message(detail="Refreshed")
+    return Message(detail="Access token refreshed")
 
 @router.get("/me", response_model=LoginResponse)
 def me(user_with_role = Depends(get_current_user)):
