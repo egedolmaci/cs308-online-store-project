@@ -163,7 +163,6 @@ def start_conversation(
         guest_email=payload.guest_email,
         initial_message=payload.initial_message,
         cart_items=payload.cart_items or [],
-        wish_list_items=payload.wish_list_items or [],
     )
 
     # Ensure token is reflected back for guests

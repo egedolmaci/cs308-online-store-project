@@ -15,11 +15,16 @@ from app.domains.support.entity import (
     SupportMessage,
 )
 from app.domains.support.repository import SupportRepository
+from app.infrastructure.database.sqlite.repositories.wishlist_repository import WishlistRepositorySQLite
+from app.domains.wishlist import use_cases as wishlist_use_cases
 
 
-def _build_context_snapshot(db: Session, customer_id: Optional[str], cart_items: list | None, wish_list_items: list | None) -> dict:
+def _build_context_snapshot(db: Session, customer_id: Optional[str], cart_items: list | None) -> dict:
     orders_summary: List[dict] = []
+    wishlist_summary: List[dict] = []
+
     if customer_id:
+        # Fetch orders
         order_repo = OrderRepository(db)
         orders = order_repo.get_all(customer_id)
         orders_summary = [
@@ -45,10 +50,24 @@ def _build_context_snapshot(db: Session, customer_id: Optional[str], cart_items:
             for order in orders
         ]
 
+        # Fetch wishlist items
+        wishlist_repo = WishlistRepositorySQLite(db)
+        wishlist_products = wishlist_use_cases.list_wishlist(db, customer_id, wishlist_repo)
+        wishlist_summary = [
+            {
+                "id": product.id,
+                "name": product.name,
+                "price": product.price,
+                "category": product.category,
+                "image": product.image,
+            }
+            for product in wishlist_products
+        ]
+
     return {
         "cart_items": cart_items or [],
         "orders_summary": orders_summary,
-        "wish_list_items": wish_list_items or [],
+        "wish_list_items": wishlist_summary,
     }
 
 
@@ -60,7 +79,6 @@ def start_conversation(
     guest_email: Optional[str],
     initial_message: Optional[str],
     cart_items: list | None,
-    wish_list_items: list | None,
 ) -> Tuple[SupportConversation, Optional[str]]:
     """
     Create a new conversation. Returns conversation and optional guest token.
@@ -83,12 +101,8 @@ def start_conversation(
         item.model_dump() if hasattr(item, "model_dump") else item
         for item in (cart_items or [])
     ]
-    wish_payload = [
-        item.model_dump() if hasattr(item, "model_dump") else item
-        for item in (wish_list_items or [])
-    ]
 
-    context_snapshot = _build_context_snapshot(db, customer_id, cart_payload, wish_payload)
+    context_snapshot = _build_context_snapshot(db, customer_id, cart_payload)
     conversation = repo.create_conversation(
         customer_id=customer_id,
         guest_name=guest_name,
