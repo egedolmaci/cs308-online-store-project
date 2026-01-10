@@ -37,6 +37,8 @@ def create_product(product: ProductCreate, db: Session = Depends(get_db)):
     """
     try:
         product_data = product.model_dump()
+        if(product_data.get("image") == ""):
+            product_data["image"] = "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=400"
         created_product = use_cases.create_product(db, product_data)
         return created_product
     except ValueError as e:
