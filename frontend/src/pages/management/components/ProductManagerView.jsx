@@ -67,16 +67,20 @@ const ProductManagerView = () => {
   // Product Functions
   const handleProductSubmit = async (e) => {
     e.preventDefault();
+    const productPayload = { ...productForm };
+    if (productPayload.price === "" || productPayload.price === null) {
+      delete productPayload.price;
+    }
     try {
       if (editingProduct) {
         await dispatch(
           updateProductAction({
             productId: editingProduct.id,
-            productData: productForm,
+            productData: productPayload,
           })
         ).unwrap();
       } else {
-        await dispatch(createProductAction(productForm)).unwrap();
+        await dispatch(createProductAction(productPayload)).unwrap();
       }
       setShowProductModal(false);
       setEditingProduct(null);
@@ -454,7 +458,7 @@ const ProductManagerView = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Price
+                    Price (Optional)
                   </label>
                   <input
                     type="number"
@@ -463,8 +467,8 @@ const ProductManagerView = () => {
                     onChange={(e) =>
                       setProductForm({ ...productForm, price: e.target.value })
                     }
+                    placeholder="Set by sales manager"
                     className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-sand focus:outline-none transition-colors"
-                    required
                   />
                 </div>
 

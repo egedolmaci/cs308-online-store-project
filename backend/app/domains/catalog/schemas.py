@@ -9,7 +9,7 @@ class ProductCreate(BaseModel):
     model: str = Field(min_length=1, max_length=100)
     serial_number: str = Field(min_length=1, max_length=100)
     description: Optional[str] = Field(None, max_length=500)
-    price: float = Field(gt=0)
+    price: Optional[float] = Field(0.0, ge=0)
     stock: int = Field(ge=0)
     category_id: int = Field(gt=0)
     image: Optional[str] = Field(None, max_length=500)
@@ -18,6 +18,13 @@ class ProductCreate(BaseModel):
     distributor: Optional[str] = Field(None, max_length=200)
 
     model_config = ConfigDict(from_attributes=True)
+
+    @field_validator("price")
+    @classmethod
+    def normalize_price(cls, v):
+        if v is None:
+            return 0.0
+        return v
 
 
 class ProductResponse(BaseModel):
