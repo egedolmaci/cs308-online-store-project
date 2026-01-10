@@ -275,6 +275,12 @@ const PersonalDetails = () => {
                 {user.email}
               </p>
             </div>
+            <div>
+              <p className="text-sm text-gray-500 mb-1">Tax ID</p>
+              <p className="text-lg font-semibold text-gray-900">
+                {user.taxId || "11111111111"}
+              </p>
+            </div>
 
             {/* Address Section */}
             <div className="pt-6 border-t border-gray-200">

@@ -13,6 +13,7 @@ class UserModel(Base):
     password_hash = Column(String(255), nullable=False)
     role = Column(String(50), nullable=False, default="customer")
     address = Column(String(500), nullable=True)  # Optional address field
+    tax_id = Column(String(11), nullable=False, default="11111111111")  # Fixed tax ID for all users
 
     def __repr__(self):
         return f"<User(id={self.id}, email='{self.email}', role='{self.role}')>"

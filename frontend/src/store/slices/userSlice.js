@@ -79,6 +79,7 @@ const initialState = {
   firstName: null,
   lastName: null,
   address: null,
+  taxId: null,
   isAuthenticated: false,
   isLoading: true,
   error: null,
@@ -102,6 +103,7 @@ const userSlice = createSlice({
       state.email = null;
       state.role = null;
       state.address = null;
+      state.taxId = null;
       state.isAuthenticated = false;
       state.error = null;
     },
@@ -133,6 +135,7 @@ const userSlice = createSlice({
         state.email = action.payload.email;
         state.role = action.payload.role;
         state.address = action.payload.address;
+        state.taxId = action.payload.tax_id;
         state.isAuthenticated = true;
         state.error = null;
       })
@@ -168,6 +171,7 @@ const userSlice = createSlice({
         state.firstName = null;
         state.lastName = null;
         state.address = null;
+        state.taxId = null;
         state.error = null;
       })
       .addCase(logoutUser.rejected, (state, action) => {
@@ -186,6 +190,7 @@ const userSlice = createSlice({
         state.email = action.payload.email;
         state.role = action.payload.role;
         state.address = action.payload.address;
+        state.taxId = action.payload.tax_id;
         state.isAuthenticated = true;
         state.error = null;
       })
@@ -198,6 +203,7 @@ const userSlice = createSlice({
         state.firstName = null;
         state.lastName = null;
         state.address = null;
+        state.taxId = null;
         state.error = null;
       })
       // Update user info cases
@@ -211,6 +217,7 @@ const userSlice = createSlice({
         state.lastName = action.payload.last_name;
         state.email = action.payload.email;
         state.address = action.payload.address;
+        state.taxId = action.payload.tax_id;
         state.error = null;
       })
       .addCase(updateUserInfo.rejected, (state, action) => {

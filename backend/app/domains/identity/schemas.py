@@ -17,6 +17,7 @@ class UserRead(BaseModel):
     email: EmailStr
     role: Role
     address: Optional[str] = None
+    tax_id: str
 
 class LoginRequest(BaseModel):
     email: EmailStr
@@ -33,6 +34,7 @@ class LoginResponse(BaseModel):
     email: EmailStr
     role: Role
     address: Optional[str] = None
+    tax_id: str
 
 class UserUpdate(BaseModel):
     first_name: Optional[str] = Field(None, min_length=1, max_length=100)
