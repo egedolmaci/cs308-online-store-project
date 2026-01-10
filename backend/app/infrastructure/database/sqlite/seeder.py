@@ -33,6 +33,7 @@ def seed_database(db: Session) -> None:
         # Seed users first
         logger.info("Seeding users...")
         customer_id = str(uuid.uuid4())
+        customer2_id = str(uuid.uuid4())
         seed_users = [
             {
                 "id": str(uuid.uuid4()),
@@ -73,6 +74,16 @@ def seed_database(db: Session) -> None:
                 "address": encrypt_str("123 Sales St, Commerce City"),
                 "role": "customer",
                 "tax_id": "11111111111",
+            },
+            {
+                "id": customer2_id,
+                "first_name": "Customer",
+                "last_name": "Example",
+                "email": "examplecustomer@example.com",
+                "password_hash": hash_password("12345678"),
+                "address": encrypt_str("456 Example Ave, Sample Town"),
+                "role": "customer",
+                "tax_id": "22222222222",
             },
         ]
 
@@ -199,6 +210,185 @@ def seed_database(db: Session) -> None:
 
             db.commit()
             logger.info("Successfully seeded 3 orders for customer Ahmet Yılmaz!")
+
+        # Seed orders for customer Customer Example
+        logger.info("Seeding orders for Customer Example...")
+
+        # Get various products for diverse order history
+        product_a = next((p for p in products if "Product A" in p.name), None)
+        product_e = next((p for p in products if "Product E" in p.name), None)
+        product_f = next((p for p in products if "Product F" in p.name), None)
+        hoodie = next((p for p in products if "Hoodie" in p.name and "Product" not in p.name), None)
+        tshirt = next((p for p in products if "Classic Cotton T-Shirt" in p.name), None)
+
+        # Order 1: 5 months ago - delivered
+        if tshirt and hoodie:
+            order_1_date = datetime.utcnow() - timedelta(days=150)
+            order_1_subtotal = (tshirt.price * 2) + hoodie.price
+            order_1_tax = round(order_1_subtotal * 0.08, 2)
+            order_1 = OrderModel(
+                customer_id=customer2_id,
+                status=OrderStatus.DELIVERED,
+                total_amount=round(order_1_subtotal + order_1_tax, 2),
+                tax_amount=order_1_tax,
+                shipping_amount=0.00,
+                delivery_address=encrypt_str("456 Example Ave, Sample Town"),
+                created_at=order_1_date,
+                updated_at=order_1_date,
+                delivered_at=order_1_date + timedelta(days=4),
+            )
+            db.add(order_1)
+            db.flush()
+
+            # 2x T-shirts
+            db.add(OrderItemModel(
+                order_id=order_1.id,
+                product_id=tshirt.id,
+                product_name=tshirt.name,
+                product_price=tshirt.price,
+                quantity=2,
+                subtotal=tshirt.price * 2,
+            ))
+            # 1x Hoodie
+            db.add(OrderItemModel(
+                order_id=order_1.id,
+                product_id=hoodie.id,
+                product_name=hoodie.name,
+                product_price=hoodie.price,
+                quantity=1,
+                subtotal=hoodie.price,
+            ))
+
+        # Order 2: 4 months ago - delivered
+        if product_b:
+            order_2_date = datetime.utcnow() - timedelta(days=120)
+            order_2_subtotal = product_b.price * 1
+            order_2_tax = round(order_2_subtotal * 0.08, 2)
+            order_2 = OrderModel(
+                customer_id=customer2_id,
+                status=OrderStatus.DELIVERED,
+                total_amount=round(order_2_subtotal + order_2_tax, 2),
+                tax_amount=order_2_tax,
+                shipping_amount=0.00,
+                delivery_address=encrypt_str("456 Example Ave, Sample Town"),
+                created_at=order_2_date,
+                updated_at=order_2_date,
+                delivered_at=order_2_date + timedelta(days=3),
+            )
+            db.add(order_2)
+            db.flush()
+
+            db.add(OrderItemModel(
+                order_id=order_2.id,
+                product_id=product_b.id,
+                product_name=product_b.name,
+                product_price=product_b.price,
+                quantity=1,
+                subtotal=product_b.price,
+            ))
+
+        # Order 3: 3 months ago - delivered
+        if product_e and product_a:
+            order_3_date = datetime.utcnow() - timedelta(days=90)
+            order_3_subtotal = product_e.price + (product_a.price * 3)
+            order_3_tax = round(order_3_subtotal * 0.08, 2)
+            order_3 = OrderModel(
+                customer_id=customer2_id,
+                status=OrderStatus.DELIVERED,
+                total_amount=round(order_3_subtotal + order_3_tax, 2),
+                tax_amount=order_3_tax,
+                shipping_amount=0.00,
+                delivery_address=encrypt_str("456 Example Ave, Sample Town"),
+                created_at=order_3_date,
+                updated_at=order_3_date,
+                delivered_at=order_3_date + timedelta(days=5),
+            )
+            db.add(order_3)
+            db.flush()
+
+            db.add(OrderItemModel(
+                order_id=order_3.id,
+                product_id=product_e.id,
+                product_name=product_e.name,
+                product_price=product_e.price,
+                quantity=1,
+                subtotal=product_e.price,
+            ))
+            db.add(OrderItemModel(
+                order_id=order_3.id,
+                product_id=product_a.id,
+                product_name=product_a.name,
+                product_price=product_a.price,
+                quantity=3,
+                subtotal=product_a.price * 3,
+            ))
+
+        # Order 4: 2 months ago - delivered
+        if product_f:
+            order_4_date = datetime.utcnow() - timedelta(days=60)
+            order_4_subtotal = product_f.price * 2
+            order_4_tax = round(order_4_subtotal * 0.08, 2)
+            order_4 = OrderModel(
+                customer_id=customer2_id,
+                status=OrderStatus.DELIVERED,
+                total_amount=round(order_4_subtotal + order_4_tax, 2),
+                tax_amount=order_4_tax,
+                shipping_amount=0.00,
+                delivery_address=encrypt_str("456 Example Ave, Sample Town"),
+                created_at=order_4_date,
+                updated_at=order_4_date,
+                delivered_at=order_4_date + timedelta(days=4),
+            )
+            db.add(order_4)
+            db.flush()
+
+            db.add(OrderItemModel(
+                order_id=order_4.id,
+                product_id=product_f.id,
+                product_name=product_f.name,
+                product_price=product_f.price,
+                quantity=2,
+                subtotal=product_f.price * 2,
+            ))
+
+        # Order 5: 1 month ago - delivered
+        if product_c and product_d:
+            order_5_date = datetime.utcnow() - timedelta(days=30)
+            order_5_subtotal = product_c.price + product_d.price
+            order_5_tax = round(order_5_subtotal * 0.08, 2)
+            order_5 = OrderModel(
+                customer_id=customer2_id,
+                status=OrderStatus.DELIVERED,
+                total_amount=round(order_5_subtotal + order_5_tax, 2),
+                tax_amount=order_5_tax,
+                shipping_amount=0.00,
+                delivery_address=encrypt_str("456 Example Ave, Sample Town"),
+                created_at=order_5_date,
+                updated_at=order_5_date,
+                delivered_at=order_5_date + timedelta(days=3),
+            )
+            db.add(order_5)
+            db.flush()
+
+            db.add(OrderItemModel(
+                order_id=order_5.id,
+                product_id=product_c.id,
+                product_name=product_c.name,
+                product_price=product_c.price,
+                quantity=1,
+                subtotal=product_c.price,
+            ))
+            db.add(OrderItemModel(
+                order_id=order_5.id,
+                product_id=product_d.id,
+                product_name=product_d.name,
+                product_price=product_d.price,
+                quantity=1,
+                subtotal=product_d.price,
+            ))
+
+        db.commit()
+        logger.info("Successfully seeded 5 orders for customer Customer Example!")
 
         logger.info("Database seeding completed successfully!")
 
