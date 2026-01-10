@@ -4,6 +4,7 @@ from sqlalchemy.orm import Session
 from app.infrastructure.database.sqlite.models.product import ProductModel
 from app.infrastructure.database.sqlite.models.category import CategoryModel
 from app.infrastructure.database.sqlite.models.user import UserModel
+from app.core.crypto import encrypt_str
 from app.infrastructure.database.sqlite.models.order import OrderModel, OrderItemModel
 from app.infrastructure.database.sqlite.seed_data import PRODUCTS, CATEGORIES
 from app.core.security import hash_password
@@ -43,7 +44,7 @@ def seed_database(db: Session) -> None:
                 "password_hash": hash_password("12345678"),
                 "address": encrypt_str("123 Manager Rd, Business City"),
                 "role": "product_manager",
-                "tax_id": "11111111111",
+                "tax_id": encrypt_str("11111111111"),
             },
             {
                 "id": str(uuid.uuid4()),
@@ -53,7 +54,7 @@ def seed_database(db: Session) -> None:
                 "password_hash": hash_password("12345678"),
                 "address": encrypt_str("123 Sales St, Commerce City"),
                 "role": "sales_manager",
-                "tax_id": "11111111111",
+                "tax_id": encrypt_str("11111111111"),
             },
             {
                 "id": str(uuid.uuid4()),
@@ -63,7 +64,7 @@ def seed_database(db: Session) -> None:
                 "password_hash": hash_password("12345678"),
                 "address": encrypt_str("123 Sales St, Commerce City"),
                 "role": "support_agent",
-                "tax_id": "11111111111",
+                "tax_id": encrypt_str("11111111111"),
             },
             {
                 "id": customer_id,
@@ -73,7 +74,7 @@ def seed_database(db: Session) -> None:
                 "password_hash": hash_password("12345678"),
                 "address": encrypt_str("123 Sales St, Commerce City"),
                 "role": "customer",
-                "tax_id": "11111111111",
+                "tax_id": encrypt_str("11111111111"),
             },
             {
                 "id": customer2_id,
@@ -83,7 +84,7 @@ def seed_database(db: Session) -> None:
                 "password_hash": hash_password("12345678"),
                 "address": encrypt_str("456 Example Ave, Sample Town"),
                 "role": "customer",
-                "tax_id": "22222222222",
+                "tax_id": encrypt_str("22222222222"),
             },
         ]
 

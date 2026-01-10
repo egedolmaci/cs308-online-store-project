@@ -35,7 +35,7 @@ class SQLAlchemyUserRepository:
             password_hash=model.password_hash,
             role=model.role,
             address=decrypt_str(model.address),
-            tax_id=model.tax_id,
+            tax_id=decrypt_str(model.tax_id),
         )
 
     def _ensure_seed_user(self):
@@ -57,7 +57,7 @@ class SQLAlchemyUserRepository:
                     password_hash=hash_password("12345678"),
                     address=encrypt_str("123 Manager Rd, Business City"),
                     role="product_manager",
-                    tax_id="11111111111",
+                    tax_id=encrypt_str("11111111111"),
                 )
                 db.add(seeded)
                 db.commit()
@@ -74,7 +74,7 @@ class SQLAlchemyUserRepository:
                     password_hash=hash_password("12345678"),
                     address=encrypt_str("456 Helpdesk Rd, Service City"),
                     role="support_agent",
-                    tax_id="11111111111",
+                    tax_id=encrypt_str("11111111111"),
                 )
                 db.add(seeded)
                 db.commit()
@@ -91,7 +91,7 @@ class SQLAlchemyUserRepository:
                     password_hash=hash_password("12345678"),
                     address=encrypt_str("123 Sales St, Commerce City"),
                     role="sales_manager",
-                    tax_id="11111111111",
+                    tax_id=encrypt_str("11111111111"),
                 )
                 db.add(seeded)
                 db.commit()
@@ -108,7 +108,7 @@ class SQLAlchemyUserRepository:
                     password_hash=hash_password("12345678"),
                     address=encrypt_str("123 Sales St, Commerce City"),
                     role="customer",
-                    tax_id="11111111111",
+                    tax_id=encrypt_str("11111111111"),
                 )
                 db.add(seeded)
                 db.commit()
@@ -128,7 +128,7 @@ class SQLAlchemyUserRepository:
                 password_hash=hash_password(password),
                 role=role,
                 address=encrypt_str(address) if address else "123 Sales St, Commerce City",
-                tax_id="11111111111",
+                tax_id=encrypt_str("11111111111"),
             )
             db.add(model)
             try:
