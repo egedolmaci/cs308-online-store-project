@@ -96,6 +96,23 @@ class SQLAlchemyUserRepository:
                 db.add(seeded)
                 db.commit()
 
+            # Ensure customer exists
+            existing = db.query(UserModel).filter(UserModel.email == "customer@example.com").first()
+            if not existing:
+                logger.info("Re-creating missing customer user")
+                seeded = UserModel(
+                    id=str(uuid.uuid4()),
+                    first_name="Ahmet",
+                    last_name="Yılmaz",
+                    email="customer@example.com",
+                    password_hash=hash_password("12345678"),
+                    address=encrypt_str("123 Sales St, Commerce City"),
+                    role="customer",
+                    tax_id="11111111111",
+                )
+                db.add(seeded)
+                db.commit()
+
     def create_user(self, first_name: str, last_name: str, email: str, password: str, role: str = "customer", address: Optional[str] = None) -> User:
         email_l = email.lower()
         with SessionLocal() as db:
