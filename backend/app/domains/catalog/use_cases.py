@@ -1,9 +1,32 @@
 from typing import List, Optional
 from sqlalchemy.orm import Session
+from sqlalchemy.exc import IntegrityError
 from app.domains.catalog.repository import ProductRepository
 from app.domains.catalog.entity import Product
 from app.domains.notifications.notifier import WishlistNotifier
 from app.domains.wishlist.repository import WishlistRepository
+
+
+def create_product(db: Session, product_data: dict) -> Product:
+    """
+    Create a new product in the catalog.
+
+    Args:
+        db: Database session
+        product_data: Dictionary containing product information
+
+    Returns:
+        Created Product entity
+
+    Raises:
+        ValueError: If serial_number already exists
+    """
+    repository = ProductRepository(db)
+    try:
+        return repository.create(product_data)
+    except IntegrityError:
+        db.rollback()
+        raise ValueError("Product with this serial number already exists")
 
 
 def get_all_products(db: Session) -> List[Product]:

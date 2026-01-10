@@ -10,6 +10,14 @@ class ProductRepository:
     def __init__(self, db: Session):
         self.db = db
 
+    def create(self, product_data: dict) -> Product:
+        """Create a new product in the database."""
+        product = ProductModel(**product_data)
+        self.db.add(product)
+        self.db.commit()
+        self.db.refresh(product)
+        return self._to_entity(product)
+
     def get_all(self) -> List[Product]:
         """Retrieve all products from the database."""
         products = self.db.query(ProductModel).all()

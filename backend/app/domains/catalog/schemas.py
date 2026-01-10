@@ -1,5 +1,23 @@
 from typing import Optional, List
-from pydantic import BaseModel, ConfigDict, field_validator
+from pydantic import BaseModel, ConfigDict, field_validator, Field
+
+
+class ProductCreate(BaseModel):
+    """Schema for creating a new product."""
+
+    name: str = Field(min_length=1, max_length=200)
+    model: str = Field(min_length=1, max_length=100)
+    serial_number: str = Field(min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+    price: float = Field(gt=0)
+    stock: int = Field(ge=0)
+    category_id: int = Field(gt=0)
+    image: Optional[str] = Field(None, max_length=500)
+    rating: Optional[float] = Field(None, ge=0, le=5)
+    warranty_status: Optional[str] = Field(None, max_length=100)
+    distributor: Optional[str] = Field(None, max_length=200)
+
+    model_config = ConfigDict(from_attributes=True)
 
 
 class ProductResponse(BaseModel):

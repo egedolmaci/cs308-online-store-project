@@ -37,11 +37,16 @@ const ProductManagerView = () => {
   const [editingProduct, setEditingProduct] = useState(null);
   const [productForm, setProductForm] = useState({
     name: "",
-    category: "",
-    price: "",
-    cost_price: "",
-    stock: "",
+    model: "",
+    serial_number: "",
     description: "",
+    price: "",
+    stock: "",
+    category_id: "",
+    image: "",
+    rating: "",
+    warranty_status: "",
+    distributor: "",
   });
 
   // Categories State
@@ -53,6 +58,7 @@ const ProductManagerView = () => {
   useEffect(() => {
     if (activeTab === "products") {
       dispatch(fetchProducts());
+      dispatch(fetchCategories()); // Load categories for dropdown
     } else if (activeTab === "categories") {
       dispatch(fetchCategories());
     }
@@ -76,11 +82,16 @@ const ProductManagerView = () => {
       setEditingProduct(null);
       setProductForm({
         name: "",
-        category: "",
-        price: "",
-        cost_price: "",
-        stock: "",
+        model: "",
+        serial_number: "",
         description: "",
+        price: "",
+        stock: "",
+        category_id: "",
+        image: "",
+        rating: "",
+        warranty_status: "",
+        distributor: "",
       });
       dispatch(fetchProducts());
     } catch (error) {
@@ -92,11 +103,16 @@ const ProductManagerView = () => {
     setEditingProduct(product);
     setProductForm({
       name: product.name,
-      category: product.category,
-      price: product.price,
-      cost_price: product.cost_price || "",
-      stock: product.stock,
+      model: product.model || "",
+      serial_number: product.serial_number || "",
       description: product.description || "",
+      price: product.price,
+      stock: product.stock,
+      category_id: product.category_id || "",
+      image: product.image || "",
+      rating: product.rating || "",
+      warranty_status: product.warranty_status || "",
+      distributor: product.distributor || "",
     });
     setShowProductModal(true);
   };
@@ -200,11 +216,16 @@ const ProductManagerView = () => {
                 setEditingProduct(null);
                 setProductForm({
                   name: "",
-                  category: "",
-                  price: "",
-                  cost_price: "",
-                  stock: "",
+                  model: "",
+                  serial_number: "",
                   description: "",
+                  price: "",
+                  stock: "",
+                  category_id: "",
+                  image: "",
+                  rating: "",
+                  warranty_status: "",
+                  distributor: "",
                 });
                 setShowProductModal(true);
               }}
@@ -377,19 +398,57 @@ const ProductManagerView = () => {
                 />
               </div>
 
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Model
+                  </label>
+                  <input
+                    type="text"
+                    value={productForm.model}
+                    onChange={(e) =>
+                      setProductForm({ ...productForm, model: e.target.value })
+                    }
+                    className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-sand focus:outline-none transition-colors"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Serial Number
+                  </label>
+                  <input
+                    type="text"
+                    value={productForm.serial_number}
+                    onChange={(e) =>
+                      setProductForm({ ...productForm, serial_number: e.target.value })
+                    }
+                    className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-sand focus:outline-none transition-colors"
+                    required
+                  />
+                </div>
+              </div>
+
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-2">
                   Category
                 </label>
-                <input
-                  type="text"
-                  value={productForm.category}
+                <select
+                  value={productForm.category_id}
                   onChange={(e) =>
-                    setProductForm({ ...productForm, category: e.target.value })
+                    setProductForm({ ...productForm, category_id: e.target.value })
                   }
                   className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-sand focus:outline-none transition-colors"
                   required
-                />
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>
+                      {category.name}
+                    </option>
+                  ))}
+                </select>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -411,33 +470,18 @@ const ProductManagerView = () => {
 
                 <div>
                   <label className="block text-sm font-semibold text-gray-700 mb-2">
-                    Cost Price (Optional)
+                    Stock
                   </label>
                   <input
                     type="number"
-                    step="0.01"
-                    value={productForm.cost_price}
+                    value={productForm.stock}
                     onChange={(e) =>
-                      setProductForm({ ...productForm, cost_price: e.target.value })
+                      setProductForm({ ...productForm, stock: e.target.value })
                     }
                     className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-sand focus:outline-none transition-colors"
+                    required
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
-                  Stock
-                </label>
-                <input
-                  type="number"
-                  value={productForm.stock}
-                  onChange={(e) =>
-                    setProductForm({ ...productForm, stock: e.target.value })
-                  }
-                  className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-sand focus:outline-none transition-colors"
-                  required
-                />
               </div>
 
               <div>
@@ -452,6 +496,69 @@ const ProductManagerView = () => {
                   rows="3"
                   className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-sand focus:outline-none transition-colors"
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Image URL (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={productForm.image}
+                    onChange={(e) =>
+                      setProductForm({ ...productForm, image: e.target.value })
+                    }
+                    className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-sand focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Rating (0-5)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.1"
+                    min="0"
+                    max="5"
+                    value={productForm.rating}
+                    onChange={(e) =>
+                      setProductForm({ ...productForm, rating: e.target.value })
+                    }
+                    className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-sand focus:outline-none transition-colors"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Warranty Status (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={productForm.warranty_status}
+                    onChange={(e) =>
+                      setProductForm({ ...productForm, warranty_status: e.target.value })
+                    }
+                    className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-sand focus:outline-none transition-colors"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Distributor (Optional)
+                  </label>
+                  <input
+                    type="text"
+                    value={productForm.distributor}
+                    onChange={(e) =>
+                      setProductForm({ ...productForm, distributor: e.target.value })
+                    }
+                    className="w-full px-4 py-3 rounded-2xl border-2 border-gray-200 focus:border-sand focus:outline-none transition-colors"
+                  />
+                </div>
               </div>
 
               <div className="flex gap-3 pt-4">

@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.infrastructure.database.sqlite.session import get_db
-from app.domains.catalog.schemas import ProductResponse, ProductUpdate, ProductDiscountRequest, ProductDiscountClearRequest
+from app.domains.catalog.schemas import ProductResponse, ProductCreate, ProductUpdate, ProductDiscountRequest, ProductDiscountClearRequest
 from app.domains.catalog import use_cases
 from app.infrastructure.database.sqlite.repositories.wishlist_repository import WishlistRepositorySQLite
 from app.domains.notifications.notifier import ConsoleWishlistNotifier
@@ -19,6 +19,31 @@ def _get_notifier(db: Session):
     return ConsoleWishlistNotifier()
 
 router = APIRouter(prefix="/api/v1/products", tags=["products"])
+
+
+@router.post("", response_model=ProductResponse, status_code=status.HTTP_201_CREATED)
+def create_product(product: ProductCreate, db: Session = Depends(get_db)):
+    """
+    Create a new product in the catalog.
+
+    Args:
+        product: Product data to create
+
+    Returns:
+        Created product details
+
+    Raises:
+        HTTPException: 400 if serial_number already exists
+    """
+    try:
+        product_data = product.model_dump()
+        created_product = use_cases.create_product(db, product_data)
+        return created_product
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e)
+        )
 
 
 @router.get("", response_model=List[ProductResponse])
