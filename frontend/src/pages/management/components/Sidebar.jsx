@@ -17,6 +17,12 @@ const Sidebar = ({
 
     if (userRole === USER_ROLES.SALES_MANAGER) {
       roleSpecificItems.push({
+        id: "prices",
+        label: "Price Management",
+        icon: "sales",
+        roles: [USER_ROLES.SALES_MANAGER],
+      });
+      roleSpecificItems.push({
         id: "discounts",
         label: "Discount Management",
         icon: "discount",

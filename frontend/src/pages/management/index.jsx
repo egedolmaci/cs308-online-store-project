@@ -11,6 +11,7 @@ import OrdersManagement from "./components/OrdersManagement";
 import DiscountsManagement from "./components/DiscountsManagement";
 import InvoicesManagement from "./components/InvoicesManagement";
 import RevenueAnalysis from "./components/RevenueAnalysis";
+import PriceManagement from "./components/PriceManagement";
 import { USER_ROLES } from "../../constants";
 
 const Management = () => {
@@ -39,6 +40,11 @@ const Management = () => {
   const renderContent = () => {
     switch (activeSection) {
       case "dashboard":
+        return <Dashboard userRole={userRole} setActiveSection={setActiveSection} />;
+      case "prices":
+        if (userRole === USER_ROLES.SALES_MANAGER) {
+          return <PriceManagement />;
+        }
         return <Dashboard userRole={userRole} setActiveSection={setActiveSection} />;
       case "discounts":
         if (userRole === USER_ROLES.SALES_MANAGER) {
